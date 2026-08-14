@@ -2,7 +2,12 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* Custom CSS for better styling */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap');
+
+/* ===================================================
+   Linh Cosmetics - Modern Luxury Design System
+   =================================================== */
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -13,11 +18,16 @@
   }
 
   body {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      sans-serif;
-    background-color: #fdfbf7;
-    color: #2d2d2d;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #FDFBF7;
+    color: #2D2D2D;
     line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.01em;
   }
 }
 
@@ -43,10 +53,57 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Luxury gradient badges & buttons */
+  .btn-rose-gradient {
+    background: linear-gradient(135deg, #BC8F8F 0%, #CB997E 100%);
+    color: #ffffff;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-rose-gradient:hover {
+    background: linear-gradient(135deg, #a67c7c 0%, #b8866d 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(188, 143, 143, 0.35);
+  }
+
+  /* Glassmorphism containers */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(221, 190, 169, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(188, 143, 143, 0.08);
+  }
+
+  .glass-header {
+    background: rgba(253, 251, 247, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(221, 190, 169, 0.25);
+  }
 }
 
 @layer utilities {
-  /* Custom scrollbar */
+  /* Luxury Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #FDFBF7;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #DDBEA9;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #BC8F8F;
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -57,15 +114,15 @@
   }
 }
 
-/* Ant Design customizations */
+/* Ant Design Global Polish */
 .ant-layout {
-  background: #fdfbf7 !important;
+  background: #FDFBF7 !important;
 }
 
 .ant-layout-header {
-  background: rgba(253, 251, 247, 0.8) !important;
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(253, 251, 247, 0.9) !important;
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(221, 190, 169, 0.25);
 }
 
 .ant-menu-horizontal {
@@ -75,91 +132,100 @@
 
 .ant-menu-horizontal > .ant-menu-item:hover,
 .ant-menu-horizontal > .ant-menu-submenu:hover {
-  color: #bc8f8f !important;
+  color: #BC8F8F !important;
 }
 
 .ant-menu-horizontal > .ant-menu-item-selected {
-  color: #bc8f8f !important;
-  border-bottom-color: #bc8f8f !important;
+  color: #BC8F8F !important;
+  border-bottom-color: #BC8F8F !important;
 }
 
 .ant-card {
-  border-radius: 8px !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03),
-    0 1px 6px -1px rgba(0, 0, 0, 0.02) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(221, 190, 169, 0.25) !important;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.04), 0 4px 16px -4px rgba(188, 143, 143, 0.06) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .ant-card-hoverable:hover {
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.05), 0 2px 4px 0 rgba(0, 0, 0, 0.02) !important;
-  transform: translateY(-2px);
-  transition: all 0.3s ease;
+  box-shadow: 0 12px 28px -4px rgba(188, 143, 143, 0.15), 0 4px 12px -2px rgba(0, 0, 0, 0.04) !important;
+  transform: translateY(-3px);
 }
 
 .ant-btn-primary {
-  background-color: #bc8f8f !important;
-  border-color: #bc8f8f !important;
-  box-shadow: none !important;
+  background-color: #BC8F8F !important;
+  border-color: #BC8F8F !important;
+  box-shadow: 0 2px 8px rgba(188, 143, 143, 0.25) !important;
+  font-weight: 500 !important;
 }
 
 .ant-btn-primary:hover {
-  background-color: rgba(188, 143, 143, 0.9) !important;
-  border-color: rgba(188, 143, 143, 0.9) !important;
+  background-color: #a67c7c !important;
+  border-color: #a67c7c !important;
+  box-shadow: 0 4px 14px rgba(188, 143, 143, 0.35) !important;
 }
 
 .ant-input:focus,
-.ant-input-focused {
-  border-color: #bc8f8f !important;
-  box-shadow: 0 0 0 2px rgba(188, 143, 143, 0.1) !important;
+.ant-input-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: #BC8F8F !important;
+  box-shadow: 0 0 0 2px rgba(188, 143, 143, 0.15) !important;
 }
 
-.ant-form-item-label
-  > label.ant-form-item-required:not(
-    .ant-form-item-required-mark-optional
-  )::before {
-  color: #bc8f8f !important;
+.ant-table {
+  border-radius: 8px !important;
+  overflow: hidden;
 }
 
-/* Custom glassmorphism effect for header */
-.glass-header {
-  background: rgba(253, 251, 247, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+.ant-table-thead > tr > th {
+  background-color: #FAF5F0 !important;
+  color: #6B705C !important;
+  font-weight: 600 !important;
 }
 
-/* Smooth transitions */
-.transition-all {
-  transition: all 0.3s ease;
+.ant-table-row:hover > td {
+  background-color: rgba(221, 190, 169, 0.08) !important;
 }
 
-/* Custom aspect ratio for product images */
-.aspect-square {
-  aspect-ratio: 1 / 1;
+.ant-tabs-ink-bar {
+  background: #BC8F8F !important;
 }
 
-/* Loading animation */
-@keyframes fadeIn {
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #BC8F8F !important;
+  font-weight: 600;
+}
+
+.ant-tag {
+  border-radius: 6px !important;
+  font-weight: 500;
+}
+
+/* Animations */
+@keyframes fadeInScale {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: scale(0.98) translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1) translateY(0);
   }
 }
 
 .fade-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Responsive text sizes */
-@media (max-width: 640px) {
-  .ant-typography h1 {
-    font-size: 1.875rem !important;
-  }
+/* Smooth Image hover zoom */
+.image-zoom-container {
+  overflow: hidden;
+}
 
-  .ant-typography h2 {
-    font-size: 1.5rem !important;
-  }
+.image-zoom-container img {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.image-zoom-container:hover img {
+  transform: scale(1.06);
 }
