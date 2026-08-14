@@ -380,18 +380,18 @@ const AiForecastPage: React.FC = () => {
                           <Line
                             type="monotone"
                             dataKey="Dự báo tương lai"
-                            stroke="#BC8F8F"
-                            strokeWidth={3}
-                            dot={{ r: 3, fill: "#BC8F8F" }}
+                            stroke="#4F46E5"
+                            strokeWidth={3.5}
+                            dot={{ r: 4, fill: "#4F46E5", stroke: "#FFFFFF", strokeWidth: 1.5 }}
                           />
 
                           {/* Upper Confidence Band */}
                           <Line
                             type="monotone"
                             dataKey="Cận trên tin cậy"
-                            stroke="#E07A5F"
-                            strokeWidth={1}
-                            strokeDasharray="2 2"
+                            stroke="#10B981"
+                            strokeWidth={1.5}
+                            strokeDasharray="3 3"
                             dot={false}
                           />
 
@@ -399,9 +399,9 @@ const AiForecastPage: React.FC = () => {
                           <Line
                             type="monotone"
                             dataKey="Cận dưới tin cậy"
-                            stroke="#81B29A"
-                            strokeWidth={1}
-                            strokeDasharray="2 2"
+                            stroke="#F59E0B"
+                            strokeWidth={1.5}
+                            strokeDasharray="3 3"
                             dot={false}
                           />
                         </ComposedChart>
@@ -952,7 +952,7 @@ const AiForecastPage: React.FC = () => {
                     </Col>
 
                     <Col xs={24} lg={12}>
-                      <Card style={cardStyle} title={<span className="font-bold text-[#2D2D2D]">Cơ Cấu Doanh Thu Theo Thương Hiệu</span>}>
+                      <Card style={cardStyle} title={<span className="font-bold text-[#2D2D2D]">🥧 Cơ Cấu Doanh Thu Theo Thương Hiệu</span>}>
                         <div className="h-64 w-full">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -962,14 +962,18 @@ const AiForecastPage: React.FC = () => {
                                 nameKey="brandName"
                                 cx="50%"
                                 cy="50%"
-                                outerRadius={80}
+                                innerRadius={60}
+                                outerRadius={90}
+                                paddingAngle={3}
+                                stroke="#FFFFFF"
+                                strokeWidth={2}
                                 label={({ payload }: any) => `${payload?.brandName || ""}: ${payload?.marketSharePercent || 0}%`}
                               >
                                 {(trendData?.brandTrends || []).map((_: any, index: number) => (
                                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                               </Pie>
-                              <RechartsTooltip formatter={(val: any) => formatCurrency(val)} />
+                              <RechartsTooltip formatter={(val: any) => [formatCurrency(val), "Doanh thu"]} />
                             </PieChart>
                           </ResponsiveContainer>
                         </div>

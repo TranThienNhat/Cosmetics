@@ -26,8 +26,8 @@ import { Link } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
 import {
   ComposedChart,
-  Line,
   Bar,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -60,11 +60,11 @@ interface DashboardData {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: "#DDBEA9",
-  processing: "#CB997E",
-  shipped: "#A5A58D",
-  completed: "#BC8F8F",
-  cancelled: "#806060",
+  completed: "#10B981", // Xanh lục hoàn thành
+  shipped: "#3B82F6",   // Xanh dương đang giao
+  processing: "#F59E0B",// Vàng cam đang xử lý
+  pending: "#EC4899",   // Hồng chờ xử lý
+  cancelled: "#9CA3AF", // Xám đã hủy
 };
 
 const STATUS_TRANSLATION: Record<string, string> = {
@@ -412,32 +412,54 @@ const DashboardPage: React.FC = () => {
           <Row gutter={[24, 24]}>
             <Col xs={24} lg={16}>
               <Card
-                title="Biểu đồ Doanh thu & Đơn hàng"
+                title={
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-bold text-gray-800 text-base">📊 Biểu đồ Doanh thu & Tăng trưởng đơn hàng</span>
+                    <div className="flex items-center gap-2 text-xs font-normal">
+                      <span className="px-2.5 py-1 rounded-full bg-rose-50 text-[#BC8F8F] border border-rose-200 font-medium">
+                        ● Doanh thu (VND)
+                      </span>
+                      <span className="px-2.5 py-1 rounded-full bg-amber-50 text-[#CB997E] border border-amber-200 font-medium">
+                        ■ Số lượng đơn
+                      </span>
+                    </div>
+                  </div>
+                }
                 style={cardStyle}
                 loading={loading}
               >
                 <ResponsiveContainer width="100%" height={360}>
                   <ComposedChart
                     data={data.charts.revenueChartData}
-                    margin={{ top: 20, right: 20, bottom: 0, left: 0 }}
+                    margin={{ top: 20, right: 20, bottom: 0, left: 10 }}
                   >
+                    <defs>
+                      <linearGradient id="revenueAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#BC8F8F" stopOpacity={0.35} />
+                        <stop offset="95%" stopColor="#BC8F8F" stopOpacity={0.0} />
+                      </linearGradient>
+                      <linearGradient id="orderBarGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#CB997E" stopOpacity={0.9} />
+                        <stop offset="100%" stopColor="#DDBEA9" stopOpacity={0.7} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
-                      stroke="#EAEAEA"
+                      stroke="#F0EDE8"
                     />
                     <XAxis
                       dataKey="label"
-                      axisLine={false}
+                      axisLine={{ stroke: "#E2DDD7" }}
                       tickLine={false}
-                      tick={{ fill: "#555555" }}
+                      tick={{ fill: "#666666", fontSize: 12 }}
                       dy={10}
                     />
                     <YAxis
                       yAxisId="left"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: "#555555" }}
+                      tick={{ fill: "#666666", fontSize: 12 }}
                       tickFormatter={formatCompactNumber}
                     />
                     <YAxis
@@ -445,39 +467,41 @@ const DashboardPage: React.FC = () => {
                       orientation="right"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: "#555555" }}
+                      tick={{ fill: "#666666", fontSize: 12 }}
                     />
                     <RechartsTooltip
                       formatter={(value: any, name: any) => {
-                        if (name === "Doanh thu")
-                          return [formatCurrency(value), "Doanh thu"];
-                        return [value, String(name)];
+                        if (name === "Doanh thu" || name === "Doanh thu (VND)")
+                          return [formatCurrency(value), "💰 Doanh thu"];
+                        return [`${value} đơn`, "📦 Số đơn hàng"];
                       }}
-                      labelFormatter={(label) => `Thời gian: ${label}`}
+                      labelFormatter={(label) => `📅 Thời gian: ${label}`}
                       contentStyle={{
-                        borderRadius: "8px",
-                        border: "none",
-                        boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+                        borderRadius: "10px",
+                        border: "1px solid #EAD8CE",
+                        boxShadow: "0 8px 24px rgba(188, 143, 143, 0.15)",
                         backgroundColor: "#FFFFFF",
+                        padding: "10px 14px",
                       }}
                     />
-                    <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                    <Legend wrapperStyle={{ paddingTop: "16px" }} />
                     <Bar
                       yAxisId="right"
                       dataKey="total_orders"
                       name="Số đơn hàng"
-                      fill="#E6D3D3"
-                      barSize={24}
-                      radius={[4, 4, 0, 0]}
+                      fill="url(#orderBarGrad)"
+                      barSize={20}
+                      radius={[6, 6, 0, 0]}
                     />
-                    <Line
+                    <Area
                       yAxisId="left"
                       type="monotone"
                       dataKey="revenue"
                       name="Doanh thu"
                       stroke="#BC8F8F"
                       strokeWidth={3}
-                      activeDot={{ r: 6, fill: "#BC8F8F" }}
+                      fill="url(#revenueAreaGrad)"
+                      activeDot={{ r: 6, fill: "#BC8F8F", stroke: "#FFFFFF", strokeWidth: 2 }}
                     />
                   </ComposedChart>
                 </ResponsiveContainer>
@@ -486,7 +510,7 @@ const DashboardPage: React.FC = () => {
 
             <Col xs={24} lg={8}>
               <Card
-                title="Trạng thái đơn hàng"
+                title={<span className="font-bold text-gray-800 text-base">🥧 Cơ cấu Trạng thái Đơn hàng</span>}
                 style={cardStyle}
                 loading={loading}
               >
@@ -495,9 +519,10 @@ const DashboardPage: React.FC = () => {
                     <Pie
                       data={data.charts.orderStatusChart}
                       cx="50%"
-                      cy="50%"
-                      innerRadius={80}
-                      outerRadius={120}
+                      cy="48%"
+                      innerRadius={70}
+                      outerRadius={110}
+                      paddingAngle={3}
                       dataKey="value"
                       nameKey="label"
                       stroke="#FFFFFF"
@@ -515,17 +540,22 @@ const DashboardPage: React.FC = () => {
                     </Pie>
                     <RechartsTooltip
                       formatter={(value: any, name: any) => [
-                        value,
+                        `${value} đơn hàng`,
                         STATUS_TRANSLATION[name] || name,
                       ]}
                       contentStyle={{
-                        borderRadius: "8px",
-                        border: "none",
-                        boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+                        borderRadius: "10px",
+                        border: "1px solid #EAD8CE",
+                        boxShadow: "0 8px 24px rgba(188, 143, 143, 0.15)",
+                        backgroundColor: "#FFFFFF",
                       }}
                     />
                     <Legend
-                      formatter={(value) => STATUS_TRANSLATION[value] || value}
+                      formatter={(value) => (
+                        <span className="text-xs text-gray-700 font-medium">
+                          {STATUS_TRANSLATION[value] || value}
+                        </span>
+                      )}
                       verticalAlign="bottom"
                     />
                   </PieChart>
