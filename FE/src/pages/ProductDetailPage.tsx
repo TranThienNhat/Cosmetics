@@ -25,7 +25,7 @@ import {
 } from "@ant-design/icons"; 
 import { ProductVariant } from "../types";
 import api from "../utils/api";
-import { getImageUrl, formatCurrency } from "../utils/helpers";
+import { getImageUrl, formatCurrency, DEFAULT_PLACEHOLDER_IMAGE } from "../utils/helpers";
 import { useCart } from "../contexts/CartContext";
 import CartDrawer from "../components/CartDrawer";
 
@@ -209,7 +209,9 @@ const ProductDetailPage: React.FC = () => {
                   src={getImageUrl(selectedImage)}
                   alt={product.name}
                   className="w-full h-full object-contain transition-all duration-700 hover:scale-105"
-                  onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/600x800?text=Linh"; }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = DEFAULT_PLACEHOLDER_IMAGE;
+                  }}
                 />
               </div>
               
@@ -223,7 +225,14 @@ const ProductDetailPage: React.FC = () => {
                         selectedImage === img ? "border-primary opacity-100" : "border-transparent opacity-60 hover:opacity-100"
                     }`}
                   >
-                    <img src={getImageUrl(img)} alt={`thumb-${i}`} className="w-full h-full object-contain p-1" />
+                    <img
+                      src={getImageUrl(img)}
+                      alt={`thumb-${i}`}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = DEFAULT_PLACEHOLDER_IMAGE;
+                      }}
+                      className="w-full h-full object-contain p-1"
+                    />
                   </button> 
                 ))}
               </div>
@@ -417,8 +426,11 @@ const ProductDetailPage: React.FC = () => {
                           >
                             <div className="relative w-24 h-24 md:w-28 md:h-28 mb-2">
                               <img
-                                src={item.imageUrl ? getImageUrl(item.imageUrl) : "https://via.placeholder.com/120"}
+                                src={getImageUrl(item.imageUrl)}
                                 alt={item.productName}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = DEFAULT_PLACEHOLDER_IMAGE;
+                                }}
                                 className="w-full h-full object-contain"
                               />
                               {isMain && (
@@ -537,15 +549,15 @@ const ProductDetailPage: React.FC = () => {
                         >
                           <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-primary/5 rounded-full flex items-center justify-center text-primary font-serif font-bold text-base border border-primary/10">
-                                {r.user_name?.charAt(0).toUpperCase()}
+                              <div className="w-10 h-10 bg-primary/5 rounded-full flex items-center justify-center text-primary font-serif font-bold text-base border border-primary/10 shrink-0">
+                                {((r.user_name || "K").trim() || "K").charAt(0).toUpperCase()}
                               </div>
                               <div>
                                 <Text strong className="block text-charcoal font-serif text-base leading-none mb-1">
-                                  {r.user_name}
+                                  {r.user_name || "Khách hàng"}
                                 </Text>
                                 <Text className="text-[10px] text-gray uppercase tracking-widest font-medium">
-                                  {new Date(r.created_at).toLocaleDateString("vi-VN")}
+                                  {r.created_at ? new Date(r.created_at).toLocaleDateString("vi-VN") : "Gần đây"}
                                 </Text>
                               </div>
                             </div>

@@ -3,7 +3,7 @@ import { Row, Col, Card, Button, Typography, Spin, Pagination, Select, Input, Em
 import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { SearchOutlined, FilterOutlined, ReloadOutlined, RightOutlined } from "@ant-design/icons";
 import api from "../utils/api";
-import { getImageUrl, formatCurrency } from "../utils/helpers";
+import { getImageUrl, formatCurrency, DEFAULT_PLACEHOLDER_IMAGE } from "../utils/helpers";
 
 const { Title, Text, Paragraph } = Typography;
 const { Meta } = Card;
@@ -216,6 +216,10 @@ const ProductsPage: React.FC = () => {
                               <img
                                 alt={product.name}
                                 src={getImageUrl(product.thumb_image)}
+                                onError={(e: any) => {
+                                  e.target.onerror = null;
+                                  e.target.src = DEFAULT_PLACEHOLDER_IMAGE;
+                                }}
                                 className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-700"
                               />
                             </div>

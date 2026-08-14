@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ConfigProvider } from "antd";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
@@ -41,6 +41,17 @@ import AiForecastPage from "./pages/admin/AiForecastPage";
 
 import "./index.css";
 
+// Tự động cuộn lên đầu trang khi chuyển Route
+const ScrollToTop: React.FC = () => {
+  const { pathname } = useLocation();
+
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname]);
+
+  return null;
+};
+
 // Component xử lý trang mặc định khi vào /admin
 const AdminIndexRedirect: React.FC = () => {
   const { user } = useAuth();
@@ -60,6 +71,7 @@ const App: React.FC = () => {
       <AuthProvider>
         <CartProvider>
           <Router>
+            <ScrollToTop />
             <Routes>
               {/* === AUTH ROUTES === */}
               <Route path="/login" element={<LoginPage />} />
