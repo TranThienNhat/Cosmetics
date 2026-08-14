@@ -16,11 +16,11 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  SearchOutlined, // Đổi Reload sang Search icon cho giống file cũ
+  ReloadOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import api from "../../utils/api";
-import { getImageUrl, formatCurrency } from "../../utils/helpers";
+import { getImageUrl, formatCurrency, DEFAULT_PLACEHOLDER_IMAGE } from "../../utils/helpers";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -68,18 +68,22 @@ const ProductsPage: React.FC = () => {
 
   const columns = [
     {
-      title: "Hình ảnh",
+      title: "Ảnh",
       key: "thumb_image",
-      width: 80, // Thu nhỏ lại theo file cũ
+      width: 75,
+      align: "center" as const,
       render: (_: any, record: any) => (
-        <Image
-          src={getImageUrl(record.thumb_image)}
-          alt={record.name}
-          width={50}
-          height={50}
-          className="object-cover rounded"
-          fallback="/placeholder-product.jpg"
-        />
+        <div className="w-12 h-12 rounded-lg bg-[#FAF3EC] overflow-hidden border border-gray-100 flex items-center justify-center mx-auto shrink-0 shadow-sm">
+          <Image
+            src={getImageUrl(record.thumb_image)}
+            alt={record.name}
+            width={48}
+            height={48}
+            className="w-full h-full object-cover"
+            fallback={DEFAULT_PLACEHOLDER_IMAGE}
+            preview={{ mask: null }}
+          />
+        </div>
       ),
     },
     {
@@ -92,7 +96,7 @@ const ProductsPage: React.FC = () => {
       render: (name: string, record: any) => (
         <Link
           to={`/admin/products/${record.id}/edit`}
-          className="text-primary font-medium block truncate max-w-[280px]"
+          className="text-primary font-medium hover:underline block truncate max-w-[280px]"
           title={name}
         >
           {name}
@@ -105,22 +109,28 @@ const ProductsPage: React.FC = () => {
       key: "min_price",
       width: 140,
       ellipsis: true,
-      render: (price: any) => (price ? <span className="whitespace-nowrap font-medium">{formatCurrency(Number(price))}</span> : "-"),
+      render: (price: any) => (price ? <span className="whitespace-nowrap font-medium text-charcoal">{formatCurrency(Number(price))}</span> : "-"),
       sorter: (a: any, b: any) => Number(a.min_price || 0) - Number(b.min_price || 0),
     },
     {
       title: "Tồn kho",
       dataIndex: "total_stock",
       key: "total_stock",
-      render: (stock: any) => stock ?? 0,
+      width: 100,
+      align: "center" as const,
+      render: (stock: any) => (
+        <span className="font-medium text-charcoal">{stock ?? 0}</span>
+      ),
       sorter: (a: any, b: any) => Number(a.total_stock || 0) - Number(b.total_stock || 0),
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+      width: 110,
+      align: "center" as const,
       render: (status: string) => (
-        <Tag color={status === "active" ? "green" : "default"}>
+        <Tag color={status === "active" ? "green" : "default"} className="m-0">
           {status === "active" ? "Hiển thị" : "Ẩn"}
         </Tag>
       ),
@@ -128,11 +138,11 @@ const ProductsPage: React.FC = () => {
     {
       title: "Thao tác",
       key: "actions",
-      width: 120,
+      width: 100,
+      align: "center" as const,
       render: (_: any, record: any) => (
-        <Space>
+        <Space size="small">
           <Link to={`/admin/products/${record.id}/edit`}>
-            {/* Quay lại nút dạng text không nền */}
             <Button type="text" icon={<EditOutlined />} size="small" />
           </Link>
           <Popconfirm
@@ -151,28 +161,28 @@ const ProductsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Title level={2} className="!mb-0">
+        <Title level={2} className="!mb-0 !font-serif">
           Quản lý sản phẩm
         </Title>
         <Link to="/admin/products/create">
-          <Button type="primary" icon={<PlusOutlined />}>
+          <Button type="primary" icon={<PlusOutlined />} className="bg-primary border-primary">
             Thêm sản phẩm
           </Button>
         </Link>
       </div>
 
-      <Card>
-        <div className="flex items-center gap-4 mb-6">
+      <Card className="rounded-2xl border-gray/10 shadow-sm overflow-hidden">
+        <div className="flex flex-wrap items-center gap-4 mb-6">
           <Search
             placeholder="Tìm kiếm sản phẩm..."
             allowClear
-            style={{ width: 300 }}
+            style={{ width: 280 }}
             onSearch={setSearchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
           <Select
             placeholder="Trạng thái"
-            style={{ width: 150 }}
+            style={{ width: 140 }}
             value={statusFilter}
             onChange={setStatusFilter}
           >
@@ -180,7 +190,7 @@ const ProductsPage: React.FC = () => {
             <Select.Option value="active">Hiển thị</Select.Option>
             <Select.Option value="hidden">Ẩn</Select.Option>
           </Select>
-          <Button icon={<SearchOutlined />} onClick={loadProducts}>
+          <Button icon={<ReloadOutlined />} onClick={loadProducts}>
             Làm mới
           </Button>
         </div>
@@ -197,7 +207,7 @@ const ProductsPage: React.FC = () => {
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} của ${total} sản phẩm`,
           }}
-          scroll={{ x: 900 }}
+          scroll={{ x: 800 }}
         />
       </Card>
     </div>

@@ -28,7 +28,7 @@ import {
   PlusOutlined,
   SwapOutlined,
   GiftOutlined,
-  DollarOutlined,
+  DollarCircleOutlined,
 } from "@ant-design/icons";
 import {
   ResponsiveContainer,
@@ -222,26 +222,30 @@ const AiForecastPage: React.FC = () => {
                   {/* KPI Cards */}
                   <Row gutter={[16, 16]}>
                     <Col xs={24} sm={12} lg={6}>
-                      <Card style={cardStyle} bodyStyle={{ padding: "20px" }}>
+                      <Card
+                        style={cardStyle}
+                        bodyStyle={{ padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}
+                        className="h-full hover:shadow-md transition-all duration-300"
+                      >
                         <div className="flex items-center justify-between">
-                          <div>
-                            <Text className="text-gray-500 text-xs uppercase font-semibold">Độ Chính Xác R²</Text>
-                            <div className="text-2xl font-bold text-[#2D2D2D] mt-1">
+                          <div className="min-w-0 flex-1 pr-2">
+                            <Text className="text-gray-500 text-xs uppercase font-semibold block truncate">Độ Chính Xác R²</Text>
+                            <div className="text-2xl font-bold text-[#2D2D2D] mt-1 truncate font-serif">
                               {revenueData?.metrics?.r2Percent || 92.4}%
                             </div>
                           </div>
-                          <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                          <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl shrink-0">
                             <CheckCircleOutlined />
                           </div>
                         </div>
-                        <div className="mt-3">
+                        <div className="mt-4 pt-1">
                           <Progress
                             percent={revenueData?.metrics?.r2Percent || 92.4}
                             strokeColor="#10B981"
                             size="small"
                             showInfo={false}
                           />
-                          <Text className="text-xs text-gray-400 mt-1 block">
+                          <Text className="text-xs text-gray-400 mt-1 block truncate">
                             R² Score: {revenueData?.metrics?.r2Score || 0.924} (Rất tốt)
                           </Text>
                         </div>
@@ -249,61 +253,73 @@ const AiForecastPage: React.FC = () => {
                     </Col>
 
                     <Col xs={24} sm={12} lg={6}>
-                      <Card style={cardStyle} bodyStyle={{ padding: "20px" }}>
+                      <Card
+                        style={cardStyle}
+                        bodyStyle={{ padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}
+                        className="h-full hover:shadow-md transition-all duration-300"
+                      >
                         <div className="flex items-center justify-between">
-                          <div>
-                            <Text className="text-gray-500 text-xs uppercase font-semibold">Dự Báo {forecastDays} Ngày Tới</Text>
-                            <div className="text-2xl font-bold text-[#BC8F8F] mt-1">
+                          <div className="min-w-0 flex-1 pr-2">
+                            <Text className="text-gray-500 text-xs uppercase font-semibold block truncate">Dự Báo {forecastDays} Ngày Tới</Text>
+                            <div className="text-2xl font-bold text-[#BC8F8F] mt-1 truncate font-serif" title={formatCurrency(revenueData?.summary?.predictedRevenue30d || 0)}>
                               {formatCurrency(revenueData?.summary?.predictedRevenue30d || 0)}
                             </div>
                           </div>
-                          <div className="w-12 h-12 bg-[#FAF3EC] text-[#BC8F8F] rounded-xl flex items-center justify-center text-xl">
-                            <DollarOutlined />
+                          <div className="w-12 h-12 bg-[#FAF3EC] text-[#BC8F8F] rounded-xl flex items-center justify-center text-xl shrink-0">
+                            <DollarCircleOutlined />
                           </div>
                         </div>
-                        <div className="mt-3 flex items-center gap-1 text-xs">
+                        <div className="mt-4 pt-1 flex items-center gap-1 text-xs text-gray-500">
                           <span className={revenueData?.summary?.predictedGrowthPercent >= 0 ? "text-emerald-600 font-semibold" : "text-rose-600 font-semibold"}>
                             {revenueData?.summary?.predictedGrowthPercent >= 0 ? "+" : ""}
                             {revenueData?.summary?.predictedGrowthPercent || 0}%
                           </span>
-                          <span className="text-gray-500">so với 30 ngày trước</span>
+                          <span>so với 30 ngày trước</span>
                         </div>
                       </Card>
                     </Col>
 
                     <Col xs={24} sm={12} lg={6}>
-                      <Card style={cardStyle} bodyStyle={{ padding: "20px" }}>
+                      <Card
+                        style={cardStyle}
+                        bodyStyle={{ padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}
+                        className="h-full hover:shadow-md transition-all duration-300"
+                      >
                         <div className="flex items-center justify-between">
-                          <div>
-                            <Text className="text-gray-500 text-xs uppercase font-semibold">Dự Báo 7 Ngày Tới</Text>
-                            <div className="text-2xl font-bold text-[#2D2D2D] mt-1">
+                          <div className="min-w-0 flex-1 pr-2">
+                            <Text className="text-gray-500 text-xs uppercase font-semibold block truncate">Dự Báo 7 Ngày Tới</Text>
+                            <div className="text-2xl font-bold text-[#2D2D2D] mt-1 truncate font-serif" title={formatCurrency(revenueData?.summary?.predictedRevenue7d || 0)}>
                               {formatCurrency(revenueData?.summary?.predictedRevenue7d || 0)}
                             </div>
                           </div>
-                          <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+                          <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl shrink-0">
                             <ThunderboltOutlined />
                           </div>
                         </div>
-                        <div className="mt-3 text-xs text-gray-500">
+                        <div className="mt-4 pt-1 text-xs text-gray-500 truncate">
                           Trung bình: <b className="text-gray-700">{formatCurrency(revenueData?.summary?.averageDailyForecast || 0)}</b> / ngày
                         </div>
                       </Card>
                     </Col>
 
                     <Col xs={24} sm={12} lg={6}>
-                      <Card style={cardStyle} bodyStyle={{ padding: "20px" }}>
+                      <Card
+                        style={cardStyle}
+                        bodyStyle={{ padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}
+                        className="h-full hover:shadow-md transition-all duration-300"
+                      >
                         <div className="flex items-center justify-between">
-                          <div>
-                            <Text className="text-gray-500 text-xs uppercase font-semibold">Sai Số Tuyệt Đối (MAE)</Text>
-                            <div className="text-2xl font-bold text-[#2D2D2D] mt-1">
+                          <div className="min-w-0 flex-1 pr-2">
+                            <Text className="text-gray-500 text-xs uppercase font-semibold block truncate">Sai Số Tuyệt Đối (MAE)</Text>
+                            <div className="text-2xl font-bold text-[#2D2D2D] mt-1 truncate font-serif" title={formatCurrency(revenueData?.metrics?.mae || 0)}>
                               {formatCurrency(revenueData?.metrics?.mae || 0)}
                             </div>
                           </div>
-                          <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl">
+                          <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl shrink-0">
                             <LineChartOutlined />
                           </div>
                         </div>
-                        <div className="mt-3 text-xs text-gray-500">
+                        <div className="mt-4 pt-1 text-xs text-gray-500 truncate">
                           MAPE: <b className="text-emerald-600">{revenueData?.metrics?.mape || 11.5}%</b> • RMSE: {formatCurrency(revenueData?.metrics?.rmse || 0)}
                         </div>
                       </Card>
