@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # MySQL Database Service
+  # ==========================================
+  db:
+    image: mysql:8.0
+    container_name: cosmetics_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "rootpassword"
+      MYSQL_DATABASE: "mypham_db"
+      MYSQL_USER: "cosmetics_user"
+      MYSQL_PASSWORD: "cosmetics_password"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./BE/db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # Backend API & Python Machine Learning Engine
+  # ==========================================
+  backend:
+    build:
+      context: ./BE
+      dockerfile: Dockerfile
+    container_name: cosmetics_backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: cosmetics_user
+      DB_PASSWORD: cosmetics_password
+      DB_NAME: mypham_db
+      JWT_SECRET: "your_production_secret_key_here_cosmetics_2026"
+      CORS_ORIGIN: "http://localhost:5173,http://localhost:80,http://localhost"
+      DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY:-}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads_data:/app/uploads
+
+  # ==========================================
+  # Frontend React (Vite + Nginx)
+  # ==========================================
+  frontend:
+    build:
+      context: ./FE
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: "http://localhost:3000/api"
+        VITE_API_BASE_URL: "http://localhost:3000"
+        VITE_UPLOAD_URL: "http://localhost:3000/uploads"
+    container_name: cosmetics_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  mysql_data:
+  uploads_data:

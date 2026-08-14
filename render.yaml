@@ -1,0 +1,36 @@
+services:
+  # ==========================================
+  # Backend Web Service (Node.js + Python ML)
+  # ==========================================
+  - type: web
+    name: cosmetics-backend
+    runtime: docker
+    dockerfilePath: ./BE/Dockerfile
+    dockerContext: ./BE
+    plan: free
+    region: singapore
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: 3306
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: mypham_db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
