@@ -103,12 +103,6 @@ const CartPage: React.FC = () => {
   const applicableDiscount = Math.min(discount, selectedSubtotal);
   const finalTotal = Math.max(selectedSubtotal - applicableDiscount + shippingFee, 0);
 
-  // Thêm useEffect vào trong component CartPage
-  useEffect(() => {
-    // Gọi hàm xóa coupon từ Context mỗi khi component mount
-    removeCoupon();
-  }, []);
-
   // 3. XỬ LÝ CHỌN SẢN PHẨM
   const handleSelectToggle = (variantId: number) => {
     setSelectedItemIds((prev) =>
@@ -139,6 +133,11 @@ const CartPage: React.FC = () => {
       await applyCoupon(couponInput);
       setCouponInput("");
     } catch (error) { }
+  };
+
+  const handleRemoveCoupon = async () => {
+    await removeCoupon();
+    message.success("Đã gỡ mã ưu đãi");
   };
 
   if (items.length === 0) {
@@ -352,7 +351,7 @@ const CartPage: React.FC = () => {
                       <Text type="secondary" className="text-[10px] block uppercase">Ưu đãi áp dụng</Text>
                       <Text className="text-primary font-bold">{couponCode}</Text>
                     </div>
-                    <Button type="text" icon={<CloseOutlined style={{ fontSize: 12 }} />} onClick={removeCoupon} className="text-gray hover:text-red-500" />
+                    <Button type="text" icon={<CloseOutlined style={{ fontSize: 12 }} />} onClick={handleRemoveCoupon} className="text-gray hover:text-red-500" />
                   </div>
                 )}
               </Card>

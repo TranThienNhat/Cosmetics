@@ -168,7 +168,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       await api.delete("/cart/coupon");
       await refreshCart();
     } catch (error) {
-      message.error("Không thể gỡ mã lúc này");
+      console.warn("Lỗi gỡ mã giảm giá:", error);
     } finally {
       setIsLoading(false);
     }

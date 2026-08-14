@@ -78,16 +78,25 @@ export const applyCoupon = async (req: Request, res: Response): Promise<Response
     const { couponCode } = req.body;
     const { userId, sessionId } = getIdentity(req);
 
-    if (!couponCode) return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: "Thiếu mã giảm giá" });
+    if (!couponCode || !couponCode.trim()) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Vui lòng nhập mã giảm giá" });
+    }
 
     const cart = await Cart.findCart(userId, sessionId);
-    if (!cart) return res.status(HTTP_STATUS.NOT_FOUND).json({ message: "Không tìm thấy giỏ hàng" });
+    if (!cart) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Giỏ hàng đang trống, vui lòng thêm sản phẩm vào giỏ trước khi dùng mã!" });
+    }
 
-    const result = await Cart.applyCoupon(cart.id!, couponCode, userId);
+    const items = await Cart.getCartItems(cart.id!);
+    if (!items || items.length === 0) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Giỏ hàng đang trống, vui lòng thêm sản phẩm vào giỏ trước khi dùng mã!" });
+    }
+
+    const result = await Cart.applyCoupon(cart.id!, couponCode.trim(), userId);
     return res.json({ success: true, message: "Áp dụng mã giảm giá thành công", ...result });
   } catch (error: any) {
     console.error("Apply coupon error:", error);
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: error.message || "Lỗi server" });
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: error.message || "Mã giảm giá không hợp lệ" });
   }
 };
 
@@ -95,10 +104,11 @@ export const removeCoupon = async (req: Request, res: Response): Promise<Respons
   try {
     const { userId, sessionId } = getIdentity(req);
     const cart = await Cart.findCart(userId, sessionId);
-    if (!cart) return res.status(HTTP_STATUS.NOT_FOUND).json({ message: "Không tìm thấy giỏ hàng" });
+    if (cart) {
+      await Cart.removeCoupon(cart.id!);
+    }
 
-    await Cart.removeCoupon(cart.id!);
-    return res.json({ success: true, message: "Đã xóa mã giảm giá" });
+    return res.json({ success: true, message: "Đã gỡ mã giảm giá" });
   } catch (error) {
     console.error("Remove coupon error:", error);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
@@ -109,10 +119,11 @@ export const clearCart = async (req: Request, res: Response): Promise<Response> 
   try {
     const { userId, sessionId } = getIdentity(req);
     const cart = await Cart.findCart(userId, sessionId);
-    if (!cart) return res.status(HTTP_STATUS.NOT_FOUND).json({ message: "Không tìm thấy giỏ hàng" });
+    if (cart) {
+      await Cart.clearCart(cart.id!);
+    }
 
-    await Cart.clearCart(cart.id!);
-    return res.json({ message: "Đã xóa tất cả sản phẩm trong giỏ hàng" });
+    return res.json({ success: true, message: "Đã xóa tất cả sản phẩm trong giỏ hàng" });
   } catch (error) {
     console.error("Clear cart error:", error);
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
