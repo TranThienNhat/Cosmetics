@@ -15,19 +15,19 @@ import {
 } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  ShoppingCart,
-  User,
-  LogOut,
-  Package,
-  Search,
-  Settings,
-  Instagram,
-  Facebook,
-  MessageCircle,
-  X,
-  Send,
-  Sparkles,
-} from "lucide-react";
+  ShoppingCartOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  InboxOutlined,
+  SearchOutlined,
+  SettingOutlined,
+  InstagramOutlined,
+  FacebookOutlined,
+  CustomerServiceOutlined,
+  CloseOutlined,
+  SendOutlined,
+  ThunderboltOutlined,
+} from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCart } from "../../contexts/CartContext";
@@ -178,7 +178,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       key: "orders",
       label: (
         <Link to="/orders" className="flex items-center gap-2 py-1">
-          <Package size={16} />
+          <InboxOutlined style={{ fontSize: 16 }} />
           <span>Đơn hàng của tôi</span>
         </Link>
       ),
@@ -189,7 +189,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             key: "admin",
             label: (
               <Link to="/admin" className="flex items-center gap-2 py-1">
-                <Settings size={16} />
+                <SettingOutlined style={{ fontSize: 16 }} />
                 <span>Quản trị hệ thống</span>
               </Link>
             ),
@@ -203,7 +203,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       key: "logout",
       label: (
         <span className="flex items-center gap-2 text-red-500 py-1 hover:text-red-600 transition-colors">
-          <LogOut size={16} />
+          <LogoutOutlined style={{ fontSize: 16 }} />
           <span>Đăng xuất</span>
         </span>
       ),
@@ -235,14 +235,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <Space size="middle">
             <Button
               type="text"
-              icon={<Search size={22} />}
+              icon={<SearchOutlined style={{ fontSize: 20 }} />}
               onClick={() => setSearchModalVisible(true)}
             />
 
             <Badge count={cartItemCount} color="#BC8F8F">
               <Button
                 type="text"
-                icon={<ShoppingCart size={22} />}
+                icon={<ShoppingCartOutlined style={{ fontSize: 22 }} />}
                 onClick={() => navigate("/cart")}
               />
             </Badge>
@@ -253,7 +253,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   type="text"
                   className="flex items-center gap-2 font-medium"
                 >
-                  <User size={22} />
+                  <UserOutlined style={{ fontSize: 18 }} />
                   <span className="hidden lg:inline">{user?.name}</span>
                 </Button>
               </Dropdown>
@@ -343,18 +343,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 href="https://www.facebook.com/linncosmetic"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-[#BC8F8F] hover:border-[#BC8F8F] transition-all duration-300"
+                className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-[#BC8F8F] hover:border-[#BC8F8F] transition-all duration-300 text-white"
               >
-                <Facebook size={18} />
+                <FacebookOutlined style={{ fontSize: 16 }} />
               </a>
 
               <a
                 href="https://www.instagram.com/ilnh02"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-[#BC8F8F] hover:border-[#BC8F8F] transition-all duration-300"
+                className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-[#BC8F8F] hover:border-[#BC8F8F] transition-all duration-300 text-white"
               >
-                <Instagram size={15} />
+                <InstagramOutlined style={{ fontSize: 16 }} />
               </a>
             </div>
           </div>
@@ -377,12 +377,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <Space>
                     <Avatar
                       style={{ backgroundColor: "#BC8F8F" }}
-                      icon={<Sparkles size={16} />}
+                      icon={<ThunderboltOutlined />}
                     />
 
                     <div>
                       <div className="font-semibold text-sm text-gray-800">
-                        Trợ lý Linh Cosmetics
+                        Trợ lý Linh Cosmetics AI
                       </div>
 
                       <div className="text-[11px] text-green-500 font-normal">
@@ -394,12 +394,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <Button
                     type="text"
                     shape="circle"
-                    icon={
-                      <X
-                        size={16}
-                        className="text-gray-400 hover:text-gray-600"
-                      />
-                    }
+                    icon={<CloseOutlined style={{ fontSize: 14 }} className="text-gray-400 hover:text-gray-600" />}
                     onClick={() => setChatOpen(false)}
                   />
                 </div>
@@ -482,7 +477,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
                   <Button
                     type="primary"
-                    icon={<Send size={14} />}
+                    icon={<SendOutlined />}
                     onClick={handleSendChatMessage}
                     loading={chatLoading}
                     size="large"
@@ -503,8 +498,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               type="primary"
               shape="circle"
               onClick={() => setChatOpen(true)}
-              className="!w-14 !h-14 border-none shadow-xl transition-all duration-300 hover:scale-105 !bg-gradient-to-r from-[#BC8F8F] to-[#d4afaf]"
-              icon={<MessageCircle size={24} className="text-white" />}
+              className="!w-14 !h-14 border-none shadow-xl transition-all duration-300 hover:scale-105 !bg-gradient-to-r from-[#BC8F8F] to-[#d4afaf] flex items-center justify-center"
+              icon={<CustomerServiceOutlined style={{ fontSize: 24, color: "#fff" }} />}
             />
 
             {/* Nút liên hệ qua Zalo */}
@@ -534,7 +529,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <Input
           placeholder="Bạn tìm gì hôm nay?"
           size="large"
-          prefix={<Search size={20} />}
+          prefix={<SearchOutlined style={{ fontSize: 18 }} />}
           value={searchValue}
           onPressEnter={handleSearch}
           onChange={(e) => setSearchValue(e.target.value)}

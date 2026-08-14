@@ -21,8 +21,10 @@ import {
   SaveOutlined,
   PlusSquareOutlined,
   AppstoreAddOutlined,
+  ThunderboltOutlined,
 } from "@ant-design/icons";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import dayjs from "dayjs";
 import api from "../../utils/api";
 
 const { Title, Text } = Typography;
@@ -46,15 +48,16 @@ const PurchaseReceiptFormPage: React.FC = () => {
   const [quickProductForm] = Form.useForm();
   const [quickVariantForm] = Form.useForm();
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
   const isEdit = !!id;
 
   const [loading, setLoading] = useState(false);
-  const [suppliers, setSuppliers] = useState([]);
-  const [variants, setVariants] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [brands, setBrands] = useState([]);
+  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [variants, setVariants] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [brands, setBrands] = useState<any[]>([]);
 
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
@@ -81,8 +84,10 @@ const PurchaseReceiptFormPage: React.FC = () => {
         api.get("/brands"),
       ]);
 
-      setSuppliers(sRes.data?.data || []);
-      setVariants(vRes.data?.data || []);
+      const loadedSuppliers = sRes.data?.data || [];
+      const loadedVariants = vRes.data?.data || [];
+      setSuppliers(loadedSuppliers);
+      setVariants(loadedVariants);
       setProducts(pRes.data?.data || []);
       setCategories(cRes.data?.data || []);
       setBrands(bRes.data?.data || []);
@@ -98,14 +103,74 @@ const PurchaseReceiptFormPage: React.FC = () => {
             data.details?.map((d: any) => ({
               product_variant_id: d.variant_id,
               quantity: d.quantity,
-              unit_price: Math.round(d.unit_price), // Loại bỏ phần thập phân nếu dữ liệu DB trả về dạng float
+              unit_price: Math.round(d.unit_price),
             })) || [],
         });
+      } else if (location.state?.prefillItems) {
+        // Nạp từ gợi ý của AI Forecast Page
+        form.setFieldsValue({
+          supplier_id: location.state.supplier_id || loadedSuppliers[0]?.id,
+          note: `⚡ Phiếu nhập hàng tự động nạp từ Đề xuất Dự báo Nhu cầu AI (${dayjs().format("DD/MM/YYYY HH:mm")})`,
+          items: location.state.prefillItems,
+        });
+        message.success(`Đã tự động nạp ${location.state.prefillItems.length} sản phẩm theo phân tích AI!`);
       }
     } catch (e: any) {
       message.error("Không thể tải dữ liệu trang");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // NẠP ĐỀ XUẤT TỒN KHO TỰ ĐỘNG TỪ AI (KHÔNG CẦN NHẬP TAY)
+  const handleAutoFillFromAi = async () => {
+    try {
+      message.loading({ content: "Đang phân tích dữ liệu tồn kho & tính toán số lượng nhập từ AI...", key: "ai_fill" });
+      const res = await api.get("/analytics/demand-forecast");
+      const demandData = res.data?.data;
+      if (!demandData || !demandData.productDemand) {
+        message.info({ content: "Hiện tại tất cả mặt hàng đều ở mức tồn kho an toàn!", key: "ai_fill" });
+        return;
+      }
+
+      // Lọc các sản phẩm có rủi ro hết hàng (Critical, High Risk, Medium)
+      const restockNeeded = demandData.productDemand.filter(
+        (p: any) => p.riskLevel !== "Safe" && p.suggestedReorderQuantity > 0
+      );
+
+      if (restockNeeded.length === 0) {
+        message.success({ content: "Tất cả sản phẩm đều tồn kho tối ưu, chưa cần nhập thêm!", key: "ai_fill" });
+        return;
+      }
+
+      const itemsToFill: any[] = [];
+      restockNeeded.forEach((p: any) => {
+        const matchingVariants = variants.filter(
+          (v: any) => v.product_id === p.productId || v.product_name === p.productName
+        );
+        if (matchingVariants.length > 0) {
+          matchingVariants.forEach((mv: any) => {
+            itemsToFill.push({
+              product_variant_id: mv.id,
+              quantity: Math.max(p.suggestedReorderQuantity, 15),
+              unit_price: Math.round((Number(mv.price) || 250000) * 0.65), // Giá nhập ước tính ~65% giá bán lẻ
+            });
+          });
+        }
+      });
+
+      if (itemsToFill.length > 0) {
+        form.setFieldsValue({
+          supplier_id: form.getFieldValue("supplier_id") || suppliers[0]?.id,
+          note: `⚡ Phiếu nhập hàng tự động nạp từ Đề xuất Dự báo Nhu cầu AI (${dayjs().format("DD/MM/YYYY HH:mm")})`,
+          items: itemsToFill,
+        });
+        message.success({ content: `Đã tự động điền ${itemsToFill.length} mặt hàng cần nhập theo thuật toán AI!`, key: "ai_fill" });
+      } else {
+        message.warning({ content: "Không tìm thấy biến thể tương ứng cho các sản phẩm đề xuất.", key: "ai_fill" });
+      }
+    } catch (error) {
+      message.error({ content: "Lỗi khi lấy dữ liệu đề xuất từ AI", key: "ai_fill" });
     }
   };
 
@@ -229,6 +294,16 @@ const PurchaseReceiptFormPage: React.FC = () => {
         </Space>
 
         <Space size="middle">
+          {!isEdit && (
+            <Button
+              icon={<ThunderboltOutlined />}
+              onClick={handleAutoFillFromAi}
+              className="bg-gradient-to-r from-amber-500 to-[#BC8F8F] text-white font-semibold border-none hover:opacity-90 rounded-lg h-10 shadow-sm flex items-center gap-1"
+            >
+              Nạp Đề Xuất AI
+            </Button>
+          )}
+
           <Button
             icon={<PlusSquareOutlined />}
             onClick={() => setIsProductModalOpen(true)}

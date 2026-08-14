@@ -13,7 +13,14 @@ import {
   Checkbox,
 } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { Trash2, Plus, Minus, ShoppingBag, Ticket, X } from "lucide-react";
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  MinusOutlined,
+  ShoppingOutlined,
+  GiftOutlined,
+  CloseOutlined,
+} from "@ant-design/icons";
 import { useCart } from "../contexts/CartContext";
 import { getImageUrl, formatCurrency } from "../utils/helpers";
 import api from "../utils/api";
@@ -139,7 +146,7 @@ const CartPage: React.FC = () => {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center bg-white p-10 md:p-14 rounded-2xl shadow-sm border border-gray/10 max-w-md w-full">
           <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <ShoppingBag size={32} className="text-primary" />
+            <ShoppingOutlined style={{ fontSize: 36, color: "#BC8F8F" }} />
           </div>
           <Title level={3} className="!font-serif !text-charcoal mb-3">Giỏ hàng trống</Title>
           <Paragraph className="text-gray mb-8">Bạn chưa chọn được sản phẩm nào sao?</Paragraph>
@@ -237,7 +244,7 @@ const CartPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <div className="flex items-center bg-background rounded-lg border border-gray/20 p-0.5">
                             <Button
-                              type="text" size="small" icon={<Minus size={12} />}
+                              type="text" size="small" icon={<MinusOutlined style={{ fontSize: 10 }} />}
                               onClick={() => handleQuantityChange(Number(item.variant_id), item.quantity - 1)}
                               disabled={item.quantity <= 1 || isLoading}
                               className="text-gray hover:text-charcoal"
@@ -247,7 +254,7 @@ const CartPage: React.FC = () => {
                               className="w-8 border-0 bg-transparent text-center font-medium !text-charcoal text-xs"
                             />
                             <Button
-                              type="text" size="small" icon={<Plus size={12} />}
+                              type="text" size="small" icon={<PlusOutlined style={{ fontSize: 10 }} />}
                               onClick={() => handleQuantityChange(Number(item.variant_id), item.quantity + 1)}
                               disabled={isLoading}
                               className="text-gray hover:text-charcoal"
@@ -256,7 +263,7 @@ const CartPage: React.FC = () => {
 
                           <Button
                             type="text"
-                            icon={<Trash2 size={16} />}
+                            icon={<DeleteOutlined style={{ fontSize: 16 }} />}
                             onClick={() => removeFromCart(item.variant_id)}
                             disabled={isLoading}
                             className="text-gray/40 hover:text-red-500 transition-colors"
@@ -324,7 +331,7 @@ const CartPage: React.FC = () => {
               {/* Voucher Card */}
               <Card className="border border-gray/10 shadow-sm rounded-2xl bg-white" bodyStyle={{ padding: "20px" }}>
                 <div className="flex items-center gap-2 mb-4 text-charcoal font-medium">
-                  <Ticket size={18} className="text-primary" />
+                  <GiftOutlined style={{ fontSize: 18, color: "#BC8F8F" }} />
                   <span>Mã ưu đãi</span>
                 </div>
                 {!couponCode ? (
@@ -345,7 +352,7 @@ const CartPage: React.FC = () => {
                       <Text type="secondary" className="text-[10px] block uppercase">Ưu đãi áp dụng</Text>
                       <Text className="text-primary font-bold">{couponCode}</Text>
                     </div>
-                    <Button type="text" icon={<X size={14} />} onClick={removeCoupon} className="text-gray hover:text-red-500" />
+                    <Button type="text" icon={<CloseOutlined style={{ fontSize: 12 }} />} onClick={removeCoupon} className="text-gray hover:text-red-500" />
                   </div>
                 )}
               </Card>

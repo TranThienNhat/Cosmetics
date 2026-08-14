@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Form, Input, InputNumber, Select, Button, Card, Typography, message, Row, Col, Space, Upload, Tag } from "antd";
-import { ArrowLeftOutlined, PlusOutlined, DeleteOutlined, SaveOutlined } from "@ant-design/icons";
+import { Form, Input, InputNumber, Select, Button, Card, Typography, message, Row, Col, Space, Upload, Tag, Dropdown, MenuProps } from "antd";
+import { ArrowLeftOutlined, PlusOutlined, DeleteOutlined, SaveOutlined, ThunderboltOutlined, DownOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../utils/api";
 import { getImageUrl } from "../../utils/helpers";
@@ -8,6 +8,59 @@ import { Category, Brand } from "../../types";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
+
+const PRODUCT_TEMPLATES = [
+  {
+    name: "Serum Phục Hồi Da B5 & Hyaluronic Acid Dưỡng Ẩm Chuyên Sâu",
+    description: "Tinh chất phục hồi làm dịu da mẩn đỏ nhạy cảm, cấp ẩm tầng sâu và tái tạo hàng rào bảo vệ da với Vitamin B5 và HA đa phân tử.",
+    categoryKeyword: "chăm sóc da",
+    brandKeyword: "la roche",
+    variants: [
+      { variant_name: "Chai 30ml", price: 385000, stock_quantity: 50 },
+      { variant_name: "Chai 50ml Tiết Kiệm", price: 560000, stock_quantity: 30 },
+    ],
+  },
+  {
+    name: "Kem Chống Nắng Kiềm Dầu Nâng Tông Tự Nhiên SPF50+ PA++++",
+    description: "Bảo vệ quang phổ rộng chống tia UVA/UVB và ánh sáng xanh, finish mịn ráo tự nhiên kiềm dầu suốt 10 tiếng không gây bóng nhờn.",
+    categoryKeyword: "chống nắng",
+    brandKeyword: "anessa",
+    variants: [
+      { variant_name: "Tuýp 60ml", price: 460000, stock_quantity: 40 },
+    ],
+  },
+  {
+    name: "Son Kem Lì Velvet Mịn Môi Cao Cấp Lâu Trôi",
+    description: "Chất son kem nhung mịn siêu nhẹ tênh, lên màu chuẩn sắc từ lần chạm đầu tiên, không làm lộ vân môi.",
+    categoryKeyword: "trang điểm",
+    brandKeyword: "3ce",
+    variants: [
+      { variant_name: "Màu 01 - Đỏ Ruby", price: 290000, stock_quantity: 45 },
+      { variant_name: "Màu 02 - Cam Cháy", price: 290000, stock_quantity: 35 },
+      { variant_name: "Màu 03 - Hồng Đất", price: 290000, stock_quantity: 40 },
+    ],
+  },
+  {
+    name: "Nước Tẩy Trang Micellar Water Dịu Nhẹ Cho Da Nhạy Cảm",
+    description: "Làm sạch sâu 99% bụi mịn và lớp makeup cứng đầu mà vẫn giữ độ ẩm mượt tự nhiên, không cồn, không paraben.",
+    categoryKeyword: "làm sạch",
+    brandKeyword: "bioderma",
+    variants: [
+      { variant_name: "Chai 100ml", price: 150000, stock_quantity: 30 },
+      { variant_name: "Chai 500ml", price: 395000, stock_quantity: 60 },
+    ],
+  },
+  {
+    name: "Sữa Rửa Mặt Tạo Bọt Cân Bằng Độ Ẩm Dịu Nhẹ pH 5.5",
+    description: "Làm sạch bã nhờn sâu trong lỗ chân lông mà không gây cảm giác khô căng nhờ 3 loại Ceramides thiết yếu.",
+    categoryKeyword: "sữa rửa mặt",
+    brandKeyword: "cerave",
+    variants: [
+      { variant_name: "Chai 236ml", price: 280000, stock_quantity: 50 },
+      { variant_name: "Chai 473ml", price: 430000, stock_quantity: 40 },
+    ],
+  },
+];
 
 const createSlug = (str: string) => {
   if (!str) return "";
@@ -123,6 +176,38 @@ const ProductFormPage: React.FC = () => {
     }
   };
 
+  const handleApplyTemplate = (template: typeof PRODUCT_TEMPLATES[0]) => {
+    const matchedCat = categories.find(c => 
+      c.name.toLowerCase().includes(template.categoryKeyword) || template.categoryKeyword.includes(c.name.toLowerCase())
+    ) || categories[0];
+
+    const matchedBrand = brands.find(b => 
+      b.name.toLowerCase().includes(template.brandKeyword) || template.brandKeyword.includes(b.name.toLowerCase())
+    ) || brands[0];
+
+    form.setFieldsValue({
+      name: template.name,
+      slug: createSlug(template.name),
+      description: template.description,
+      category_id: matchedCat?.id,
+      brand_id: matchedBrand?.id,
+      status: "active",
+      variants: template.variants,
+    });
+    message.success(`Đã nạp mẫu sản phẩm "${template.name}"!`);
+  };
+
+  const templateMenuItems: MenuProps["items"] = PRODUCT_TEMPLATES.map((tmpl, idx) => ({
+    key: `template-${idx}`,
+    label: (
+      <div className="py-1">
+        <div className="font-semibold text-xs text-gray-800">{tmpl.name}</div>
+        <div className="text-[11px] text-gray-500">{tmpl.variants.length} biến thể • Giá từ {tmpl.variants[0].price.toLocaleString()}đ</div>
+      </div>
+    ),
+    onClick: () => handleApplyTemplate(tmpl),
+  }));
+
   return (
     <Form
       form={form}
@@ -131,7 +216,7 @@ const ProductFormPage: React.FC = () => {
       onValuesChange={(v) => v.name && form.setFieldsValue({ slug: createSlug(v.name) })}
       autoComplete="off"
     >
-      {/* Sticky Header - Giúp nút "Lưu" luôn ở tầm mắt khi scroll dài */}
+      {/* Sticky Header */}
       <div className="flex justify-between items-center mb-8 sticky top-0 z-10 bg-gray-50/80 backdrop-blur-md py-4">
         <Space size="middle">
           <Button
@@ -146,17 +231,28 @@ const ProductFormPage: React.FC = () => {
           </div>
         </Space>
 
-        <Space>
-          <Button size="large" onClick={() => navigate(-1)}>Hủy</Button>
+        <Space size="middle">
+          {!isEdit && (
+            <Dropdown menu={{ items: templateMenuItems }} placement="bottomRight">
+              <Button
+                icon={<ThunderboltOutlined />}
+                className="bg-gradient-to-r from-amber-500 to-[#BC8F8F] text-white font-semibold border-none hover:opacity-90 rounded-lg h-10 shadow-sm flex items-center gap-1"
+              >
+                Gợi Ý Mẫu Hot Trend <DownOutlined style={{ fontSize: 10 }} />
+              </Button>
+            </Dropdown>
+          )}
+
+          <Button size="large" onClick={() => navigate(-1)} className="rounded-lg h-10">Hủy</Button>
           <Button
             type="primary"
             htmlType="submit"
             loading={loading}
             size="large"
             icon={<SaveOutlined />}
-            className="bg-blue-600 hover:bg-blue-500 shadow-lg px-8 rounded-lg"
+            className="bg-[#BC8F8F] hover:bg-[#a67c7c] text-white font-semibold rounded-lg px-8 shadow-md border-0 h-10 flex items-center justify-center transition-all"
           >
-            Lưu thay đổi
+            Lưu sản phẩm
           </Button>
         </Space>
       </div>

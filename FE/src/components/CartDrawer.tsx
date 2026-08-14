@@ -1,6 +1,6 @@
 import React from "react";
 import { Drawer, Button, Typography, Space, Empty, Spin } from "antd";
-import { ShoppingBag, X, Minus, Plus } from "lucide-react";
+import { ShoppingOutlined, CloseOutlined, MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { useCart } from "../contexts/CartContext";
 import { getImageUrl, formatCurrency } from "../utils/helpers";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +34,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ visible, onClose }) => {
       title={
         <div className="flex justify-between items-center">
           <Space>
-            <ShoppingBag size={20} className="text-primary" />
+            <ShoppingOutlined style={{ fontSize: 20, color: "#BC8F8F" }} />
             <span className="font-serif text-lg text-charcoal">Giỏ hàng nhanh</span>
           </Space>
         </div>
@@ -44,8 +44,8 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ visible, onClose }) => {
       open={visible}
       width={400}
       extra={
-        <X 
-          size={20} 
+        <CloseOutlined 
+          style={{ fontSize: 16 }}
           className="cursor-pointer text-gray-400 hover:text-charcoal transition-colors" 
           onClick={onClose} 
         />
@@ -122,7 +122,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ visible, onClose }) => {
                           className="text-gray-400 hover:text-red-500 transition-colors ml-2"
                           disabled={isLoading}
                         >
-                          <X size={16} />
+                          <CloseOutlined style={{ fontSize: 13 }} />
                         </button>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
@@ -136,21 +136,21 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ visible, onClose }) => {
                       {/* Bộ tăng giảm số lượng mini */}
                       <div className="flex items-center border border-gray-200 rounded bg-white overflow-hidden">
                         <button 
-                          className="px-2 py-1 hover:bg-gray-50 disabled:opacity-30 transition-colors"
+                          className="px-2 py-1 hover:bg-gray-50 disabled:opacity-30 transition-colors flex items-center justify-center"
                           onClick={() => handleUpdateQty(item.variant_id, item.quantity - 1)}
                           disabled={item.quantity <= 1 || isLoading}
                         >
-                          <Minus size={12} />
+                          <MinusOutlined style={{ fontSize: 9 }} />
                         </button>
                         <span className="px-3 text-xs font-bold border-x border-gray-200 min-w-[32px] text-center">
                           {item.quantity}
                         </span>
                         <button 
-                          className="px-2 py-1 hover:bg-gray-50 disabled:opacity-30 transition-colors"
+                          className="px-2 py-1 hover:bg-gray-50 disabled:opacity-30 transition-colors flex items-center justify-center"
                           onClick={() => handleUpdateQty(item.variant_id, item.quantity + 1)}
                           disabled={isLoading}
                         >
-                          <Plus size={12} />
+                          <PlusOutlined style={{ fontSize: 9 }} />
                         </button>
                       </div>
                       <Text strong className="text-charcoal text-xs">

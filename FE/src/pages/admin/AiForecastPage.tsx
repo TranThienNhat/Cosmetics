@@ -13,6 +13,7 @@ import {
   Spin,
   Alert,
   message,
+  Space,
 } from "antd";
 import {
   RiseOutlined,
@@ -552,18 +553,39 @@ const AiForecastPage: React.FC = () => {
                   <Card
                     style={cardStyle}
                     title={
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
                         <span className="font-bold text-[#2D2D2D]">
                           Bảng Đánh Giá Nhu Cầu & Tồn Kho Từng Sản Phẩm
                         </span>
-                        <Button
-                          type="primary"
-                          icon={<PlusOutlined />}
-                          onClick={() => navigate("/admin/purchase/create")}
-                          className="bg-[#BC8F8F] border-none rounded-lg text-xs"
-                        >
-                          Tạo Phiếu Nhập Hàng Mới
-                        </Button>
+                        <Space>
+                          <Button
+                            type="primary"
+                            icon={<ThunderboltOutlined />}
+                            onClick={() => {
+                              const lowStockItems = (demandData?.productDemandList || []).filter((p: any) => p.suggestedReorder > 0);
+                              if (lowStockItems.length === 0) {
+                                message.info("Tất cả mặt hàng đều tồn kho an toàn!");
+                                return;
+                              }
+                              const prefillItems = lowStockItems.map((item: any) => ({
+                                product_variant_id: item.variantId || item.productId,
+                                quantity: item.suggestedReorder || 20,
+                                unit_price: Math.round((Number(item.price) || 200000) * 0.65),
+                              }));
+                              navigate("/admin/purchase/create", { state: { prefillItems } });
+                            }}
+                            className="bg-gradient-to-r from-amber-500 to-[#BC8F8F] text-white border-none rounded-lg text-xs font-semibold shadow-sm"
+                          >
+                            ⚡ Nhập Kho Nhanh Toàn Bộ Đề Xuất ({(demandData?.productDemandList || []).filter((p: any) => p.suggestedReorder > 0).length} sp)
+                          </Button>
+                          <Button
+                            icon={<PlusOutlined />}
+                            onClick={() => navigate("/admin/purchase/create")}
+                            className="border-[#BC8F8F] text-[#BC8F8F] hover:bg-[#FAF3EC] rounded-lg text-xs"
+                          >
+                            Tạo Phiếu Nhập
+                          </Button>
+                        </Space>
                       </div>
                     }
                   >
@@ -645,6 +667,28 @@ const AiForecastPage: React.FC = () => {
                             ) : (
                               <span className="text-xs text-gray-400">Đủ hàng</span>
                             )
+                          ),
+                        },
+                        {
+                          title: "Thao tác",
+                          key: "action",
+                          render: (_, record: any) => (
+                            <Button
+                              type="link"
+                              size="small"
+                              icon={<ThunderboltOutlined />}
+                              onClick={() => {
+                                const prefillItems = [{
+                                  product_variant_id: record.variantId || record.productId,
+                                  quantity: record.suggestedReorder > 0 ? record.suggestedReorder : 20,
+                                  unit_price: Math.round((Number(record.price) || 200000) * 0.65),
+                                }];
+                                navigate("/admin/purchase/create", { state: { prefillItems } });
+                              }}
+                              className="text-[#BC8F8F] font-semibold hover:text-[#a67c7c] p-0"
+                            >
+                              Nhập món này
+                            </Button>
                           ),
                         },
                       ]}
