@@ -164,10 +164,11 @@ const BlogAdmin: React.FC = () => {
     {
       title: "Thông tin bài viết",
       key: "info",
+      ellipsis: { showTitle: true },
       render: (_: any, record: Blog) => (
-        <div className="flex flex-col">
-          <Text strong>{record.title}</Text>
-          <Text type="secondary" style={{ fontSize: "12px" }}>
+        <div className="flex flex-col max-w-[350px]">
+          <Text strong className="truncate block" title={record.title}>{record.title}</Text>
+          <Text type="secondary" style={{ fontSize: "12px" }} className="truncate block">
             slug: {record.slug}
           </Text>
         </div>

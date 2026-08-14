@@ -139,13 +139,26 @@ const BrandsPage: React.FC = () => {
         />
       ),
     },
-    { title: "Tên thương hiệu", dataIndex: "name", key: "name" },
-    { title: "Slug", dataIndex: "slug", key: "slug" },
+    {
+      title: "Tên thương hiệu",
+      dataIndex: "name",
+      key: "name",
+      ellipsis: { showTitle: true },
+      render: (name: string) => <span className="font-medium text-charcoal truncate block max-w-[200px]" title={name}>{name}</span>
+    },
+    {
+      title: "Slug",
+      dataIndex: "slug",
+      key: "slug",
+      ellipsis: { showTitle: true },
+      render: (slug: string) => <span className="text-gray-500 font-mono text-xs truncate block max-w-[150px]" title={slug}>{slug}</span>
+    },
     {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
-      render: (text: string) => text || "-",
+      ellipsis: { showTitle: true },
+      render: (text: string) => text ? <span className="text-gray-600 truncate block max-w-[280px]" title={text}>{text}</span> : "-",
     },
     {
       title: "Thao tác",

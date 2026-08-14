@@ -112,10 +112,11 @@ const UsersPage: React.FC = () => {
       title: "Tên",
       dataIndex: "name",
       key: "name",
+      ellipsis: { showTitle: true },
       render: (name: string) => (
-        <div className="flex items-center gap-2">
-          <UserOutlined className="text-gray-400" />
-          {name}
+        <div className="flex items-center gap-2 max-w-[200px]">
+          <UserOutlined className="text-gray-400 shrink-0" />
+          <span className="truncate" title={name}>{name}</span>
         </div>
       ),
     },
@@ -123,6 +124,8 @@ const UsersPage: React.FC = () => {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      ellipsis: { showTitle: true },
+      render: (email: string) => <span className="truncate block max-w-[220px]" title={email}>{email}</span>
     },
     {
       title: "Số điện thoại",

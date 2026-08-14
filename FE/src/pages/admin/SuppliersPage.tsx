@@ -119,10 +119,11 @@ const SuppliersPage: React.FC = () => {
       title: "Nhà cung cấp",
       dataIndex: "name",
       key: "name",
+      ellipsis: { showTitle: true },
       render: (text: string, record: Supplier) => (
-        <div>
-          <Text strong>{text}</Text>
-          <div style={{ fontSize: "12px", color: "#999" }}>
+        <div className="max-w-[220px]">
+          <Text strong className="truncate block" title={text}>{text}</Text>
+          <div style={{ fontSize: "12px", color: "#999" }} className="truncate" title={record.contact_name}>
             Người đại diện: {record.contact_name || "---"}
           </div>
         </div>
@@ -131,10 +132,11 @@ const SuppliersPage: React.FC = () => {
     {
       title: "Liên hệ",
       key: "contact",
+      ellipsis: { showTitle: true },
       render: (_: any, record: Supplier) => (
-        <div style={{ fontSize: "13px" }}>
-          <div>{record.phone}</div>
-          <div className="text-gray-400">{record.email}</div>
+        <div style={{ fontSize: "13px" }} className="max-w-[180px]">
+          <div className="truncate">{record.phone}</div>
+          <div className="text-gray-400 truncate" title={record.email}>{record.email}</div>
         </div>
       ),
     },

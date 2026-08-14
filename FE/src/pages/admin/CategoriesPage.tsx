@@ -86,12 +86,26 @@ const CategoriesPage: React.FC = () => {
       width: 80,
       render: (url: string) => <Image src={getImageUrl(url)} width={50} height={50} style={{ objectFit: 'cover', borderRadius: 4 }} fallback="/placeholder.jpg" />
     },
-    { title: "Tên danh mục", dataIndex: "name" },
-    { title: "Slug", dataIndex: "slug" },
+    {
+      title: "Tên danh mục",
+      dataIndex: "name",
+      ellipsis: { showTitle: true },
+      render: (name: string) => <span className="font-medium text-charcoal truncate block max-w-[220px]" title={name}>{name}</span>
+    },
+    {
+      title: "Slug",
+      dataIndex: "slug",
+      ellipsis: { showTitle: true },
+      render: (slug: string) => <span className="text-gray-500 font-mono text-xs truncate block max-w-[160px]" title={slug}>{slug}</span>
+    },
     {
       title: "Danh mục cha",
       dataIndex: "parent_id",
-      render: (pid: number) => categories.find(c => c.id === pid)?.name || "-"
+      ellipsis: { showTitle: true },
+      render: (pid: number) => {
+        const parent = categories.find(c => c.id === pid);
+        return parent ? <span className="truncate block max-w-[180px]" title={parent.name}>{parent.name}</span> : "-";
+      }
     },
     {
       title: "Thao tác",

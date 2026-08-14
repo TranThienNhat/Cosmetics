@@ -113,18 +113,20 @@ const AdminOrdersPage: React.FC = () => {
       title: "Mã đơn",
       dataIndex: "order_code",
       key: "order_code",
+      ellipsis: true,
       render: (order_code: string) => (
-        <span className="font-mono text-primary">{order_code}</span>
+        <span className="font-mono text-primary font-medium">{order_code}</span>
       ),
     },
     // THÊM CỘT KHÁCH HÀNG VÀO BẢNG
     {
       title: "Khách hàng",
       key: "customer",
+      ellipsis: { showTitle: true },
       render: (_: any, record: Order) => (
-        <div>
-          <div>{record.shipping_name}</div>
-          <div style={{ fontSize: '12px', color: '#999' }}>{record.shipping_phone}</div>
+        <div className="max-w-[200px]">
+          <div className="truncate font-medium text-charcoal" title={record.shipping_name}>{record.shipping_name}</div>
+          <div style={{ fontSize: '12px', color: '#999' }} className="truncate">{record.shipping_phone}</div>
         </div>
       )
     },
@@ -132,7 +134,10 @@ const AdminOrdersPage: React.FC = () => {
       title: "Tổng tiền",
       dataIndex: "final_amount",
       key: "final_amount",
-      render: (final_amount: number) => formatCurrency(Number(final_amount)),
+      ellipsis: true,
+      render: (final_amount: number) => (
+        <span className="whitespace-nowrap font-medium">{formatCurrency(Number(final_amount))}</span>
+      ),
       sorter: (a: Order, b: Order) => Number(a.final_amount) - Number(b.final_amount),
     },
     {

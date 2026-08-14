@@ -86,8 +86,15 @@ const ProductsPage: React.FC = () => {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
+      ellipsis: {
+        showTitle: true,
+      },
       render: (name: string, record: any) => (
-        <Link to={`/admin/products/${record.id}/edit`} className="text-primary">
+        <Link
+          to={`/admin/products/${record.id}/edit`}
+          className="text-primary font-medium block truncate max-w-[280px]"
+          title={name}
+        >
           {name}
         </Link>
       ),
@@ -96,7 +103,9 @@ const ProductsPage: React.FC = () => {
       title: "Giá (thấp nhất)",
       dataIndex: "min_price",
       key: "min_price",
-      render: (price: any) => (price ? formatCurrency(Number(price)) : "-"),
+      width: 140,
+      ellipsis: true,
+      render: (price: any) => (price ? <span className="whitespace-nowrap font-medium">{formatCurrency(Number(price))}</span> : "-"),
       sorter: (a: any, b: any) => Number(a.min_price || 0) - Number(b.min_price || 0),
     },
     {

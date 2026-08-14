@@ -3,7 +3,6 @@ import {
   Row,
   Col,
   Card,
-  Statistic,
   Typography,
   Table,
   Tag,
@@ -15,12 +14,16 @@ import {
   message,
 } from "antd";
 import {
-  ShoppingCartOutlined,
-  DollarOutlined,
+  ShoppingOutlined,
+  DollarCircleOutlined,
   CloseCircleOutlined,
   PercentageOutlined,
-  SyncOutlined,
-  FileExcelOutlined, // <- Import thêm icon Excel
+  ReloadOutlined,
+  FileExcelOutlined,
+  AreaChartOutlined,
+  PieChartOutlined,
+  TrophyOutlined,
+  WarningOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
@@ -44,84 +47,88 @@ import { formatCurrency } from "../../utils/helpers";
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
-interface DashboardData {
-  overview: {
-    totalOrders: number;
-    totalRevenue: number;
-    cancelRate: string;
-    totalCancelled: number;
-  };
-  charts: {
-    revenueChartData: any[];
-    orderStatusChart: any[];
-  };
-  topProducts: any[];
-  inventoryProducts: any[];
-}
-
+// Định dạng màu sắc & dịch thuật trạng thái
 const STATUS_COLORS: Record<string, string> = {
-  completed: "#10B981", // Xanh lục hoàn thành
-  shipped: "#3B82F6",   // Xanh dương đang giao
-  processing: "#F59E0B",// Vàng cam đang xử lý
-  pending: "#EC4899",   // Hồng chờ xử lý
-  cancelled: "#9CA3AF", // Xám đã hủy
+  completed: "#A5A58D",
+  processing: "#BC8F8F",
+  shipped: "#DDBEA9",
+  pending: "#CB997E",
+  cancelled: "#806060",
 };
 
 const STATUS_TRANSLATION: Record<string, string> = {
-  pending: "Chờ xử lý",
+  completed: "Hoàn tất",
   processing: "Đang xử lý",
   shipped: "Đang giao",
-  completed: "Hoàn thành",
-  cancelled: "Đã huỷ",
-};
-
-const formatCompactNumber = (number: number) => {
-  if (number === 0) return "0";
-  if (number >= 1000000000) return `${+(number / 1000000000).toFixed(1)} Tỷ`;
-  if (number >= 1000000) return `${+(number / 1000000).toFixed(1)} Tr`;
-  if (number >= 1000) return `${+(number / 1000).toFixed(1)}000`;
-  return number.toString();
+  pending: "Chờ xử lý",
+  cancelled: "Đã hủy",
 };
 
 const themeConfig = {
   token: {
     colorPrimary: "#BC8F8F",
-    colorTextBase: "#2D2D2D",
-    colorTextSecondary: "#555555",
-    colorBgBase: "#FFFFFF",
-    colorBgLayout: "#FDFBF7",
-    borderRadius: 8,
+    colorSuccess: "#A5A58D",
+    colorWarning: "#CB997E",
+    colorError: "#806060",
+    borderRadius: 10,
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   },
 };
 
+const cardStyle: React.CSSProperties = {
+  backgroundColor: "#FFFFFF",
+  borderRadius: "14px",
+  border: "1px solid rgba(188, 143, 143, 0.12)",
+  boxShadow: "0 2px 10px rgba(0, 0, 0, 0.03)",
+};
+
+const formatCompactNumber = (value: number) => {
+  if (value >= 1_000_000_000)
+    return `${(value / 1_000_000_000).toFixed(1).replace(/\.0$/, "")} Tỷ`;
+  if (value >= 1_000_000)
+    return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")} Tr`;
+  if (value >= 1_000)
+    return `${(value / 1_000).toFixed(1).replace(/\.0$/, "")} k`;
+  return value.toString();
+};
+
 const DashboardPage: React.FC = () => {
-  const [data, setData] = useState<DashboardData>({
+  const [data, setData] = useState<{
+    overview: {
+      totalOrders: number;
+      totalRevenue: number;
+      totalCancelled: number;
+      cancelRate: number;
+    };
+    charts: {
+      revenueChartData: any[];
+      orderStatusChart: any[];
+    };
+    topProducts: any[];
+    inventoryProducts: any[];
+  }>({
     overview: {
       totalOrders: 0,
       totalRevenue: 0,
-      cancelRate: "0",
       totalCancelled: 0,
+      cancelRate: 0,
     },
-    charts: { revenueChartData: [], orderStatusChart: [] },
+    charts: {
+      revenueChartData: [],
+      orderStatusChart: [],
+    },
     topProducts: [],
     inventoryProducts: [],
   });
 
-  const [loading, setLoading] = useState(true);
-
-  const [filterType, setFilterType] = useState<
-    "current_month" | "year" | "range"
-  >("current_month");
+  const [loading, setLoading] = useState(false);
+  const [filterType, setFilterType] = useState<string>("current_month");
   const [selectedYear, setSelectedYear] = useState<Dayjs | null>(dayjs());
-  const [dateRange, setDateRange] = useState<
-    [Dayjs | null, Dayjs | null] | null
-  >(null);
-
-  const cardStyle = {
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
-    border: "1px solid rgba(188, 143, 143, 0.15)",
-  };
+  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null]>([
+    dayjs().startOf("month"),
+    dayjs().endOf("month"),
+  ]);
 
   useEffect(() => {
     loadDashboardData();
@@ -133,9 +140,9 @@ const DashboardPage: React.FC = () => {
       const params = new URLSearchParams();
 
       if (filterType === "current_month") {
-        params.append("year", dayjs().year().toString());
-        params.append("month", (dayjs().month() + 1).toString());
+        params.append("filter", "current_month");
       } else if (filterType === "year" && selectedYear) {
+        params.append("filter", "year");
         params.append("year", selectedYear.year().toString());
       } else if (
         filterType === "range" &&
@@ -143,8 +150,9 @@ const DashboardPage: React.FC = () => {
         dateRange[0] &&
         dateRange[1]
       ) {
-        params.append("startDate", dateRange[0].format("YYYY-MM-DD"));
-        params.append("endDate", dateRange[1].format("YYYY-MM-DD"));
+        params.append("filter", "range");
+        params.append("start_date", dateRange[0].format("YYYY-MM-DD"));
+        params.append("end_date", dateRange[1].format("YYYY-MM-DD"));
       }
 
       const response = await api.get(`/dashboard/stats?${params.toString()}`);
@@ -162,7 +170,6 @@ const DashboardPage: React.FC = () => {
     try {
       const XLSX = await import("xlsx");
 
-      // 1. Chuẩn bị dữ liệu cho Sheet Top Sản Phẩm
       const topProductsData = data.topProducts.map((item, index) => ({
         STT: index + 1,
         "Tên sản phẩm": item.name,
@@ -170,38 +177,32 @@ const DashboardPage: React.FC = () => {
         "Tổng doanh thu (VNĐ)": Number(item.total_sales),
       }));
 
-      // 2. Chuẩn bị dữ liệu cho Sheet Tồn Kho
       const inventoryData = data.inventoryProducts.map((item, index) => ({
         STT: index + 1,
         "Tên sản phẩm": item.name,
         "Số lượng tồn kho": Number(item.total_stock),
       }));
 
-      // 3. Chuẩn bị dữ liệu cho Sheet Biểu đồ Doanh thu
       const revenueData = data.charts.revenueChartData.map((item) => ({
         "Thời gian": item.label,
         "Số đơn hàng": Number(item.total_orders),
         "Doanh thu (VNĐ)": Number(item.revenue),
       }));
 
-      // Chuyển đổi JSON sang Worksheet
       const wsTopProducts = XLSX.utils.json_to_sheet(topProductsData);
       const wsInventory = XLSX.utils.json_to_sheet(inventoryData);
       const wsRevenue = XLSX.utils.json_to_sheet(revenueData);
 
-      // Tùy chỉnh độ rộng cột cho đẹp
       const wscols = [{ wch: 5 }, { wch: 45 }, { wch: 20 }, { wch: 25 }];
       wsTopProducts["!cols"] = wscols;
       wsInventory["!cols"] = [{ wch: 5 }, { wch: 45 }, { wch: 20 }];
       wsRevenue["!cols"] = [{ wch: 20 }, { wch: 15 }, { wch: 25 }];
 
-      // Tạo Workbook và thêm các sheet vào
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, wsTopProducts, "Top Sản Phẩm");
       XLSX.utils.book_append_sheet(wb, wsInventory, "Tồn Kho");
       XLSX.utils.book_append_sheet(wb, wsRevenue, "Doanh Thu");
 
-      // Xuất file
       const fileName = `Thong_Ke_Dashboard_${dayjs().format("DD_MM_YYYY_HHmm")}.xlsx`;
       XLSX.writeFile(wb, fileName);
       message.success("Xuất file Excel thành công!");
@@ -216,10 +217,14 @@ const DashboardPage: React.FC = () => {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
+      ellipsis: {
+        showTitle: true,
+      },
       render: (name: string, record: any) => (
         <Link
           to={`/admin/products/${record.id}/edit`}
-          style={{ color: "#BC8F8F", fontWeight: 500 }}
+          className="text-[#BC8F8F] font-medium hover:underline block truncate max-w-[240px]"
+          title={name}
         >
           {name}
         </Link>
@@ -229,8 +234,10 @@ const DashboardPage: React.FC = () => {
       title: "Đã bán",
       dataIndex: "sold_qty",
       key: "sold_qty",
+      width: 90,
+      align: "center" as const,
       render: (val: number) => (
-        <Tag color="#E6D3D3" style={{ color: "#806060", borderRadius: "6px" }}>
+        <Tag color="#E6D3D3" style={{ color: "#806060", borderRadius: "6px" }} className="m-0">
           {val}
         </Tag>
       ),
@@ -239,8 +246,10 @@ const DashboardPage: React.FC = () => {
       title: "Tổng thu",
       dataIndex: "total_sales",
       key: "total_sales",
+      width: 140,
+      align: "right" as const,
       render: (val: number) => (
-        <Text strong style={{ color: "#2D2D2D" }}>
+        <Text strong style={{ color: "#2D2D2D" }} className="whitespace-nowrap font-medium">
           {formatCurrency(val)}
         </Text>
       ),
@@ -252,15 +261,26 @@ const DashboardPage: React.FC = () => {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
+      ellipsis: {
+        showTitle: true,
+      },
+      render: (name: string) => (
+        <span className="block truncate max-w-[240px] text-charcoal font-medium" title={name}>
+          {name}
+        </span>
+      ),
     },
     {
       title: "Tồn kho",
       dataIndex: "total_stock",
       key: "total_stock",
+      width: 120,
+      align: "center" as const,
       render: (val: number) => (
         <Tag
           color={val > 10 ? "#A5A58D" : "#806060"}
           style={{ borderRadius: "6px" }}
+          className="m-0 whitespace-nowrap"
         >
           {val} sản phẩm
         </Tag>
@@ -280,9 +300,9 @@ const DashboardPage: React.FC = () => {
       >
         {/* Sticky Header */}
         <div
-          className="flex justify-between items-center mb-8 sticky top-0 z-10 py-4"
+          className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 sticky top-0 z-10 py-4"
           style={{
-            background: "rgba(253, 251, 247, 0.85)",
+            background: "rgba(253, 251, 247, 0.92)",
             backdropFilter: "blur(12px)",
             borderBottom: "1px solid rgba(188, 143, 143, 0.15)",
             margin: "-24px -24px 24px -24px",
@@ -290,7 +310,7 @@ const DashboardPage: React.FC = () => {
           }}
         >
           <div>
-            <Title level={3} style={{ margin: 0, color: "#2D2D2D" }}>
+            <Title level={3} style={{ margin: 0, color: "#2D2D2D" }} className="!font-serif font-bold">
               Tổng quan thống kê
             </Title>
             <Text type="secondary" style={{ color: "#555555" }}>
@@ -298,12 +318,12 @@ const DashboardPage: React.FC = () => {
             </Text>
           </div>
 
-          <Space size="middle">
+          <Space size="middle" className="flex-wrap">
             <Select
               size="large"
               value={filterType}
               onChange={(val) => setFilterType(val)}
-              style={{ width: 180 }}
+              style={{ width: 160 }}
               options={[
                 { label: "Tháng hiện tại", value: "current_month" },
                 { label: "Theo năm", value: "year" },
@@ -338,7 +358,7 @@ const DashboardPage: React.FC = () => {
                 onClick={loadDashboardData}
                 loading={loading}
                 size="large"
-                icon={<SyncOutlined />}
+                icon={<ReloadOutlined />}
                 style={{ fontWeight: 500, borderRadius: "8px" }}
               >
                 Làm mới
@@ -354,7 +374,7 @@ const DashboardPage: React.FC = () => {
                   borderRadius: "8px",
                   backgroundColor: "#A5A58D",
                   borderColor: "#A5A58D",
-                }} // Dùng màu xanh rêu sang trọng cho nút Excel
+                }}
               >
                 Xuất Excel
               </Button>
@@ -363,47 +383,77 @@ const DashboardPage: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-          {/* THẺ THỐNG KÊ (OVERVIEW) */}
+          {/* THẺ THỐNG KÊ (OVERVIEW) - ĐỒNG BỘ GIAO DIỆN PREMIUM */}
           <Row gutter={[24, 24]}>
             <Col xs={24} sm={12} lg={6}>
-              <Card style={cardStyle} loading={loading}>
-                <Statistic
-                  title="Tổng đơn hàng"
-                  value={data.overview.totalOrders}
-                  prefix={<ShoppingCartOutlined style={{ color: "#BC8F8F" }} />}
-                  valueStyle={{ color: "#2D2D2D", fontWeight: 600 }}
-                />
+              <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300">
+                <div className="flex items-center justify-between">
+                  <div className="min-w-0 flex-1 pr-3">
+                    <Text className="text-xs uppercase tracking-wider font-semibold text-[#806060] block truncate mb-1">
+                      Tổng đơn hàng
+                    </Text>
+                    <div className="text-2xl font-bold text-[#2D2D2D] truncate font-serif">
+                      {data.overview.totalOrders}
+                    </div>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-[#BC8F8F]/15 text-[#BC8F8F]">
+                    <ShoppingOutlined style={{ fontSize: 22 }} />
+                  </div>
+                </div>
               </Card>
             </Col>
+
             <Col xs={24} sm={12} lg={6}>
-              <Card style={cardStyle} loading={loading}>
-                <Statistic
-                  title="Tổng doanh thu"
-                  value={data.overview.totalRevenue}
-                  prefix={<DollarOutlined style={{ color: "#A5A58D" }} />}
-                  formatter={(value) => formatCurrency(Number(value))}
-                  valueStyle={{ color: "#2D2D2D", fontWeight: 600 }}
-                />
+              <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300">
+                <div className="flex items-center justify-between">
+                  <div className="min-w-0 flex-1 pr-3">
+                    <Text className="text-xs uppercase tracking-wider font-semibold text-[#806060] block truncate mb-1">
+                      Tổng doanh thu
+                    </Text>
+                    <div className="text-2xl font-bold text-[#2D2D2D] truncate font-serif" title={formatCurrency(data.overview.totalRevenue)}>
+                      {formatCurrency(data.overview.totalRevenue)}
+                    </div>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-[#A5A58D]/20 text-[#6B705C]">
+                    <DollarCircleOutlined style={{ fontSize: 22 }} />
+                  </div>
+                </div>
               </Card>
             </Col>
+
             <Col xs={24} sm={12} lg={6}>
-              <Card style={cardStyle} loading={loading}>
-                <Statistic
-                  title="Đơn bị huỷ"
-                  value={data.overview.totalCancelled}
-                  prefix={<CloseCircleOutlined style={{ color: "#806060" }} />}
-                  valueStyle={{ color: "#2D2D2D", fontWeight: 600 }}
-                />
+              <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300">
+                <div className="flex items-center justify-between">
+                  <div className="min-w-0 flex-1 pr-3">
+                    <Text className="text-xs uppercase tracking-wider font-semibold text-[#806060] block truncate mb-1">
+                      Đơn bị huỷ
+                    </Text>
+                    <div className="text-2xl font-bold text-[#2D2D2D] truncate font-serif">
+                      {data.overview.totalCancelled}
+                    </div>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-[#806060]/15 text-[#806060]">
+                    <CloseCircleOutlined style={{ fontSize: 22 }} />
+                  </div>
+                </div>
               </Card>
             </Col>
+
             <Col xs={24} sm={12} lg={6}>
-              <Card style={cardStyle} loading={loading}>
-                <Statistic
-                  title="Tỷ lệ huỷ đơn"
-                  value={data.overview.cancelRate}
-                  prefix={<PercentageOutlined style={{ color: "#CB997E" }} />}
-                  valueStyle={{ color: "#2D2D2D", fontWeight: 600 }}
-                />
+              <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300">
+                <div className="flex items-center justify-between">
+                  <div className="min-w-0 flex-1 pr-3">
+                    <Text className="text-xs uppercase tracking-wider font-semibold text-[#806060] block truncate mb-1">
+                      Tỷ lệ huỷ đơn
+                    </Text>
+                    <div className="text-2xl font-bold text-[#2D2D2D] truncate font-serif">
+                      {data.overview.cancelRate}%
+                    </div>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-[#CB997E]/20 text-[#CB997E]">
+                    <PercentageOutlined style={{ fontSize: 22 }} />
+                  </div>
+                </div>
               </Card>
             </Col>
           </Row>
@@ -414,7 +464,10 @@ const DashboardPage: React.FC = () => {
               <Card
                 title={
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-bold text-gray-800 text-base">📊 Biểu đồ Doanh thu & Tăng trưởng đơn hàng</span>
+                    <span className="font-bold text-gray-800 text-base flex items-center gap-2">
+                      <AreaChartOutlined style={{ color: "#BC8F8F", fontSize: 18 }} />
+                      Biểu đồ Doanh thu & Tăng trưởng đơn hàng
+                    </span>
                     <div className="flex items-center gap-2 text-xs font-normal">
                       <span className="px-2.5 py-1 rounded-full bg-rose-50 text-[#BC8F8F] border border-rose-200 font-medium">
                         ● Doanh thu (VND)
@@ -472,10 +525,10 @@ const DashboardPage: React.FC = () => {
                     <RechartsTooltip
                       formatter={(value: any, name: any) => {
                         if (name === "Doanh thu" || name === "Doanh thu (VND)")
-                          return [formatCurrency(value), "💰 Doanh thu"];
-                        return [`${value} đơn`, "📦 Số đơn hàng"];
+                          return [formatCurrency(value), "Doanh thu"];
+                        return [`${value} đơn`, "Số đơn hàng"];
                       }}
-                      labelFormatter={(label) => `📅 Thời gian: ${label}`}
+                      labelFormatter={(label) => `Thời gian: ${label}`}
                       contentStyle={{
                         borderRadius: "10px",
                         border: "1px solid #EAD8CE",
@@ -510,7 +563,12 @@ const DashboardPage: React.FC = () => {
 
             <Col xs={24} lg={8}>
               <Card
-                title={<span className="font-bold text-gray-800 text-base">🥧 Cơ cấu Trạng thái Đơn hàng</span>}
+                title={
+                  <span className="font-bold text-gray-800 text-base flex items-center gap-2">
+                    <PieChartOutlined style={{ color: "#CB997E", fontSize: 18 }} />
+                    Cơ cấu Trạng thái Đơn hàng
+                  </span>
+                }
                 style={cardStyle}
                 loading={loading}
               >
@@ -568,9 +626,14 @@ const DashboardPage: React.FC = () => {
           <Row gutter={[24, 24]}>
             <Col xs={24} lg={12}>
               <Card
-                title="Top 10 Sản phẩm bán chạy"
+                title={
+                  <span className="flex items-center gap-2 font-bold text-gray-800">
+                    <TrophyOutlined style={{ color: "#BC8F8F" }} />
+                    Top 10 Sản phẩm bán chạy
+                  </span>
+                }
                 extra={
-                  <Link to="/admin/products" style={{ color: "#BC8F8F" }}>
+                  <Link to="/admin/products" style={{ color: "#BC8F8F" }} className="hover:underline font-medium text-xs">
                     Xem tất cả
                   </Link>
                 }
@@ -588,7 +651,15 @@ const DashboardPage: React.FC = () => {
             </Col>
 
             <Col xs={24} lg={12}>
-              <Card title="Cảnh báo Tồn kho hiện tại" style={cardStyle}>
+              <Card
+                title={
+                  <span className="flex items-center gap-2 font-bold text-gray-800">
+                    <WarningOutlined style={{ color: "#CB997E" }} />
+                    Cảnh báo Tồn kho hiện tại
+                  </span>
+                }
+                style={cardStyle}
+              >
                 <Table
                   dataSource={data.inventoryProducts}
                   columns={inventoryColumns}
