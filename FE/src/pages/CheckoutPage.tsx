@@ -14,15 +14,15 @@ import {
 } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  MapPin,
-  CreditCard,
-  User,
-  ChevronLeft,
-  StickyNote,
-  PackageCheck,
-  Phone,
-  Mail,
-} from "lucide-react";
+  EnvironmentOutlined,
+  CreditCardOutlined,
+  UserOutlined,
+  LeftOutlined,
+  FileTextOutlined,
+  CheckCircleOutlined,
+  PhoneOutlined,
+  MailOutlined,
+} from "@ant-design/icons";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../utils/api";
@@ -46,69 +46,64 @@ const CheckoutPage: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  // ÉP CHUỖI ĐỂ TRÁNH RESET THAM CHIẾU Ô NHỚ KHI RE-RENDER
-  const stateVariantIdsString = JSON.stringify((location.state as any)?.selectedVariantIds);
+  const selectedVariantIds = (location.state as any)?.selectedVariantIds as
+    | number[]
+    | undefined;
 
-  // LẤY DANH SÁCH VARIANT_ID ĐÃ CHỌN TỪ CARTPAGE
-  const selectedVariantIds = useMemo(() => {
-    const state = location.state as {
-      selectedVariantIds?: Array<number | string>;
-    };
-
-    return Array.isArray(state?.selectedVariantIds)
-      ? state.selectedVariantIds.map(Number)
-      : [];
-  }, [stateVariantIdsString]); // Chỉ chạy lại khi ruột thực sự thay đổi
-
-  // CHỈ LỌC SẢN PHẨM ĐÃ CHỌN CHÍNH XÁC
   const checkoutItems = useMemo(() => {
-    if (selectedVariantIds.length === 0) return [];
+    if (!selectedVariantIds || selectedVariantIds.length === 0) {
+      return items;
+    }
     return items.filter((item) =>
       selectedVariantIds.includes(Number(item.variant_id))
     );
   }, [items, selectedVariantIds]);
 
-  // TÍNH TỔNG TIỀN THEO SẢN PHẨM ĐÃ CHỌN
   const checkoutSubtotal = useMemo(() => {
     return checkoutItems.reduce(
       (sum, item) => sum + Number(item.price) * item.quantity,
-        0
+      0
     );
   }, [checkoutItems]);
 
-  const shippingFee =
-    checkoutItems.length > 0 && checkoutSubtotal < 500000 ? 30000 : 0;
+  const totalCartSubtotal = useMemo(() => {
+    return items.reduce(
+      (sum, item) => sum + Number(item.price) * item.quantity,
+      0
+    );
+  }, [items]);
 
-  // Giới hạn mã discount không vượt quá subtotal của sản phẩm đã chọn
-  const applicableDiscount = Math.min(discount, checkoutSubtotal);
-  const finalTotal = Math.max(checkoutSubtotal - applicableDiscount + shippingFee, 0);
+  const applicableDiscount = useMemo(() => {
+    if (totalCartSubtotal === 0 || discount === 0) return 0;
+    return Math.round((checkoutSubtotal / totalCartSubtotal) * discount);
+  }, [checkoutSubtotal, totalCartSubtotal, discount]);
 
-  // KIỂM TRA ĐIỀU KIỆN CHẶN TRUY CẬP
+  const shippingFee = checkoutSubtotal >= 500000 ? 0 : 30000;
+  const finalTotal = Math.max(
+    0,
+    checkoutSubtotal - applicableDiscount + (checkoutItems.length > 0 ? shippingFee : 0)
+  );
+
   useEffect(() => {
-    if (cartLoading) return;
-
-    if (selectedVariantIds.length === 0) {
-      message.warning("Vui lòng chọn sản phẩm để thanh toán!");
-      navigate("/cart", { replace: true });
-      return;
-    }
-
-    if (checkoutItems.length === 0 && items.length > 0) {
-      message.warning("Sản phẩm đã chọn không còn trong giỏ hàng!");
+    if (items.length > 0 && checkoutItems.length === 0) {
+      message.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
       navigate("/cart", { replace: true });
     }
-  }, [cartLoading, selectedVariantIds, checkoutItems, items, navigate]);
+  }, [checkoutItems, items, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      form.setFieldsValue({
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+      });
+    }
+  }, [user, form]);
 
   const handlePlaceOrder = async (values: any) => {
-    if (!user) {
-      message.error("Vui lòng đăng nhập để tiếp tục!");
-      navigate("/login");
-      return;
-    }
-
     if (checkoutItems.length === 0) {
-      message.warning("Vui lòng chọn sản phẩm để thanh toán!");
-      navigate("/cart");
+      message.error("Không có sản phẩm nào được chọn để thanh toán");
       return;
     }
 
@@ -116,7 +111,7 @@ const CheckoutPage: React.FC = () => {
       setLoading(true);
 
       const payload = {
-        shipping_info: {
+        shipping_address: {
           name: values.name,
           phone: values.phone,
           email: values.email,
@@ -155,12 +150,12 @@ const CheckoutPage: React.FC = () => {
   };
 
   const renderLabel = (
-    IconComponent: any,
+    icon: React.ReactNode,
     labelText: string,
     isRequired: boolean = false
   ) => (
     <span className="flex items-center gap-2">
-      <IconComponent size={16} className="text-primary" />
+      {icon}
       <span className="font-semibold text-charcoal">
         {labelText}
         {isRequired && <span className="text-red-500 ml-1">*</span>}
@@ -185,7 +180,7 @@ const CheckoutPage: React.FC = () => {
           <div>
             <Button
               type="text"
-              icon={<ChevronLeft size={18} />}
+              icon={<LeftOutlined style={{ fontSize: 14 }} />}
               onClick={() => navigate("/cart")}
               className="text-gray hover:text-primary p-0 flex items-center mb-2 transition-colors"
             >
@@ -228,7 +223,7 @@ const CheckoutPage: React.FC = () => {
                     <Col xs={24} md={12}>
                       <Form.Item
                         name="name"
-                        label={renderLabel(User, "Họ và tên", true)}
+                        label={renderLabel(<UserOutlined style={{ fontSize: 16, color: "#BC8F8F" }} />, "Họ và tên", true)}
                         rules={[
                           {
                             required: true,
@@ -246,7 +241,7 @@ const CheckoutPage: React.FC = () => {
                     <Col xs={24} md={12}>
                       <Form.Item
                         name="phone"
-                        label={renderLabel(Phone, "Số điện thoại", true)}
+                        label={renderLabel(<PhoneOutlined style={{ fontSize: 16, color: "#BC8F8F" }} />, "Số điện thoại", true)}
                         rules={[
                           {
                             required: true,
@@ -264,7 +259,7 @@ const CheckoutPage: React.FC = () => {
 
                   <Form.Item
                     name="email"
-                    label={renderLabel(Mail, "Email", true)}
+                    label={renderLabel(<MailOutlined style={{ fontSize: 16, color: "#BC8F8F" }} />, "Email", true)}
                     rules={[
                       {
                         required: true,
@@ -278,7 +273,7 @@ const CheckoutPage: React.FC = () => {
 
                   <Form.Item
                     name="address"
-                    label={renderLabel(MapPin, "Địa chỉ giao hàng", true)}
+                    label={renderLabel(<EnvironmentOutlined style={{ fontSize: 16, color: "#BC8F8F" }} />, "Địa chỉ giao hàng", true)}
                     rules={[
                       {
                         required: true,
@@ -291,13 +286,13 @@ const CheckoutPage: React.FC = () => {
 
                   <Form.Item
                     name="notes"
-                    label={renderLabel(StickyNote, "Ghi chú")}
+                    label={renderLabel(<FileTextOutlined style={{ fontSize: 16, color: "#BC8F8F" }} />, "Ghi chú")}
                   >
                     <Input.TextArea rows={2} className="rounded-lg" />
                   </Form.Item>
 
                   <div className="bg-background p-5 rounded-xl border border-gray/10 flex gap-4 items-center mb-8">
-                    <CreditCard size={20} className="text-primary" />
+                    <CreditCardOutlined style={{ fontSize: 20, color: "#BC8F8F" }} />
 
                     <div>
                       <Text strong className="block">
@@ -331,7 +326,7 @@ const CheckoutPage: React.FC = () => {
                   level={4}
                   className="!m-0 !font-serif flex items-center gap-2"
                 >
-                  <PackageCheck size={20} className="text-primary" />
+                  <CheckCircleOutlined style={{ fontSize: 20, color: "#BC8F8F" }} />
                   Sản phẩm đã chọn ({checkoutItems.length})
                 </Title>
               </div>

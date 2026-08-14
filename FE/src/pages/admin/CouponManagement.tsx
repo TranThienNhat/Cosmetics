@@ -15,7 +15,12 @@ import {
   Card,
   Typography,
 } from "antd";
-import { Plus, Edit, Trash2, Gift } from "lucide-react";
+import {
+  GiftOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 import api from "../../utils/api";
 import { formatCurrency } from "../../utils/helpers";
 import dayjs from "dayjs";
@@ -203,7 +208,7 @@ const CouponManagement: React.FC = () => {
         <Space>
           <Button
             type="text"
-            icon={<Edit size={16} />}
+            icon={<EditOutlined style={{ fontSize: 16 }} />}
             onClick={() => handleEdit(record)}
           />
           <Popconfirm
@@ -211,7 +216,7 @@ const CouponManagement: React.FC = () => {
             onConfirm={() => handleDelete(record.id)}
             okText="Xóa"
             cancelText="Hủy">
-            <Button type="text" danger icon={<Trash2 size={16} />} />
+            <Button type="text" danger icon={<DeleteOutlined style={{ fontSize: 16 }} />} />
           </Popconfirm>
         </Space>
       ),
@@ -223,12 +228,12 @@ const CouponManagement: React.FC = () => {
       <Card>
         <div className="flex justify-between items-center mb-6">
           <Title level={2} className="!mb-0 flex items-center gap-2">
-            <Gift size={24} />
+            <GiftOutlined style={{ fontSize: 24, color: "#BC8F8F" }} />
             Quản lý mã giảm giá
           </Title>
           <Button
             type="primary"
-            icon={<Plus size={16} />}
+            icon={<PlusOutlined />}
             onClick={handleCreate}
             className="bg-primary border-primary">
             Tạo mã giảm giá

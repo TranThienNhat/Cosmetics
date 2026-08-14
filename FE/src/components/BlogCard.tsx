@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Typography } from "antd";
 import { Link } from "react-router-dom";
-import { Calendar, ArrowRight } from "lucide-react";
+import { CalendarOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import { getImageUrl } from "../utils/helpers";
 
 const { Title, Paragraph } = Typography;
@@ -35,7 +35,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog }) => {
     >
       <div className="flex items-center gap-4 text-[#555555] text-[11px] uppercase tracking-widest mb-3">
         <span className="flex items-center gap-1.5">
-          <Calendar size={14} className="text-[#BC8F8F]" />
+          <CalendarOutlined style={{ fontSize: 13, color: "#BC8F8F" }} />
           {new Date(blog.created_at).toLocaleDateString("vi-VN")}
         </span>
       </div>
@@ -58,8 +58,8 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog }) => {
         className="inline-flex items-center gap-2 text-[#BC8F8F] font-bold text-[11px] uppercase tracking-[0.15em] border-b border-[#BC8F8F]/20 pb-1 hover:border-[#BC8F8F] transition-all"
       >
         Xem chi tiết
-        <ArrowRight
-          size={14}
+        <ArrowRightOutlined
+          style={{ fontSize: 12 }}
           className="group-hover:translate-x-1 transition-transform"
         />
       </Link>

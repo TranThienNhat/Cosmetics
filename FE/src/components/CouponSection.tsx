@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Input, Button, message, Tag } from "antd";
-import { Gift, X } from "lucide-react";
+import { GiftOutlined, CloseOutlined } from "@ant-design/icons";
 import { useCart } from "../contexts/CartContext";
 import { formatCurrency } from "../utils/helpers";
 import api from "../utils/api";
@@ -54,7 +54,7 @@ const CouponSection: React.FC = () => {
         <div className="bg-green-50 p-3 rounded-lg border border-green-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Gift size={16} className="text-green-600" />
+              <GiftOutlined style={{ fontSize: 16, color: "#16a34a" }} />
               <span className="text-green-700 font-medium">
                 {appliedCouponCode}
               </span>
@@ -63,7 +63,7 @@ const CouponSection: React.FC = () => {
             <Button
               type="text"
               size="small"
-              icon={<X size={14} />}
+              icon={<CloseOutlined style={{ fontSize: 12 }} />}
               onClick={handleRemoveCoupon}
               className="text-green-600 hover:text-green-700"
             />
@@ -76,7 +76,7 @@ const CouponSection: React.FC = () => {
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value)}
             onPressEnter={handleApplyCoupon}
-            prefix={<Gift size={16} className="text-gray-400" />}
+            prefix={<GiftOutlined style={{ fontSize: 16, color: "#9ca3af" }} />}
           />
           <Button
             type="primary"

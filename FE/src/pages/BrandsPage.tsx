@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Row, Col, Card, Typography, Spin, Breadcrumb, Button } from "antd";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRightOutlined } from "@ant-design/icons";
 import api from "../utils/api";
 import { getImageUrl } from "../utils/helpers";
 
@@ -94,7 +94,7 @@ const BrandsPage: React.FC = () => {
                       block 
                       className="rounded-lg border-primary text-primary font-medium h-10 flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-white transition-colors"
                     >
-                      Khám phá <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                      Khám phá <ArrowRightOutlined style={{ fontSize: 14 }} className="group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </div>
                 </Card>

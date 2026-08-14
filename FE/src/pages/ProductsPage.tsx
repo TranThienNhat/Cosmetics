@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Row, Col, Card, Button, Typography, Spin, Pagination, Select, Input, Empty, Breadcrumb } from "antd";
 import { Link, useSearchParams, useLocation } from "react-router-dom";
-import { Search, Filter, RefreshCcw, ChevronRight } from "lucide-react";
+import { SearchOutlined, FilterOutlined, ReloadOutlined, RightOutlined } from "@ant-design/icons";
 import api from "../utils/api";
 import { getImageUrl, formatCurrency } from "../utils/helpers";
 
@@ -146,10 +146,10 @@ const ProductsPage: React.FC = () => {
             <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm space-y-8 sticky top-28 border border-gray/10">
               <div className="flex items-center justify-between border-b border-gray/10 pb-4">
                 <Title level={4} className="!mb-0 !font-serif flex items-center gap-2 text-charcoal">
-                  <Filter size={18} className="text-primary" /> Bộ lọc
+                  <FilterOutlined style={{ fontSize: 16, color: "#BC8F8F" }} /> Bộ lọc
                 </Title>
                 <Button type="link" onClick={clearFilters} className="text-gray hover:text-primary p-0 flex items-center gap-1 text-xs transition-colors">
-                  <RefreshCcw size={12} /> Làm mới
+                  <ReloadOutlined style={{ fontSize: 11 }} /> Làm mới
                 </Button>
               </div>
 
@@ -158,7 +158,7 @@ const ProductsPage: React.FC = () => {
                 <label className="block text-charcoal font-bold mb-3 text-[10px] uppercase tracking-widest text-gray">Tìm kiếm sản phẩm</label>
                 <Input
                   placeholder="Nhập tên sản phẩm..."
-                  prefix={<Search size={14} className="text-gray" />}
+                  prefix={<SearchOutlined style={{ fontSize: 14, color: "#9ca3af" }} />}
                   className="rounded-lg border-gray/20 bg-background h-11 focus:border-primary focus:shadow-none"
                   value={searchParams.get("search") || ""}
                   onChange={(e) => handleFilterChange("search", e.target.value)}
@@ -239,7 +239,7 @@ const ProductsPage: React.FC = () => {
                                     block
                                     className="rounded-lg border-primary text-primary h-10 font-medium flex items-center justify-center gap-2 hover:!bg-primary hover:!text-white transition-colors"
                                   >
-                                    Xem chi tiết <ChevronRight size={16} />
+                                    Xem chi tiết <RightOutlined style={{ fontSize: 12 }} />
                                   </Button>
                                 </Link>
                               </div>

@@ -10,7 +10,7 @@ import {
   Space,
   Card,
 } from "antd";
-import { Calendar, ArrowLeft, Share2 } from "lucide-react";
+import { CalendarOutlined, ArrowLeftOutlined, ShareAltOutlined } from "@ant-design/icons";
 import api from "../utils/api";
 import { getImageUrl } from "../utils/helpers";
 
@@ -55,7 +55,7 @@ const BlogDetailPage: React.FC = () => {
         <Link to="/blogs">
           <Button
             type="primary"
-            icon={<ArrowLeft size={16} />}
+            icon={<ArrowLeftOutlined />}
             className="mt-4 !bg-[#BC8F8F] !border-[#BC8F8F]"
           >
             Quay lại danh sách
@@ -120,7 +120,7 @@ const BlogDetailPage: React.FC = () => {
               </Tag>
 
               <Text className="text-[12px] text-[#555555] flex items-center gap-2">
-                <Calendar size={14} className="text-[#BC8F8F]" />
+                <CalendarOutlined style={{ fontSize: 14, color: "#BC8F8F" }} />
                 {new Date(blog.created_at).toLocaleDateString("vi-VN")}
               </Text>
             </Space>
@@ -154,7 +154,7 @@ const BlogDetailPage: React.FC = () => {
               <Link to="/blogs">
                 <Button
                   type="link"
-                  icon={<ArrowLeft size={18} />}
+                  icon={<ArrowLeftOutlined />}
                   className="flex items-center !text-[#BC8F8F] font-bold text-xs uppercase tracking-widest hover:translate-x-[-6px] transition-transform p-0"
                 >
                   Quay lại bài viết
@@ -173,7 +173,7 @@ const BlogDetailPage: React.FC = () => {
                   shape="circle"
                   size="small"
                   className="hover:!bg-[#BC8F8F]/10 flex items-center justify-center"
-                  icon={<Share2 size={16} className="text-[#BC8F8F]" />}
+                  icon={<ShareAltOutlined style={{ fontSize: 16, color: "#BC8F8F" }} />}
                 />
               </div>
             </div>

@@ -14,7 +14,15 @@ import {
   Breadcrumb,
   Divider,
 } from "antd";
-import { ShoppingCart, Heart, Zap, Star, CheckCircle2, ShieldCheck, Truck } from "lucide-react"; 
+import {
+  ShoppingCartOutlined,
+  HeartOutlined,
+  ThunderboltOutlined,
+  StarOutlined,
+  CheckCircleOutlined,
+  SafetyCertificateOutlined,
+  CarOutlined,
+} from "@ant-design/icons"; 
 import { ProductVariant } from "../types";
 import api from "../utils/api";
 import { getImageUrl, formatCurrency } from "../utils/helpers";
@@ -318,8 +326,8 @@ const ProductDetailPage: React.FC = () => {
                 <Button 
                   type="primary" 
                   size="large" 
-                  icon={<Zap size={18} fill="currentColor" />} 
-                  className="bg-charcoal border-charcoal h-12 flex-1 rounded-lg font-medium shadow-sm hover:!bg-black transition-all"
+                  icon={<ThunderboltOutlined />} 
+                  className="bg-charcoal border-charcoal h-12 flex-1 rounded-lg font-medium shadow-sm hover:!bg-black transition-all flex items-center justify-center gap-1"
                   onClick={handleBuyNow}
                   loading={actionLoading}
                   disabled={!selectedVariant?.stock_quantity}
@@ -329,8 +337,8 @@ const ProductDetailPage: React.FC = () => {
 
                 <Button 
                   size="large" 
-                  icon={<ShoppingCart size={18} />} 
-                  className="bg-transparent border-primary text-primary h-12 flex-1 rounded-lg font-medium hover:!bg-primary/5 hover:!border-primary hover:!text-primary transition-all"
+                  icon={<ShoppingCartOutlined style={{ fontSize: 18 }} />} 
+                  className="bg-transparent border-primary text-primary h-12 flex-1 rounded-lg font-medium hover:!bg-primary/5 hover:!border-primary hover:!text-primary transition-all flex items-center justify-center gap-1"
                   onClick={handleAddToCart}
                   loading={actionLoading}
                   disabled={!selectedVariant?.stock_quantity}
@@ -342,16 +350,16 @@ const ProductDetailPage: React.FC = () => {
               {/* Cam kết shop */}
               <div className="grid grid-cols-2 gap-4 pt-8 border-t border-gray/10">
                   <div className="flex items-center gap-3 text-xs text-gray">
-                    <ShieldCheck size={18} className="text-primary" /> Cam kết chính hãng
+                    <SafetyCertificateOutlined style={{ fontSize: 18, color: "#BC8F8F" }} /> Cam kết chính hãng
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray">
-                    <Truck size={18} className="text-primary" /> Miễn phí vận chuyển
+                    <CarOutlined style={{ fontSize: 18, color: "#BC8F8F" }} /> Miễn phí vận chuyển
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray">
-                    <CheckCircle2 size={18} className="text-primary" /> Đổi trả 7 ngày
+                    <CheckCircleOutlined style={{ fontSize: 18, color: "#BC8F8F" }} /> Đổi trả 7 ngày
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray">
-                    <Heart size={18} className="text-primary" /> Đóng gói an toàn
+                    <HeartOutlined style={{ fontSize: 18, color: "#BC8F8F" }} /> Đóng gói an toàn
                   </div>
               </div>
             </div>
@@ -459,7 +467,7 @@ const ProductDetailPage: React.FC = () => {
                         type="primary"
                         block
                         size="large"
-                        icon={<ShoppingCart size={18} />}
+                        icon={<ShoppingCartOutlined style={{ fontSize: 18 }} />}
                         loading={addingBundle}
                         onClick={handleAddBundleToCart}
                         disabled={selectedItems.length === 0}
@@ -514,7 +522,7 @@ const ProductDetailPage: React.FC = () => {
                 <div className="max-w-4xl mx-auto py-8">
                   {reviews.length === 0 ? (
                     <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray/20 shadow-sm">
-                      <Star size={32} className="text-gray/20 mx-auto mb-3" />
+                      <StarOutlined style={{ fontSize: 32, color: "#d1d5db" }} className="mx-auto mb-3" />
                       <Paragraph className="text-gray italic font-serif mb-0 text-base">
                         Chưa có đánh giá nào cho sản phẩm này.<br/>
                         Hãy là người đầu tiên chia sẻ cảm nhận nhé.

@@ -1,13 +1,20 @@
 import React from "react";
 import { Button, Card, Typography } from "antd";
 import { Link, useLocation } from "react-router-dom";
-import { CheckCircle, Package, Home, ArrowRight, ShieldCheck, Truck } from "lucide-react";
+import {
+  CheckCircleOutlined,
+  InboxOutlined,
+  HomeOutlined,
+  ArrowRightOutlined,
+  SafetyCertificateOutlined,
+  CarOutlined,
+} from "@ant-design/icons";
 
 const { Title, Paragraph, Text } = Typography;
 
 const CheckoutSuccessPage: React.FC = () => {
   const location = useLocation();
-  const order = location.state?.order; // Nhận toàn bộ object order nếu có
+  const order = location.state?.order;
   const orderId = order?.id || location.state?.orderId;
 
   return (
@@ -19,7 +26,7 @@ const CheckoutSuccessPage: React.FC = () => {
           
           {/* Icon Success */}
           <div className="w-20 h-20 bg-green-50 border border-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <CheckCircle size={40} className="text-green-500" strokeWidth={2} />
+            <CheckCircleOutlined style={{ fontSize: 40, color: "#10B981" }} />
           </div>
           
           <Title level={2} className="!font-serif !text-charcoal !mb-4">
@@ -41,7 +48,7 @@ const CheckoutSuccessPage: React.FC = () => {
           {/* Box Thông tin tóm tắt */}
           <div className="bg-background p-6 rounded-xl text-left border border-gray/10 mb-10">
             <h4 className="text-charcoal font-medium mb-4 flex items-center gap-2">
-              <Package size={18} className="text-primary" /> Thông tin giao hàng
+              <InboxOutlined style={{ fontSize: 18, color: "#BC8F8F" }} /> Thông tin giao hàng
             </h4>
             <div className="space-y-3">
               <div className="flex justify-between items-start gap-4">
@@ -74,7 +81,7 @@ const CheckoutSuccessPage: React.FC = () => {
             <Link to="/" className="w-full sm:w-auto">
               <Button
                 size="large"
-                icon={<Home size={18} />}
+                icon={<HomeOutlined style={{ fontSize: 16 }} />}
                 className="border-gray/20 text-charcoal hover:!border-primary hover:!text-primary rounded-lg h-12 px-8 w-full transition-colors bg-transparent"
               >
                 Về trang chủ
@@ -84,7 +91,7 @@ const CheckoutSuccessPage: React.FC = () => {
 
           <div className="mt-8">
             <Link to="/products" className="inline-flex items-center gap-2 text-primary text-sm font-medium hover:text-primary/80 transition-all group">
-              Tiếp tục mua sắm <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              Tiếp tục mua sắm <ArrowRightOutlined style={{ fontSize: 14 }} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </Card>
@@ -96,7 +103,7 @@ const CheckoutSuccessPage: React.FC = () => {
               
               <div className="p-4 hover:-translate-y-1 transition-transform duration-300">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-primary">
-                  <Package size={22} />
+                  <InboxOutlined style={{ fontSize: 22 }} />
                 </div>
                 <h4 className="text-charcoal font-medium mb-2">Đóng gói chuẩn mực</h4>
                 <p className="text-gray text-xs leading-relaxed">Sản phẩm được bảo vệ kỹ lưỡng, giữ trọn vẻ đẹp khi đến tay bạn.</p>
@@ -104,7 +111,7 @@ const CheckoutSuccessPage: React.FC = () => {
 
               <div className="p-4 hover:-translate-y-1 transition-transform duration-300">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-primary">
-                  <ShieldCheck size={22} />
+                  <SafetyCertificateOutlined style={{ fontSize: 22 }} />
                 </div>
                 <h4 className="text-charcoal font-medium mb-2">Chính hãng 100%</h4>
                 <p className="text-gray text-xs leading-relaxed">Cam kết nguồn gốc minh bạch cùng chất lượng nguyên bản.</p>
@@ -112,7 +119,7 @@ const CheckoutSuccessPage: React.FC = () => {
 
               <div className="p-4 hover:-translate-y-1 transition-transform duration-300">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-primary">
-                  <Truck size={22} />
+                  <CarOutlined style={{ fontSize: 22 }} />
                 </div>
                 <h4 className="text-charcoal font-medium mb-2">Đổi trả dễ dàng</h4>
                 <p className="text-gray text-xs leading-relaxed">Hỗ trợ đổi trả nhanh chóng trong 7 ngày nếu có phát sinh lỗi.</p>

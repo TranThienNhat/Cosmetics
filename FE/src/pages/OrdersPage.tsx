@@ -2,9 +2,16 @@ import React, { useEffect, useState } from "react";
 import { Card, Typography, Spin, Empty, Button, Modal, Divider, Row, Col, Rate, Input, message, Popconfirm } from "antd";
 import { Link, Navigate } from "react-router-dom";
 import { 
-  ShoppingBag, ChevronRight, Clock, MapPin, Phone, 
-  Package, CreditCard, CheckCircle, Copy 
-} from "lucide-react";
+  ShoppingOutlined, 
+  RightOutlined, 
+  ClockCircleOutlined, 
+  EnvironmentOutlined, 
+  PhoneOutlined, 
+  InboxOutlined, 
+  CreditCardOutlined, 
+  CheckCircleOutlined, 
+  CopyOutlined 
+} from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../utils/api";
 import { getImageUrl, formatCurrency } from "../utils/helpers";
@@ -71,7 +78,7 @@ const OrdersPage: React.FC = () => {
       // Hiển thị thông báo thành công
       message.success({
         content: `Đã sao chép: ${code}`,
-        icon: <CheckCircle size={16} className="text-green-500" />,
+        icon: <CheckCircleOutlined style={{ fontSize: 16, color: "#10B981" }} />,
         duration: 2,
       });
     } catch (err) {
@@ -189,7 +196,7 @@ const OrdersPage: React.FC = () => {
                   <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center mb-6 border-b border-gray/10 pb-4 gap-4">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                            <ShoppingBag size={20} />
+                            <ShoppingOutlined style={{ fontSize: 20 }} />
                         </div>
                         <div className="flex flex-col">
                             <div 
@@ -202,10 +209,10 @@ const OrdersPage: React.FC = () => {
                                 <Text strong className="block text-charcoal text-base group-hover/copy:text-primary transition-colors">
                                     {order.order_code}
                                 </Text>
-                                <Copy size={14} className="text-gray/40 group-hover/copy:text-primary opacity-0 group-hover/copy:opacity-100 transition-all" />
+                                <CopyOutlined style={{ fontSize: 13 }} className="text-gray/40 group-hover/copy:text-primary opacity-0 group-hover/copy:opacity-100 transition-all" />
                             </div>
                             <Text className="text-xs text-gray flex items-center gap-1 mt-1">
-                                <Clock size={14} /> {new Date(order.created_at).toLocaleDateString("vi-VN")}
+                                <ClockCircleOutlined style={{ fontSize: 13 }} /> {new Date(order.created_at).toLocaleDateString("vi-VN")}
                             </Text>
                         </div>
                     </div>
@@ -231,7 +238,7 @@ const OrdersPage: React.FC = () => {
                   <div className="mt-6 pt-4 border-t border-gray/10 flex justify-between items-center">
                     <div className="flex items-center gap-4">
                       <Button type="text" className="text-primary text-sm p-0 flex items-center gap-1 font-medium hover:text-primary/80 transition-colors">
-                          Xem chi tiết <ChevronRight size={16} />
+                          Xem chi tiết <RightOutlined style={{ fontSize: 13 }} />
                       </Button>
 
                       {(order.status === "pending" || order.status === "processing") && (
@@ -281,17 +288,17 @@ const OrdersPage: React.FC = () => {
             <div className="bg-background p-6 md:p-8 border-b border-gray/10 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                 <div>
                     <div className="flex items-center gap-3 mb-2">
-                        <Package size={22} className="text-primary" />
+                        <InboxOutlined style={{ fontSize: 22, color: "#BC8F8F" }} />
                         <Title level={3} className="!m-0 !font-serif text-charcoal">Chi tiết đơn hàng</Title>
                     </div>
                     <div 
-                      className="flex items-center gap-2 cursor-pointer group/modalcopy w-fit"
+                      className="flex items-center gap-2 cursor-pointer group/modalcopy w-fit" 
                       onClick={() => handleCopyCode(selectedOrder.order_code)}
                     >
                         <Text type="secondary" className="text-xs uppercase tracking-widest font-medium text-gray group-hover/modalcopy:text-primary transition-colors">
                             {selectedOrder.order_code}
                         </Text>
-                        <Copy size={12} className="text-gray/30 group-hover/modalcopy:text-primary transition-all" />
+                        <CopyOutlined style={{ fontSize: 12 }} className="text-gray/30 group-hover/modalcopy:text-primary transition-all" />
                     </div>
                 </div>
                 <div>{getStatusTag(selectedOrder.status)}</div>
@@ -301,18 +308,18 @@ const OrdersPage: React.FC = () => {
               <Row gutter={[24, 24]} className="mb-8">
                 <Col xs={24} md={12}>
                     <div className="flex items-center gap-2 mb-3">
-                        <MapPin size={16} className="text-gray" />
+                        <EnvironmentOutlined style={{ fontSize: 16, color: "#9ca3af" }} />
                         <Text strong className="text-xs text-charcoal uppercase tracking-widest">Địa chỉ giao hàng</Text>
                     </div>
                     <div className="bg-background p-5 rounded-xl border border-gray/10 space-y-2 h-full">
                         <Text strong className="block text-charcoal text-sm">{selectedOrder.shipping_name}</Text>
-                        <Text className="text-gray flex items-center gap-2 text-sm"><Phone size={14}/> {selectedOrder.shipping_phone}</Text>
+                        <Text className="text-gray flex items-center gap-2 text-sm"><PhoneOutlined style={{ fontSize: 13 }} /> {selectedOrder.shipping_phone}</Text>
                         <Text className="block text-gray text-sm leading-relaxed">{selectedOrder.shipping_address}</Text>
                     </div>
                 </Col>
                 <Col xs={24} md={12}>
                     <div className="flex items-center gap-2 mb-3">
-                        <CreditCard size={16} className="text-gray" />
+                        <CreditCardOutlined style={{ fontSize: 16, color: "#9ca3af" }} />
                         <Text strong className="text-xs text-charcoal uppercase tracking-widest">Thanh toán</Text>
                     </div>
                     <div className="bg-background p-5 rounded-xl border border-gray/10 h-full flex flex-col justify-center">
@@ -330,7 +337,7 @@ const OrdersPage: React.FC = () => {
 
               <div className="my-8 space-y-4">
                 <Title level={5} className="!font-serif !mb-4 text-charcoal flex items-center gap-2">
-                    <ShoppingBag size={18} className="text-primary" /> Sản phẩm đã mua
+                    <ShoppingOutlined style={{ fontSize: 18, color: "#BC8F8F" }} /> Sản phẩm đã mua
                 </Title>
                 {selectedOrder.items.map((item: any) => (
                   <div key={item.id} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-white p-4 rounded-xl border border-gray/10">
@@ -349,7 +356,7 @@ const OrdersPage: React.FC = () => {
                         {selectedOrder.status === 'completed' && (
                             item.is_reviewed ? (
                                 <div className="flex items-center gap-1 text-[11px] text-green-600 font-medium bg-green-50 px-2 py-1 rounded-md border border-green-100">
-                                    <CheckCircle size={14} /> Đã đánh giá
+                                    <CheckCircleOutlined style={{ fontSize: 14 }} /> Đã đánh giá
                                 </div>
                             ) : (
                                 <Button 

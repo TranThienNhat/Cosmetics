@@ -1,6 +1,13 @@
 import React from "react";
 import { Typography, Row, Col, Button, Divider, Card } from "antd";
-import { Heart, Sparkles, Leaf, ShieldCheck, ArrowRight, Instagram } from "lucide-react";
+import {
+  HeartOutlined,
+  ThunderboltOutlined,
+  SafetyCertificateOutlined,
+  ArrowRightOutlined,
+  InstagramOutlined,
+  SmileOutlined,
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
 
 const { Title, Paragraph, Text } = Typography;
@@ -50,7 +57,7 @@ const AboutPage: React.FC = () => {
                   Mỗi sản phẩm tại Linh đều được tuyển chọn khắt khe, từ thành phần thiên nhiên lành tính đến bao bì tinh tế, mang lại trải nghiệm vỗ về làn da và tâm trí sau những giờ làm việc mệt mỏi.
                 </Paragraph>
                 <Link to="/products" className="inline-flex items-center gap-2 text-primary font-medium hover:text-primary/80 transition-all mt-2 group">
-                  Khám phá bộ sưu tập <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  Khám phá bộ sưu tập <ArrowRightOutlined style={{ fontSize: 14 }} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
             </Col>
@@ -66,17 +73,17 @@ const AboutPage: React.FC = () => {
             <Row gutter={[24, 24]}>
               {[
                 { 
-                  icon: <Leaf className="text-primary" size={28} />, 
+                  icon: <SmileOutlined style={{ fontSize: 26, color: "#BC8F8F" }} />, 
                   title: "Thuần Khiết", 
                   desc: "Cam kết 100% nguyên liệu an toàn, minh bạch và lành tính cho mọi làn da nhạy cảm nhất." 
                 },
                 { 
-                  icon: <Heart className="text-primary" size={28} />, 
+                  icon: <HeartOutlined style={{ fontSize: 26, color: "#BC8F8F" }} />, 
                   title: "Yêu Bản Thân", 
                   desc: "Khuyến khích bạn dành ít nhất 15 phút mỗi ngày để lắng nghe và vỗ về làn da." 
                 },
                 { 
-                  icon: <ShieldCheck className="text-primary" size={28} />, 
+                  icon: <SafetyCertificateOutlined style={{ fontSize: 26, color: "#BC8F8F" }} />, 
                   title: "Trách Nhiệm", 
                   desc: "Nói không với thử nghiệm trên động vật và ưu tiên vật liệu đóng gói thân thiện môi trường." 
                 }
@@ -97,7 +104,7 @@ const AboutPage: React.FC = () => {
           {/* 4. QUOTE TRÂN TRỌNG */}
           <div className="bg-primary rounded-2xl p-10 md:p-16 text-center text-white mb-20 relative overflow-hidden shadow-lg shadow-primary/20">
             <div className="absolute top-0 right-0 p-6 opacity-20">
-              <Sparkles size={100} />
+              <ThunderboltOutlined style={{ fontSize: 90 }} />
             </div>
             <div className="relative z-10 max-w-2xl mx-auto">
               <Title level={3} className="!text-white !font-serif mb-6 leading-relaxed">
@@ -118,7 +125,7 @@ const AboutPage: React.FC = () => {
                 size="large" 
                 className="rounded-lg border-gray/30 text-charcoal hover:!text-primary hover:!border-primary h-12 px-8 flex items-center justify-center gap-2 bg-transparent"
               >
-                <Instagram size={18} /> @Linh.cosmetics
+                <InstagramOutlined style={{ fontSize: 18 }} /> @Linh.cosmetics
               </Button>
               <Link to="/products" className="w-full sm:w-auto">
                 <Button 

@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { Typography, Row, Col, Button, Input, Form, Card, message } from "antd";
 import { Link } from "react-router-dom";
 import { 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Clock, 
-  User,
-  MessageSquare,
-  Send
-} from "lucide-react";
+  EnvironmentOutlined, 
+  PhoneOutlined, 
+  MailOutlined, 
+  ClockCircleOutlined, 
+  UserOutlined,
+  MessageOutlined,
+  SendOutlined
+} from "@ant-design/icons";
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -61,22 +61,22 @@ const ContactPage: React.FC = () => {
                 
                 {[
                   { 
-                    icon: <MapPin size={20} className="text-primary" />, 
+                    icon: <EnvironmentOutlined style={{ fontSize: 18, color: "#BC8F8F" }} />, 
                     title: "Địa chỉ", 
                     detail: "54 Triều khúc, Quận Thanh Xuân, Hà Nội" 
                   },
                   { 
-                    icon: <Phone size={20} className="text-primary" />, 
+                    icon: <PhoneOutlined style={{ fontSize: 18, color: "#BC8F8F" }} />, 
                     title: "Điện thoại", 
                     detail: "0987 654 321" 
                   },
                   { 
-                    icon: <Mail size={20} className="text-primary" />, 
+                    icon: <MailOutlined style={{ fontSize: 18, color: "#BC8F8F" }} />, 
                     title: "Email", 
                     detail: "admin@Linhcosmetics.vn" 
                   },
                   { 
-                    icon: <Clock size={20} className="text-primary" />, 
+                    icon: <ClockCircleOutlined style={{ fontSize: 18, color: "#BC8F8F" }} />, 
                     title: "Giờ làm việc", 
                     detail: "Thứ 2 - Chủ Nhật (09:00 - 21:00)" 
                   }
@@ -116,7 +116,7 @@ const ContactPage: React.FC = () => {
                         rules={[{ required: true, message: 'Vui lòng nhập tên của bạn' }]}
                       >
                         <Input 
-                          prefix={<User size={16} className="text-gray" />} 
+                          prefix={<UserOutlined style={{ fontSize: 16, color: "#9ca3af" }} />} 
                           placeholder="Nguyễn Văn A" 
                           className="rounded-lg" 
                         />
@@ -132,7 +132,7 @@ const ContactPage: React.FC = () => {
                         ]}
                       >
                         <Input 
-                          prefix={<Mail size={16} className="text-gray" />} 
+                          prefix={<MailOutlined style={{ fontSize: 16, color: "#9ca3af" }} />} 
                           placeholder="your@email.com" 
                           className="rounded-lg" 
                         />
@@ -145,7 +145,7 @@ const ContactPage: React.FC = () => {
                     label="Chủ đề quan tâm"
                   >
                     <Input 
-                      prefix={<MessageSquare size={16} className="text-gray" />} 
+                      prefix={<MessageOutlined style={{ fontSize: 16, color: "#9ca3af" }} />} 
                       placeholder="Tư vấn, Đặt hàng, Góp ý..." 
                       className="rounded-lg" 
                     />
@@ -168,7 +168,7 @@ const ContactPage: React.FC = () => {
                       type="primary" 
                       htmlType="submit" 
                       loading={loading}
-                      icon={<Send size={18} />}
+                      icon={<SendOutlined />}
                       className="w-full bg-primary border-primary hover:bg-primary/90 rounded-lg h-12 text-base font-medium flex items-center justify-center gap-2"
                     >
                       Gửi tin nhắn
@@ -180,7 +180,7 @@ const ContactPage: React.FC = () => {
           </Row>
         </Card>
 
-        {/* Nút Back to Home (Tương tự RegisterPage) */}
+        {/* Nút Back to Home */}
         <div className="text-center mt-8">
           <Link to="/" className="text-gray hover:text-primary text-sm transition-colors">
             ← Quay về trang chủ

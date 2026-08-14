@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input, Button, Typography, Card, Divider, message } from "antd";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Mail, Lock } from "lucide-react";
+import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 
 const { Title, Paragraph } = Typography;
@@ -97,7 +97,7 @@ const LoginPage: React.FC = () => {
                 { type: "email", message: "Email không hợp lệ" },
               ]}>
               <Input
-                prefix={<Mail size={16} className="text-gray" />}
+                prefix={<MailOutlined style={{ fontSize: 16, color: "#9ca3af" }} />}
                 placeholder="your@email.com"
                 className="rounded-lg"
               />
@@ -111,7 +111,7 @@ const LoginPage: React.FC = () => {
                 { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" },
               ]}>
               <Input.Password
-                prefix={<Lock size={16} className="text-gray" />}
+                prefix={<LockOutlined style={{ fontSize: 16, color: "#9ca3af" }} />}
                 placeholder="Nhập mật khẩu"
                 className="rounded-lg"
               />

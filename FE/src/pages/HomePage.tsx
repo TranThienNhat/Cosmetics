@@ -1,7 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Row, Col, Card, Button, Typography, Carousel, Spin } from "antd";
 import { Link } from "react-router-dom";
-import { ArrowRight, Star, Headphones, Truck, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  StarOutlined,
+  CustomerServiceOutlined,
+  CarOutlined,
+  LeftOutlined,
+  RightOutlined,
+  ArrowRightOutlined,
+} from "@ant-design/icons";
 import api from "../utils/api";
 import { getImageUrl, formatCurrency } from "../utils/helpers";
 
@@ -95,8 +102,8 @@ const HomePage: React.FC = () => {
                             className="bg-primary border-primary h-12 px-8 rounded-lg text-base font-medium shadow-sm hover:!bg-primary/90 flex items-center gap-2 group/btn"
                           >
                             {slide.cta}{" "}
-                            <ArrowRight
-                              size={18}
+                            <ArrowRightOutlined
+                              style={{ fontSize: 16 }}
                               className="group-hover/btn:translate-x-1 transition-transform"
                             />
                           </Button>
@@ -139,7 +146,7 @@ const HomePage: React.FC = () => {
                             className="absolute top-1/2 left-4 z-20 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/40 backdrop-blur-md rounded-full text-white hover:text-charcoal shadow-md opacity-0 group-hover/img:opacity-100 transition-all duration-300 border border-white/30"
                             aria-label="Previous image"
                           >
-                            <ChevronLeft size={24} strokeWidth={1.5} />
+                            <LeftOutlined style={{ fontSize: 18 }} />
                           </button>
 
                           <button
@@ -147,7 +154,7 @@ const HomePage: React.FC = () => {
                             className="absolute top-1/2 right-4 z-20 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/40 backdrop-blur-md rounded-full text-white hover:text-charcoal shadow-md opacity-0 group-hover/img:opacity-100 transition-all duration-300 border border-white/30"
                             aria-label="Next image"
                           >
-                            <ChevronRight size={24} strokeWidth={1.5} />
+                            <RightOutlined style={{ fontSize: 18 }} />
                           </button>
                         </div>
 
@@ -176,17 +183,17 @@ const HomePage: React.FC = () => {
           <Row gutter={[32, 32]}>
             {[
               {
-                icon: <Star size={24} />,
+                icon: <StarOutlined style={{ fontSize: 24 }} />,
                 title: "Chất lượng cao cấp",
                 desc: "Sản phẩm được tuyển chọn kỹ lưỡng từ các thương hiệu uy tín.",
               },
               {
-                icon: <Truck size={24} />,
+                icon: <CarOutlined style={{ fontSize: 24 }} />,
                 title: "Giao hàng nhanh",
                 desc: "Đơn hàng được vận chuyển hỏa tốc trong vòng 24h.",
               },
               {
-                icon: <Headphones size={24} />,
+                icon: <CustomerServiceOutlined style={{ fontSize: 24 }} />,
                 title: "Tư vấn tận tâm",
                 desc: "Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn 24/7.",
               },

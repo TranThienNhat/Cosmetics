@@ -11,7 +11,7 @@ import {
   Button,
 } from "antd";
 import { Link } from "react-router-dom";
-import { Mail, ArrowRight } from "lucide-react";
+import { MailOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import api from "../utils/api";
 import BlogCard from "../components/BlogCard";
 
@@ -170,7 +170,7 @@ const BlogListPage: React.FC = () => {
                     size="large"
                     placeholder="Email của bạn..."
                     prefix={
-                      <Mail size={18} className="text-[#BC8F8F]/50 mr-2" />
+                      <MailOutlined style={{ fontSize: 16, color: "rgba(188, 143, 143, 0.7)" }} className="mr-2" />
                     }
                     className="h-14 rounded-2xl border-[#f0ece2] focus:border-[#BC8F8F] hover:border-[#BC8F8F]/50 bg-[#FDFBF7]/50"
                   />
@@ -179,7 +179,7 @@ const BlogListPage: React.FC = () => {
                     size="large"
                     className="h-14 px-10 rounded-2xl font-bold flex items-center justify-center gap-2 !bg-[#BC8F8F] !border-[#BC8F8F] hover:!opacity-90 transition-opacity uppercase tracking-widest text-xs"
                   >
-                    GỬI <ArrowRight size={16} />
+                    GỬI <ArrowRightOutlined style={{ fontSize: 14 }} />
                   </Button>
                 </div>
                 <Text className="text-[10px] text-[#555555]/50 mt-8 block uppercase tracking-[0.25em] font-medium">

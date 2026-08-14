@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input, Button, Typography, Card, Divider } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { User, Mail, Lock, Phone, ArrowLeft } from "lucide-react";
+import { UserOutlined, MailOutlined, LockOutlined, PhoneOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 
 const { Title, Paragraph, Text } = Typography;
@@ -38,23 +38,23 @@ const RegisterPage: React.FC = () => {
         <Form form={form} layout="vertical" onFinish={onFinish} size="large" requiredMark={false}>
           {/* Group Name & Email */}
           <Form.Item name="name" label="Họ và tên" rules={validationRules.name}>
-            <Input prefix={<User size={18} className="text-gray-400" />} placeholder="Nguyễn Văn A" />
-                      </Form.Item>
+            <Input prefix={<UserOutlined style={{ fontSize: 16, color: "#9ca3af" }} />} placeholder="Nguyễn Văn A" />
+          </Form.Item>
 
           <Form.Item name="email" label="Email" rules={validationRules.email}>
-            <Input prefix={<Mail size={18} className="text-gray-400" />} placeholder="example@mail.com" />
-                      </Form.Item>
+            <Input prefix={<MailOutlined style={{ fontSize: 16, color: "#9ca3af" }} />} placeholder="example@mail.com" />
+          </Form.Item>
 
           <Form.Item name="phone" label="Số điện thoại" rules={validationRules.phone}>
-            <Input prefix={<Phone size={18} className="text-gray-400" />} placeholder="090..." />
-                      </Form.Item>
+            <Input prefix={<PhoneOutlined style={{ fontSize: 16, color: "#9ca3af" }} />} placeholder="090..." />
+          </Form.Item>
 
           {/* Group Passwords */}
           <Form.Item name="password" label="Mật khẩu" rules={validationRules.password}>
-            <Input.Password prefix={<Lock size={18} className="text-gray-400" />} placeholder="••••••••" />
-                  </Form.Item>
+            <Input.Password prefix={<LockOutlined style={{ fontSize: 16, color: "#9ca3af" }} />} placeholder="••••••••" />
+          </Form.Item>
 
-                  <Form.Item
+          <Form.Item
             name="confirm" label="Xác nhận mật khẩu" dependencies={['password']}
             rules={[{ required: true, message: 'Vui lòng xác nhận!' }, 
             ({ getFieldValue }) => ({
@@ -63,18 +63,18 @@ const RegisterPage: React.FC = () => {
                 return Promise.reject(new Error('Mật khẩu không khớp!'));
               },
             })]}
-                  >
-            <Input.Password prefix={<Lock size={18} className="text-gray-400" />} placeholder="••••••••" />
-                  </Form.Item>
+          >
+            <Input.Password prefix={<LockOutlined style={{ fontSize: 16, color: "#9ca3af" }} />} placeholder="••••••••" />
+          </Form.Item>
 
           <Button type="primary" htmlType="submit" loading={isLoading} block className="h-12 text-base font-semibold mt-2">
             Đăng ký
-                  </Button>
-                </Form>
+          </Button>
+        </Form>
 
         <div className="text-center mt-4 text-xs text-gray-500">
           Đăng ký nghĩa là bạn đồng ý với <Link to="/terms" className="text-primary">Điều khoản</Link> & <Link to="/privacy" className="text-primary">Bảo mật</Link>
-                  </div>
+        </div>
                   
         <Divider plain><Text type="secondary" className="text-xs">Hoặc bạn đã có tài khoản?</Text></Divider>
 
@@ -84,10 +84,10 @@ const RegisterPage: React.FC = () => {
         
         <div className="text-center mt-6">
           <Link to="/" className="text-gray-400 hover:text-primary flex items-center justify-center gap-1 text-sm">
-            <ArrowLeft size={14} /> Quay về trang chủ
+            <ArrowLeftOutlined style={{ fontSize: 13 }} /> Quay về trang chủ
           </Link>
-              </div>
-            </Card>
+        </div>
+      </Card>
     </div>
   );
 };
