@@ -90,7 +90,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem("user_data", JSON.stringify(userData));
 
       setUser(userData);
-      message.success("Đăng nhập thành công!");
       return true;
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Đăng nhập thất bại";

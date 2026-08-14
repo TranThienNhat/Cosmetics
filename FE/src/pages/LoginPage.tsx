@@ -47,24 +47,26 @@ const LoginPage: React.FC = () => {
                   type="link"
                   size="small"
                   onClick={() => navigate("/admin")}
-                  className="p-0 ml-2">
+                  className="p-0 ml-2 font-medium">
                   Vào Admin Panel
                 </Button>
               </div>
             ),
-            duration: 5,
+            duration: 3,
           });
 
           // Auto redirect to admin if no specific path
           if (from === "/") {
-            setTimeout(() => navigate("/admin", { replace: true }), 1500);
+            setTimeout(() => navigate("/admin", { replace: true }), 1200);
           } else {
             navigate(from, { replace: true });
           }
         } else {
+          message.success("Đăng nhập thành công!");
           navigate(from, { replace: true });
         }
       } else {
+        message.success("Đăng nhập thành công!");
         navigate(from, { replace: true });
       }
     }

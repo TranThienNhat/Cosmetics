@@ -141,6 +141,8 @@ const DashboardPage: React.FC = () => {
 
       if (filterType === "current_month") {
         params.append("filter", "current_month");
+        params.append("year", dayjs().year().toString());
+        params.append("month", (dayjs().month() + 1).toString());
       } else if (filterType === "year" && selectedYear) {
         params.append("filter", "year");
         params.append("year", selectedYear.year().toString());
@@ -151,6 +153,8 @@ const DashboardPage: React.FC = () => {
         dateRange[1]
       ) {
         params.append("filter", "range");
+        params.append("startDate", dateRange[0].format("YYYY-MM-DD"));
+        params.append("endDate", dateRange[1].format("YYYY-MM-DD"));
         params.append("start_date", dateRange[0].format("YYYY-MM-DD"));
         params.append("end_date", dateRange[1].format("YYYY-MM-DD"));
       }

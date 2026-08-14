@@ -4,34 +4,45 @@ import pool from "../config/db";
 
 export const getFilteredDashboardStats = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { year, month, startDate, endDate } = req.query;
+    const { year, month, startDate, endDate, start_date, end_date, filter } = req.query as any;
 
     const connection = await pool.getConnection();
     try {
       // 1. Xây dựng điều kiện lọc thời gian (Where Clause)
       let dateCondition = "1=1"; 
       let orderParams: any[] = [];
-      
-      // Định dạng nhóm thời gian cho biểu đồ (Mặc định là nhóm theo tháng)
-      let chartGroupFormat = "'%Y-%m'"; 
+      let chartGroupFormat = "'%d/%m'"; 
 
-      if (startDate && endDate) {
+      const effectiveStartDate = startDate || start_date;
+      const effectiveEndDate = endDate || end_date;
+
+      if (filter === "current_month" || (!filter && !year && !month && !effectiveStartDate && !effectiveEndDate)) {
+        // Mặc định hoặc Tháng hiện tại -> Lọc theo tháng và năm hiện tại, vẽ theo từng ngày
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+        dateCondition += " AND YEAR(created_at) = ? AND MONTH(created_at) = ?";
+        orderParams.push(currentYear, currentMonth);
+        chartGroupFormat = "'%d/%m'";
+      } 
+      else if (effectiveStartDate && effectiveEndDate) {
+        // Khoảng ngày cụ thể -> Lọc từ ngày A đến ngày B, vẽ theo từng ngày
         dateCondition += " AND created_at >= ? AND created_at <= ?";
-        orderParams.push(`${startDate} 00:00:00`, `${endDate} 23:59:59`);
-        // Nếu lọc khoảng thời gian cụ thể -> Vẽ chart theo Từng Ngày
-        chartGroupFormat = "'%Y-%m-%d'"; 
+        orderParams.push(`${effectiveStartDate} 00:00:00`, `${effectiveEndDate} 23:59:59`);
+        chartGroupFormat = "'%d/%m'"; 
       } 
       else if (year && month) {
+        // Lọc tháng cụ thể
         dateCondition += " AND YEAR(created_at) = ? AND MONTH(created_at) = ?";
         orderParams.push(Number(year), Number(month));
-        // Nếu lọc theo tháng -> Vẽ chart theo Từng Ngày trong tháng
-        chartGroupFormat = "'%Y-%m-%d'";
+        chartGroupFormat = "'%d/%m'";
       } 
-      else if (year) {
+      else if (year || filter === "year") {
+        // Lọc theo năm -> Vẽ theo 12 tháng
+        const filterYear = Number(year) || new Date().getFullYear();
         dateCondition += " AND YEAR(created_at) = ?";
-        orderParams.push(Number(year));
-        // Nếu lọc theo năm -> Vẽ chart theo Từng Tháng trong năm
-        chartGroupFormat = "'%Y-%m'";
+        orderParams.push(filterYear);
+        chartGroupFormat = "'Tháng %m'";
       }
 
       // 2. Thống kê Overview (Tổng quan)
@@ -62,7 +73,7 @@ export const getFilteredDashboardStats = async (req: Request, res: Response): Pr
         FROM orders
         WHERE ${dateCondition}
         GROUP BY label
-        ORDER BY label ASC
+        ORDER BY MIN(created_at) ASC
       `;
       const [revenueChartData]: any = await connection.query(chartDataQuery, orderParams);
 
@@ -114,7 +125,7 @@ export const getFilteredDashboardStats = async (req: Request, res: Response): Pr
 
       return res.json({
         message: "Lấy thống kê dashboard thành công",
-        filters: { year, month, startDate, endDate },
+        filters: { year, month, startDate: effectiveStartDate, endDate: effectiveEndDate, filter },
         data: {
           overview: {
             totalOrders,
@@ -123,8 +134,8 @@ export const getFilteredDashboardStats = async (req: Request, res: Response): Pr
             totalCancelled
           },
           charts: {
-            revenueChartData, // Array dùng cho Line Chart / Bar Chart
-            orderStatusChart  // Array dùng cho Pie Chart / Donut Chart
+            revenueChartData,
+            orderStatusChart
           },
           topProducts,
           inventoryProducts
