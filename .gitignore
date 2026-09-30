@@ -52,3 +52,5 @@ FE/.env
 # Uploads
 BE/uploads/*
 !BE/uploads/.gitkeep
+!BE/uploads/banner/
+!BE/uploads/banner/**

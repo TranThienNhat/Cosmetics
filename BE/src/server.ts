@@ -31,11 +31,36 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+// Cấu hình CORS toàn diện (cho phép x-session-id, credentials và mọi origin Vercel/Localhost)
 app.use(cors({
-  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : "*",
+  origin: (origin, callback) => {
+    // Phản hồi lại đúng origin của client để tương thích hoàn toàn với credentials: true
+    callback(null, true);
+  },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "x-session-id",
+    "X-Session-Id",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+  ],
+  exposedHeaders: ["x-session-id", "X-Session-Id"],
+  optionsSuccessStatus: 200,
 }));
+
 app.use(express.json());
+
+// Health check endpoint
+app.get("/", (req, res) => {
+  res.json({ status: "ok", message: "Cosmetics Backend API is running" });
+});
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date() });
+});
 
 // Serve static files (uploaded images)
 app.use("/uploads", express.static(uploadsDir));
@@ -70,9 +95,18 @@ app.use("/api/suppliers", supplierRoutes);
 //8. Purchase receipts
 app.use("/api/purchase-receipts", purchaseRoutes);
 
-//9. AI & ML Analytics
+// 9. AI & ML Analytics
 app.use("/api/ai", aiRoutes);
 app.use("/api/analytics", analyticsRoutes);
+
+// Global Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("Global Error Handler:", err);
+  res.status(500).json({
+    message: err.message || "Internal Server Error",
+    error: process.env.NODE_ENV === "production" ? undefined : err,
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
