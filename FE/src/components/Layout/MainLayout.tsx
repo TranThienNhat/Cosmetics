@@ -5,8 +5,13 @@ import {
   Badge,
   Dropdown,
   Button,
+  Space,
+  Typography,
   Input,
   Modal,
+  Card,
+  Avatar,
+  List,
   Drawer,
 } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -31,6 +36,7 @@ import { useCart } from "../../contexts/CartContext";
 import api from "../../utils/api";
 
 const { Header, Content, Footer } = Layout;
+const { Title } = Typography;
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -521,7 +527,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <div className="flex-1 overflow-y-auto pr-1 mb-3 space-y-3">
                 <List
                   dataSource={chatMessages}
-                  renderItem={(item) => {
+                  renderItem={(item: ChatMessage) => {
                     const isAI = item.sender === "ai";
 
                     return (

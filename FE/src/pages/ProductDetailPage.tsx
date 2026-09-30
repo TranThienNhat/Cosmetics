@@ -16,12 +16,18 @@ import {
 } from "antd";
 import {
   ShoppingCartOutlined,
+  HeartOutlined,
   ThunderboltOutlined,
+  StarOutlined,
+  CheckCircleOutlined,
+  SafetyCertificateOutlined,
+  CarOutlined,
 } from "@ant-design/icons"; 
 import { ProductVariant } from "../types";
 import api from "../utils/api";
 import { getImageUrl, formatCurrency, DEFAULT_PLACEHOLDER_IMAGE } from "../utils/helpers";
 import { useCart } from "../contexts/CartContext";
+import CartDrawer from "../components/CartDrawer";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -36,6 +42,7 @@ const ProductDetailPage: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Frequently Bought Together (FBT) Bundle states

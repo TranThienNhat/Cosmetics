@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card, Button, Typography, Spin, Pagination, Select, Input, Drawer } from "antd";
+import { Row, Col, Card, Button, Typography, Spin, Pagination, Select, Input, Empty, Breadcrumb, Drawer, Tag } from "antd";
 import { Link, useSearchParams, useLocation } from "react-router-dom";
-import { SearchOutlined, FilterOutlined, ReloadOutlined } from "@ant-design/icons";
+import { SearchOutlined, FilterOutlined, ReloadOutlined, RightOutlined } from "@ant-design/icons";
 import api from "../utils/api";
 import { getImageUrl, formatCurrency, DEFAULT_PLACEHOLDER_IMAGE } from "../utils/helpers";
 
 const { Title, Text, Paragraph } = Typography;
+const { Meta } = Card;
 const { Option } = Select;
 
 const ProductsPage: React.FC = () => {
@@ -21,7 +22,9 @@ const ProductsPage: React.FC = () => {
 
   // State bộ lọc
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [, setCurrentPage] = useState(1);
   const [pageSize] = useState(12);
+  const [appliedPriceRange] = useState<[number, number]>([0, 10000000]);
 
   // Kiểm tra điều kiện hiển thị thông tin thương hiệu
   // Phải có state 'fromBrandPage' truyền từ BrandsPage và có brand_id trên URL

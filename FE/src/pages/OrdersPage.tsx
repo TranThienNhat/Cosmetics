@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Card, Typography, Spin, Button, Modal, Divider, Row, Col, Rate, Input, message } from "antd";
-import { Link } from "react-router-dom";
+import { Card, Typography, Spin, Empty, Button, Modal, Divider, Row, Col, Rate, Input, message, Popconfirm } from "antd";
+import { Link, Navigate } from "react-router-dom";
 import { 
   ShoppingOutlined, 
+  RightOutlined, 
   ClockCircleOutlined, 
   EnvironmentOutlined, 
   PhoneOutlined, 
@@ -18,7 +19,7 @@ import { getImageUrl, formatCurrency } from "../utils/helpers";
 const { Title, Text } = Typography;
 
 const OrdersPage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -247,8 +248,8 @@ const OrdersPage: React.FC = () => {
                       {(order.status === "pending" || order.status === "processing") && (
                           <Popconfirm
                               title="Xác nhận hủy đơn hàng này?"
-                              onConfirm={(e) => { e?.stopPropagation(); handleCancelOrder(order.id); }}
-                              onCancel={(e) => e?.stopPropagation()}
+                              onConfirm={(e?: any) => { e?.stopPropagation(); handleCancelOrder(order.id); }}
+                              onCancel={(e?: any) => e?.stopPropagation()}
                               okText="Hủy đơn"
                               cancelText="Đóng"
                               okButtonProps={{ danger: true, loading: submitting }}
@@ -257,7 +258,7 @@ const OrdersPage: React.FC = () => {
                                 type="text" 
                                 danger 
                                 className="text-sm font-medium p-0" 
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(e: any) => e.stopPropagation()}
                               >
                                   Hủy đơn
                               </Button>

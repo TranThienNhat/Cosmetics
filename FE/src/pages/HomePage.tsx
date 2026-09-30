@@ -2,18 +2,23 @@ import React, { useEffect, useState, useRef } from "react";
 import { Row, Col, Card, Button, Typography, Carousel, Spin } from "antd";
 import { Link } from "react-router-dom";
 import {
+  StarOutlined,
   CustomerServiceOutlined,
   CarOutlined,
+  LeftOutlined,
+  RightOutlined,
   ArrowRightOutlined,
 } from "@ant-design/icons";
 import api from "../utils/api";
 import { getImageUrl, formatCurrency } from "../utils/helpers";
 
 const { Title, Paragraph, Text } = Typography;
+const { Meta } = Card;
 
 const HomePage: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   // Tạo mảng ref để điều khiển các Carousel bên trong vòng lặp một cách độc lập
   const showcaseCarouselRefs = useRef<(any)[]>([]);
@@ -27,6 +32,8 @@ const HomePage: React.FC = () => {
   ];
 
   useEffect(() => {
+    const authToken = localStorage.getItem("auth_token");
+    setIsLoggedIn(!!authToken);
     loadFeaturedProducts();
   }, []);
 
