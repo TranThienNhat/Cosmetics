@@ -32,7 +32,7 @@ RUN npm ci --omit=dev=false
 # 3. Copy source code & ML engine
 COPY src ./src
 COPY ml_engine ./ml_engine
-COPY uploads ./uploads
+RUN mkdir -p uploads
 
 # 4. Build TypeScript to JavaScript
 RUN npm run build && npm prune --production
