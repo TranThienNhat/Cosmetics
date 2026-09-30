@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card, Button, Typography, Spin, Pagination, Select, Input, Empty, Breadcrumb, Drawer, Tag } from "antd";
+import { Row, Col, Card, Button, Typography, Spin, Pagination, Select, Input, Drawer } from "antd";
 import { Link, useSearchParams, useLocation } from "react-router-dom";
-import { SearchOutlined, FilterOutlined, ReloadOutlined, RightOutlined } from "@ant-design/icons";
+import { SearchOutlined, FilterOutlined, ReloadOutlined } from "@ant-design/icons";
 import api from "../utils/api";
 import { getImageUrl, formatCurrency, DEFAULT_PLACEHOLDER_IMAGE } from "../utils/helpers";
 
 const { Title, Text, Paragraph } = Typography;
-const { Meta } = Card;
 const { Option } = Select;
 
 const ProductsPage: React.FC = () => {
@@ -22,9 +21,7 @@ const ProductsPage: React.FC = () => {
 
   // State bộ lọc
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
-  const [, setCurrentPage] = useState(1);
   const [pageSize] = useState(12);
-  const [appliedPriceRange] = useState<[number, number]>([0, 10000000]);
 
   // Kiểm tra điều kiện hiển thị thông tin thương hiệu
   // Phải có state 'fromBrandPage' truyền từ BrandsPage và có brand_id trên URL
@@ -304,7 +301,7 @@ const ProductsPage: React.FC = () => {
                       <Card
                         hoverable
                         className="border border-gray/10 shadow-sm h-full rounded-2xl overflow-hidden group flex flex-col bg-white hover:shadow-lg transition-all duration-300"
-                        bodyStyle={{ padding: "12px sm:20px" }}
+                        bodyStyle={{ padding: "12px" }}
                         cover={
                           <Link to={`/products/${product.id}`}>
                             <div className="h-44 sm:h-60 md:h-72 overflow-hidden bg-gray/5 p-1 border-b border-gray/5">

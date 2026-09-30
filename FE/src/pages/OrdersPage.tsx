@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Card, Typography, Spin, Empty, Button, Modal, Divider, Row, Col, Rate, Input, message, Popconfirm } from "antd";
-import { Link, Navigate } from "react-router-dom";
+import { Card, Typography, Spin, Button, Modal, Divider, Row, Col, Rate, Input, message } from "antd";
+import { Link } from "react-router-dom";
 import { 
   ShoppingOutlined, 
-  RightOutlined, 
   ClockCircleOutlined, 
   EnvironmentOutlined, 
   PhoneOutlined, 
@@ -19,7 +18,7 @@ import { getImageUrl, formatCurrency } from "../utils/helpers";
 const { Title, Text } = Typography;
 
 const OrdersPage: React.FC = () => {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

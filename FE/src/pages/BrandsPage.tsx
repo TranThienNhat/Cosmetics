@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card, Typography, Spin, Breadcrumb, Button } from "antd";
+import { Row, Col, Card, Typography, Spin, Breadcrumb } from "antd";
 import { Link } from "react-router-dom";
 import { ArrowRightOutlined } from "@ant-design/icons";
 import api from "../utils/api";
@@ -73,7 +73,7 @@ const BrandsPage: React.FC = () => {
                 <Card
                   hoverable
                   className="border border-gray/10 shadow-sm h-full rounded-2xl overflow-hidden group bg-white transition-all duration-300 hover:shadow-lg hover:-translate-y-1 flex flex-col"
-                  bodyStyle={{ padding: '16px sm:24px' }}
+                  bodyStyle={{ padding: '16px' }}
                   cover={
                     <div className="h-32 sm:h-48 overflow-hidden bg-gray/5 flex items-center justify-center p-4 sm:p-8 relative border-b border-gray/5">
                       {/* Logo thương hiệu */}

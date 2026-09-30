@@ -2,23 +2,18 @@ import React, { useEffect, useState, useRef } from "react";
 import { Row, Col, Card, Button, Typography, Carousel, Spin } from "antd";
 import { Link } from "react-router-dom";
 import {
-  StarOutlined,
   CustomerServiceOutlined,
   CarOutlined,
-  LeftOutlined,
-  RightOutlined,
   ArrowRightOutlined,
 } from "@ant-design/icons";
 import api from "../utils/api";
 import { getImageUrl, formatCurrency } from "../utils/helpers";
 
 const { Title, Paragraph, Text } = Typography;
-const { Meta } = Card;
 
 const HomePage: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   // Tạo mảng ref để điều khiển các Carousel bên trong vòng lặp một cách độc lập
   const showcaseCarouselRefs = useRef<(any)[]>([]);
@@ -32,8 +27,6 @@ const HomePage: React.FC = () => {
   ];
 
   useEffect(() => {
-    const authToken = localStorage.getItem("auth_token");
-    setIsLoggedIn(!!authToken);
     loadFeaturedProducts();
   }, []);
 
@@ -245,7 +238,7 @@ const HomePage: React.FC = () => {
                   <Card
                     hoverable
                     className="border border-gray/10 shadow-sm h-full rounded-2xl overflow-hidden group hover:shadow-lg transition-all duration-300 flex flex-col"
-                    bodyStyle={{ padding: "12px sm:20px" }}
+                    bodyStyle={{ padding: "12px" }}
                     cover={
                       <Link to={`/products/${product.id}`}>
                         <div className="relative h-44 sm:h-60 md:h-72 w-full overflow-hidden bg-gray/5">

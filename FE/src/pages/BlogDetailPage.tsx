@@ -102,7 +102,7 @@ const BlogDetailPage: React.FC = () => {
           ]}
         />
 
-        <Card className="shadow-sm border-0 rounded-xl overflow-hidden bg-white" bodyStyle={{ padding: "16px sm: 24px" }}>
+        <Card className="shadow-sm border-0 rounded-xl overflow-hidden bg-white" bodyStyle={{ padding: "16px" }}>
           {/* Cover Image */}
           <div className="relative h-[200px] sm:h-[320px] md:h-[460px] w-full overflow-hidden rounded-lg mb-6 sm:mb-8">
             <img

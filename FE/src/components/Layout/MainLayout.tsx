@@ -5,13 +5,8 @@ import {
   Badge,
   Dropdown,
   Button,
-  Space,
-  Typography,
   Input,
   Modal,
-  Card,
-  Avatar,
-  List,
   Drawer,
 } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -36,7 +31,6 @@ import { useCart } from "../../contexts/CartContext";
 import api from "../../utils/api";
 
 const { Header, Content, Footer } = Layout;
-const { Title } = Typography;
 
 interface MainLayoutProps {
   children: React.ReactNode;

@@ -1,12 +1,10 @@
 import React from "react";
-import { Typography, Row, Col, Button, Divider, Card } from "antd";
+import { Typography, Row, Col, Card } from "antd";
 import {
   HeartOutlined,
   ThunderboltOutlined,
   SafetyCertificateOutlined,
   ArrowRightOutlined,
-  InstagramOutlined,
-  SmileOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 

@@ -3,10 +3,8 @@ import {
   Layout,
   Menu,
   Button,
-  Typography,
   Dropdown,
   Space,
-  Breadcrumb,
   Drawer,
 } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -20,7 +18,6 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  HomeOutlined,
   GiftOutlined,
   FileTextOutlined,
   TruckOutlined,
@@ -30,7 +27,6 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 
 const { Header, Sider, Content } = Layout;
-const { Title } = Typography;
 
 interface AdminLayoutProps {
   children: React.ReactNode;
