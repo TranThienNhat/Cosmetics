@@ -61,9 +61,9 @@ const BrandsPage: React.FC = () => {
         </div>
 
         {/* Brand Grid */}
-        <Row gutter={[24, 32]}>
+        <Row gutter={[16, 24]}>
           {brands.map((brand) => (
-            <Col xs={24} sm={12} md={8} lg={6} key={brand.id}>
+            <Col xs={12} sm={12} md={8} lg={6} key={brand.id}>
               {/* QUAN TRỌNG: Truyền state fromBrandPage để ProductsPage hiển thị Description */}
               <Link 
                 to={`/products?brand_id=${brand.id}`} 
@@ -72,10 +72,10 @@ const BrandsPage: React.FC = () => {
               >
                 <Card
                   hoverable
-                  className="border border-gray/10 shadow-sm h-full rounded-2xl overflow-hidden group bg-white transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-                  bodyStyle={{ padding: '24px' }}
+                  className="border border-gray/10 shadow-sm h-full rounded-2xl overflow-hidden group bg-white transition-all duration-300 hover:shadow-lg hover:-translate-y-1 flex flex-col"
+                  bodyStyle={{ padding: '16px sm:24px' }}
                   cover={
-                    <div className="h-48 overflow-hidden bg-gray/5 flex items-center justify-center p-8 relative border-b border-gray/5">
+                    <div className="h-32 sm:h-48 overflow-hidden bg-gray/5 flex items-center justify-center p-4 sm:p-8 relative border-b border-gray/5">
                       {/* Logo thương hiệu */}
                       <img
                         alt={brand.name}
@@ -86,15 +86,15 @@ const BrandsPage: React.FC = () => {
                   }
                 >
                   <div className="text-center">
-                    <Title level={4} className="!font-serif !mb-5 text-charcoal group-hover:text-primary transition-colors line-clamp-1">
+                    <Title level={4} className="!font-serif !mb-3 sm:!mb-5 text-charcoal group-hover:text-primary transition-colors line-clamp-1 !text-sm sm:!text-lg">
                       {brand.name}
                     </Title>
                     
                     <Button 
                       block 
-                      className="rounded-lg border-primary text-primary font-medium h-10 flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-white transition-colors"
+                      className="rounded-lg border-primary text-primary font-medium h-8 sm:h-10 text-xs sm:text-sm flex items-center justify-center gap-1.5 group-hover:bg-primary group-hover:text-white transition-colors"
                     >
-                      Khám phá <ArrowRightOutlined style={{ fontSize: 14 }} className="group-hover:translate-x-1 transition-transform" />
+                      Khám phá <ArrowRightOutlined style={{ fontSize: 11 }} className="group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </div>
                 </Card>
@@ -104,18 +104,18 @@ const BrandsPage: React.FC = () => {
         </Row>
 
         {/* Call to action cuối trang */}
-        <div className="mt-24 p-10 md:p-16 bg-white rounded-2xl text-center border border-gray/10 shadow-sm relative overflow-hidden">
+        <div className="mt-16 sm:mt-24 p-6 sm:p-10 md:p-16 bg-white rounded-2xl text-center border border-gray/10 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10"></div>
           
-          <Title level={3} className="!font-serif mb-4 text-charcoal">Bạn muốn tìm một cái tên khác?</Title>
-          <Paragraph className="text-gray mb-8 max-w-md mx-auto leading-relaxed">
+          <Title level={3} className="!font-serif mb-3 sm:mb-4 text-charcoal !text-xl sm:!text-2xl">Bạn muốn tìm một cái tên khác?</Title>
+          <Paragraph className="text-gray mb-6 sm:mb-8 max-w-md mx-auto leading-relaxed text-sm sm:text-base">
             Nếu thương hiệu yêu thích của bạn chưa có mặt, đừng ngần ngại gửi lời nhắn cho chúng tôi nhé!
           </Paragraph>
           <Link to="/contact">
             <Button 
               size="large" 
-              className="rounded-lg border-charcoal text-charcoal px-10 h-12 font-medium hover:!border-primary hover:!text-primary transition-colors bg-transparent"
+              className="rounded-lg border-charcoal text-charcoal px-6 sm:px-10 h-11 sm:h-12 text-sm sm:text-base font-medium hover:!border-primary hover:!text-primary transition-colors bg-transparent"
             >
               Gửi yêu cầu cho Linh
             </Button>

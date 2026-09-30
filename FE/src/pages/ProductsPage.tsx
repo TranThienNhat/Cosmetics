@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card, Button, Typography, Spin, Pagination, Select, Input, Empty, Breadcrumb } from "antd";
+import { Row, Col, Card, Button, Typography, Spin, Pagination, Select, Input, Empty, Breadcrumb, Drawer, Tag } from "antd";
 import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { SearchOutlined, FilterOutlined, ReloadOutlined, RightOutlined } from "@ant-design/icons";
 import api from "../utils/api";
@@ -21,6 +21,7 @@ const ProductsPage: React.FC = () => {
   const [total, setTotal] = useState(0);
 
   // State bộ lọc
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [, setCurrentPage] = useState(1);
   const [pageSize] = useState(12);
   const [appliedPriceRange] = useState<[number, number]>([0, 10000000]);
@@ -116,17 +117,17 @@ const ProductsPage: React.FC = () => {
         />
 
         {/* Header Section: Hiển thị linh hoạt */}
-        <div className="mb-12">
+        <div className="mb-8 sm:mb-12">
           {shouldShowBrandInfo && currentBrand ? (
-            <div className="bg-white p-8 md:p-12 rounded-3xl border border-primary/10 shadow-sm relative overflow-hidden">
+            <div className="bg-white p-5 sm:p-8 md:p-12 rounded-3xl border border-primary/10 shadow-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10"></div>
               <div className="relative z-10">
-                <Text className="text-primary uppercase tracking-[0.2em] font-bold text-xs mb-3 block">Chuyên mục thương hiệu</Text>
-                <Title level={1} className="!text-charcoal !mb-6 !font-serif !text-4xl md:!text-5xl tracking-tight">
+                <Text className="text-primary uppercase tracking-[0.2em] font-bold text-[10px] sm:text-xs mb-2 sm:mb-3 block">Chuyên mục thương hiệu</Text>
+                <Title level={1} className="!text-charcoal !mb-4 sm:!mb-6 !font-serif !text-3xl sm:!text-4xl md:!text-5xl tracking-tight">
                   {currentBrand.name}
                 </Title>
                 {currentBrand.description && (
-                  <Paragraph className="text-gray italic font-serif text-lg md:text-xl max-w-3xl leading-relaxed border-l-2 border-primary/20 pl-6">
+                  <Paragraph className="text-gray italic font-serif text-sm sm:text-lg md:text-xl max-w-3xl leading-relaxed border-l-2 border-primary/20 pl-4 sm:pl-6">
                     {currentBrand.description}
                   </Paragraph>
                 )}
@@ -134,15 +135,109 @@ const ProductsPage: React.FC = () => {
             </div>
           ) : (
             <div className="text-center md:text-left">
-              <Title level={1} className="!text-charcoal !mb-3 !font-serif !text-4xl tracking-tight">Bộ sưu tập Linh</Title>
-              <Text className="text-gray italic font-serif text-base">Khám phá những sản phẩm làm đẹp cao cấp được tuyển chọn kỹ lưỡng.</Text>
+              <Title level={1} className="!text-charcoal !mb-2 sm:!mb-3 !font-serif !text-3xl sm:!text-4xl tracking-tight">Bộ sưu tập Linh</Title>
+              <Text className="text-gray italic font-serif text-sm sm:text-base">Khám phá những sản phẩm làm đẹp cao cấp được tuyển chọn kỹ lưỡng.</Text>
             </div>
           )}
         </div>
 
-        <Row gutter={[32, 32]}>
-          {/* SIDEBAR BỘ LỌC */}
-          <Col xs={24} lg={6}>
+        {/* MOBILE FILTER TOGGLE BAR (Hiện trên mobile & tablet < lg) */}
+        <div className="lg:hidden mb-6 flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-gray/10 shadow-sm">
+          <Button
+            type="primary"
+            icon={<FilterOutlined />}
+            onClick={() => setFilterDrawerOpen(true)}
+            className="bg-primary border-primary rounded-xl font-medium flex items-center gap-1.5 h-10"
+          >
+            Bộ lọc & Tìm kiếm {(searchParams.get("search") || searchParams.get("brand_id") || searchParams.get("category_id")) ? "•" : ""}
+          </Button>
+
+          {(searchParams.get("search") || searchParams.get("brand_id") || searchParams.get("category_id")) && (
+            <Button
+              type="text"
+              onClick={clearFilters}
+              icon={<ReloadOutlined style={{ fontSize: 12 }} />}
+              className="text-xs text-gray-500 hover:text-primary flex items-center gap-1"
+            >
+              Xóa bộ lọc
+            </Button>
+          )}
+        </div>
+
+        {/* MOBILE FILTER DRAWER */}
+        <Drawer
+          title={
+            <div className="flex items-center justify-between">
+              <span className="font-serif font-bold text-charcoal">Bộ lọc sản phẩm</span>
+              <Button type="link" onClick={clearFilters} className="text-xs text-gray hover:text-primary p-0">
+                Làm mới
+              </Button>
+            </div>
+          }
+          placement="bottom"
+          height="75vh"
+          open={filterDrawerOpen}
+          onClose={() => setFilterDrawerOpen(false)}
+          className="rounded-t-3xl"
+        >
+          <div className="space-y-6 pb-6">
+            {/* Tìm kiếm */}
+            <div>
+              <label className="block text-charcoal font-bold mb-2 text-[10px] uppercase tracking-widest text-gray">Tìm kiếm sản phẩm</label>
+              <Input
+                placeholder="Nhập tên sản phẩm..."
+                prefix={<SearchOutlined style={{ fontSize: 14, color: "#9ca3af" }} />}
+                className="rounded-lg border-gray/20 bg-background h-11"
+                value={searchParams.get("search") || ""}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
+              />
+            </div>
+
+            {/* Lọc theo Thương hiệu */}
+            {!shouldShowBrandInfo && (
+              <div>
+                <label className="block text-charcoal font-bold mb-2 text-[10px] uppercase tracking-widest text-gray">Thương hiệu</label>
+                <Select
+                  placeholder="Tất cả thương hiệu"
+                  className="w-full"
+                  value={searchParams.get("brand_id") ? Number(searchParams.get("brand_id")) : undefined}
+                  onChange={(val) => handleFilterChange("brand_id", val)}
+                  allowClear
+                >
+                  {brands.map((b) => <Option key={b.id} value={b.id}>{b.name}</Option>)}
+                </Select>
+              </div>
+            )}
+
+            {/* Lọc theo Danh mục */}
+            <div>
+              <label className="block text-charcoal font-bold mb-2 text-[10px] uppercase tracking-widest text-gray">Danh mục</label>
+              <Select
+                placeholder="Chọn danh mục"
+                className="w-full"
+                value={searchParams.get("category_id") ? Number(searchParams.get("category_id")) : undefined}
+                onChange={(val) => handleFilterChange("category_id", val)}
+                allowClear
+              >
+                {categories.map((c) => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+              </Select>
+            </div>
+
+            <Button
+              type="primary"
+              block
+              size="large"
+              className="bg-primary border-primary rounded-xl h-11 font-medium mt-4"
+              onClick={() => setFilterDrawerOpen(false)}
+            >
+              Áp dụng bộ lọc ({total} sản phẩm)
+            </Button>
+          </div>
+        </Drawer>
+
+        <Row gutter={[24, 32]}>
+          {/* SIDEBAR BỘ LỌC (Desktop >= lg) */}
+          <Col xs={0} lg={6}>
             <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm space-y-8 sticky top-28 border border-gray/10">
               <div className="flex items-center justify-between border-b border-gray/10 pb-4">
                 <Title level={4} className="!mb-0 !font-serif flex items-center gap-2 text-charcoal">
@@ -203,16 +298,16 @@ const ProductsPage: React.FC = () => {
               <div className="text-center py-32"><Spin size="large" className="text-primary" /></div>
             ) : products.length > 0 ? (
               <>
-                <Row gutter={[24, 32]}>
+                <Row gutter={[16, 24]}>
                   {products.map((product) => (
-                    <Col key={product.id} xs={24} sm={12} xl={8}>
+                    <Col key={product.id} xs={12} sm={12} xl={8}>
                       <Card
                         hoverable
                         className="border border-gray/10 shadow-sm h-full rounded-2xl overflow-hidden group flex flex-col bg-white hover:shadow-lg transition-all duration-300"
-                        bodyStyle={{ padding: '20px' }}
+                        bodyStyle={{ padding: "12px sm:20px" }}
                         cover={
                           <Link to={`/products/${product.id}`}>
-                            <div className="h-72 overflow-hidden bg-gray/5 p-1 border-b border-gray/5">
+                            <div className="h-44 sm:h-60 md:h-72 overflow-hidden bg-gray/5 p-1 border-b border-gray/5">
                               <img
                                 alt={product.name}
                                 src={getImageUrl(product.thumb_image)}
@@ -229,21 +324,21 @@ const ProductsPage: React.FC = () => {
                         <div className="flex flex-col h-full">
                           <Meta
                             title={
-                              <Link to={`/products/${product.id}`} className="text-charcoal hover:text-primary line-clamp-1 font-serif text-lg transition-colors">
+                              <Link to={`/products/${product.id}`} className="text-charcoal hover:text-primary line-clamp-1 font-serif text-sm sm:text-lg transition-colors">
                                 {product.name}
                               </Link>
                             }
                             description={
-                              <div className="mt-2 flex flex-col gap-4">
-                                <Text className="text-primary font-medium text-lg">
+                              <div className="mt-2 flex flex-col gap-2 sm:gap-4">
+                                <Text className="text-primary font-bold text-sm sm:text-lg">
                                   {formatCurrency(Number(product.min_price || 0))}
                                 </Text>
                                 <Link to={`/products/${product.id}`} className="w-full mt-auto">
                                   <Button
                                     block
-                                    className="rounded-lg border-primary text-primary h-10 font-medium flex items-center justify-center gap-2 hover:!bg-primary hover:!text-white transition-colors"
+                                    className="rounded-lg border-primary text-primary h-8 sm:h-10 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 hover:!bg-primary hover:!text-white transition-colors"
                                   >
-                                    Xem chi tiết <RightOutlined style={{ fontSize: 12 }} />
+                                    Xem chi tiết <RightOutlined style={{ fontSize: 10 }} />
                                   </Button>
                                 </Link>
                               </div>
@@ -255,11 +350,13 @@ const ProductsPage: React.FC = () => {
                   ))}
                 </Row>
 
-                <div className="flex justify-center mt-16">
+                <div className="flex justify-center mt-12 sm:mt-16">
                   <Pagination
                     current={Number(searchParams.get("page") || 1)}
                     total={total}
                     pageSize={pageSize}
+                    responsive
+                    size="small"
                     onChange={(page) => {
                       handleFilterChange("page", page);
                       window.scrollTo({ top: 0, behavior: "smooth" });

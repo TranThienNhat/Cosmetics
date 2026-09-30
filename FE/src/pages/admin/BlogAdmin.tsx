@@ -211,9 +211,9 @@ const BlogAdmin: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
         <div>
-          <Title level={2} className="!mb-0">
+          <Title level={2} className="!mb-0 !text-xl sm:!text-2xl !font-serif">
             Quản lý Blog
           </Title>
           <Text type="secondary">
@@ -234,14 +234,14 @@ const BlogAdmin: React.FC = () => {
       </div>
 
       <Card>
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 items-stretch sm:items-center">
           <Search
             placeholder="Tìm kiếm tiêu đề bài viết..."
             allowClear
-            style={{ width: 400 }}
+            className="w-full sm:w-80"
             onChange={(e) => setSearchText(e.target.value)}
           />
-          <Button icon={<ReloadOutlined />} onClick={fetchBlogs}>
+          <Button icon={<ReloadOutlined />} onClick={fetchBlogs} className="w-full sm:w-auto">
             Làm mới
           </Button>
         </div>
@@ -252,6 +252,7 @@ const BlogAdmin: React.FC = () => {
           rowKey="id"
           loading={loading}
           pagination={{ pageSize: 8 }}
+          scroll={{ x: 750 }}
         />
       </Card>
 
@@ -260,7 +261,7 @@ const BlogAdmin: React.FC = () => {
         open={isModalOpen}
         onCancel={handleCancel}
         onOk={() => form.submit()}
-        width={800}
+        width={window.innerWidth < 840 ? "95%" : 800}
         okText={editingId ? "Cập nhật" : "Đăng bài"}
       >
         <Form
@@ -277,7 +278,7 @@ const BlogAdmin: React.FC = () => {
           }}
         >
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="title"
                 label="Tiêu đề bài viết"
@@ -286,7 +287,7 @@ const BlogAdmin: React.FC = () => {
                 <Input placeholder="VD: 5 bước chăm sóc da buổi sáng..." />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="slug"
                 label="Đường dẫn tĩnh (Slug)"

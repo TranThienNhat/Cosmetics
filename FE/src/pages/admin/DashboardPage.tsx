@@ -294,27 +294,18 @@ const DashboardPage: React.FC = () => {
 
   return (
     <ConfigProvider theme={themeConfig}>
-      <div
-        style={{
-          backgroundColor: "#FDFBF7",
-          minHeight: "100vh",
-          margin: "-24px",
-          padding: "24px",
-        }}
-      >
+      <div className="bg-[#FDFBF7] min-h-screen -m-3 sm:-m-6 md:-m-8 p-3 sm:p-6 md:p-8">
         {/* Sticky Header */}
         <div
-          className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 sticky top-0 z-10 py-4"
+          className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 sticky top-0 z-10 -m-3 sm:-m-6 md:-m-8 mb-6 sm:mb-8 p-3 sm:p-6"
           style={{
             background: "rgba(253, 251, 247, 0.92)",
             backdropFilter: "blur(12px)",
             borderBottom: "1px solid rgba(188, 143, 143, 0.15)",
-            margin: "-24px -24px 24px -24px",
-            padding: "16px 24px",
           }}
         >
           <div>
-            <Title level={3} style={{ margin: 0, color: "#2D2D2D" }} className="!font-serif font-bold">
+            <Title level={3} style={{ margin: 0, color: "#2D2D2D" }} className="!font-serif font-bold !text-xl sm:!text-2xl">
               Tổng quan thống kê
             </Title>
             <Text type="secondary" style={{ color: "#555555" }}>
@@ -650,6 +641,7 @@ const DashboardPage: React.FC = () => {
                   size="middle"
                   loading={loading}
                   rowKey="id"
+                  scroll={{ x: 420 }}
                 />
               </Card>
             </Col>
@@ -671,6 +663,7 @@ const DashboardPage: React.FC = () => {
                   size="middle"
                   loading={loading}
                   rowKey="id"
+                  scroll={{ x: 380 }}
                 />
               </Card>
             </Col>

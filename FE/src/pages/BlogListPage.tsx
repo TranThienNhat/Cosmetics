@@ -66,11 +66,11 @@ const BlogListPage: React.FC = () => {
   }
 
   return (
-    <div className="bg-[#FDFBF7] min-h-screen py-12 md:py-20">
+    <div className="bg-[#FDFBF7] min-h-screen py-8 sm:py-14 md:py-20">
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
         {/* Breadcrumb - Đồng bộ với BlogDetail */}
         <Breadcrumb
-          className="mb-12 text-[11px] uppercase tracking-[0.2em]"
+          className="mb-6 sm:mb-12 text-[11px] uppercase tracking-[0.2em]"
           items={[
             {
               title: (
@@ -91,18 +91,18 @@ const BlogListPage: React.FC = () => {
         />
 
         {/* Header Section */}
-        <div className="text-center mb-24">
-          <Text className="text-[#BC8F8F] uppercase tracking-[0.4em] font-bold text-[10px] mb-4 block">
+        <div className="text-center mb-10 sm:mb-16 md:mb-24">
+          <Text className="text-[#BC8F8F] uppercase tracking-[0.4em] font-bold text-[10px] mb-3 block">
             Linh Cosmetics Journal
           </Text>
           <Title
             level={1}
-            className="!font-serif !text-4xl md:!text-6xl !text-[#2D2D2D] !mb-8 !font-medium"
+            className="!font-serif !text-3xl sm:!text-4xl md:!text-6xl !text-[#2D2D2D] !mb-4 sm:!mb-8 !font-medium"
           >
             Câu chuyện làm đẹp
           </Title>
-          <div className="w-16 h-[1.5px] bg-[#BC8F8F]/40 mx-auto mb-8"></div>
-          <Paragraph className="text-[#555555] font-serif text-lg md:text-xl max-w-2xl mx-auto leading-relaxed italic opacity-80">
+          <div className="w-16 h-[1.5px] bg-[#BC8F8F]/40 mx-auto mb-4 sm:mb-8"></div>
+          <Paragraph className="text-[#555555] font-serif text-base sm:text-lg md:text-xl max-w-2xl mx-auto leading-relaxed italic opacity-80 px-2">
             "Khám phá những bí quyết chăm sóc da khoa học và hành trình kiến tạo
             vẻ đẹp bền vững."
           </Paragraph>
@@ -111,11 +111,11 @@ const BlogListPage: React.FC = () => {
         {/* Blog Grid */}
         {blogs.length > 0 ? (
           <>
-            <Row gutter={[32, 56]}>
+            <Row gutter={[{ xs: 16, sm: 24, lg: 32 }, { xs: 24, sm: 36, lg: 56 }]}>
               {blogs.map((blog) => (
-                <Col xs={24} md={12} lg={8} key={blog.id}>
+                <Col xs={24} sm={12} lg={8} key={blog.id}>
                   {/* Hiệu ứng hover đồng bộ với trang Home/Register */}
-                  <div className="h-full transition-all duration-500 hover:translate-y-[-10px]">
+                  <div className="h-full transition-all duration-500 hover:translate-y-[-6px]">
                     <BlogCard blog={blog} />
                   </div>
                 </Col>
@@ -123,11 +123,12 @@ const BlogListPage: React.FC = () => {
             </Row>
 
             {/* Pagination - Custom Rosy Brown Theme */}
-            <div className="flex justify-center mt-28">
+            <div className="flex justify-center mt-12 sm:mt-20 md:mt-28">
               <Pagination
                 current={pagination.current}
                 pageSize={pagination.pageSize}
                 total={pagination.total}
+                responsive
                 onChange={(page) => {
                   fetchBlogs(page);
                   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -146,20 +147,20 @@ const BlogListPage: React.FC = () => {
         )}
 
         {/* Newsletter Section - Styled like Register Card */}
-        <div className="mt-40">
-          <Card className="max-w-4xl mx-auto shadow-sm border-0 rounded-[2.5rem] overflow-hidden relative bg-white border border-[#f0ece2]">
+        <div className="mt-16 sm:mt-28 md:mt-40">
+          <Card className="max-w-4xl mx-auto shadow-sm border-0 rounded-2xl sm:rounded-[2.5rem] overflow-hidden relative bg-white border border-[#f0ece2]">
             {/* Soft Background Decoration */}
             <div className="absolute top-0 right-0 w-80 h-80 bg-[#BC8F8F]/5 rounded-full blur-[80px] -z-0 translate-x-1/3 -translate-y-1/3"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#BC8F8F]/3 rounded-full blur-[60px] -z-0 -translate-x-1/4 translate-y-1/4"></div>
 
-            <div className="relative z-10 p-10 md:p-20 text-center">
+            <div className="relative z-10 p-6 sm:p-12 md:p-20 text-center">
               <Title
                 level={2}
-                className="!font-serif !text-[#2D2D2D] !mb-4 !text-3xl"
+                className="!font-serif !text-[#2D2D2D] !mb-4 !text-2xl sm:!text-3xl"
               >
                 Tham gia cùng chúng tôi
               </Title>
-              <Paragraph className="text-[#555555] mb-12 max-w-md mx-auto text-[15px] leading-relaxed">
+              <Paragraph className="text-[#555555] mb-8 sm:mb-12 max-w-md mx-auto text-sm sm:text-[15px] leading-relaxed">
                 Nhận những kiến thức chăm sóc da chuyên sâu và ưu đãi độc quyền
                 từ Linh Cosmetics.
               </Paragraph>
@@ -172,17 +173,17 @@ const BlogListPage: React.FC = () => {
                     prefix={
                       <MailOutlined style={{ fontSize: 16, color: "rgba(188, 143, 143, 0.7)" }} className="mr-2" />
                     }
-                    className="h-14 rounded-2xl border-[#f0ece2] focus:border-[#BC8F8F] hover:border-[#BC8F8F]/50 bg-[#FDFBF7]/50"
+                    className="h-12 sm:h-14 rounded-xl sm:rounded-2xl border-[#f0ece2] focus:border-[#BC8F8F] hover:border-[#BC8F8F]/50 bg-[#FDFBF7]/50"
                   />
                   <Button
                     type="primary"
                     size="large"
-                    className="h-14 px-10 rounded-2xl font-bold flex items-center justify-center gap-2 !bg-[#BC8F8F] !border-[#BC8F8F] hover:!opacity-90 transition-opacity uppercase tracking-widest text-xs"
+                    className="h-12 sm:h-14 px-8 sm:px-10 rounded-xl sm:rounded-2xl font-bold flex items-center justify-center gap-2 !bg-[#BC8F8F] !border-[#BC8F8F] hover:!opacity-90 transition-opacity uppercase tracking-widest text-xs"
                   >
                     GỬI <ArrowRightOutlined style={{ fontSize: 14 }} />
                   </Button>
                 </div>
-                <Text className="text-[10px] text-[#555555]/50 mt-8 block uppercase tracking-[0.25em] font-medium">
+                <Text className="text-[10px] text-[#555555]/50 mt-6 sm:mt-8 block uppercase tracking-[0.25em] font-medium">
                   Bảo mật thông tin — Không tin nhắn rác
                 </Text>
               </div>

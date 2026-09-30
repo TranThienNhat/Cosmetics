@@ -256,12 +256,12 @@ const ProductDetailPage: React.FC = () => {
               </div>
 
               {/* Box Giá */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray/10 inline-block min-w-[300px]">
-                <Text className="text-gray line-through text-sm block mb-1">
+              <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray/10 w-full sm:w-auto sm:min-w-[280px]">
+                <Text className="text-gray line-through text-xs sm:text-sm block mb-1">
                   {formatCurrency(Number(selectedVariant?.price || 0) * 1.2)}
                 </Text>
                 <div className="flex items-baseline gap-3">
-                    <Text className="text-3xl md:text-4xl font-serif text-primary font-bold">
+                    <Text className="text-2xl sm:text-3xl md:text-4xl font-serif text-primary font-bold">
                         {formatCurrency(Number(selectedVariant?.price || product.min_price || 0))}
                     </Text>
                     <Tag className="bg-primary/10 text-primary border-none rounded-md px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider">
@@ -377,18 +377,18 @@ const ProductDetailPage: React.FC = () => {
 
         {/* FREQUENTLY BOUGHT TOGETHER (COMBO GỢI Ý MUA KÈM TỪ AI) */}
         {bundleData && bundleData.recommendedItems?.length > 0 && (
-          <div className="mt-16 bg-gradient-to-br from-[#FDFBF7] to-[#FAF3EC] border border-[#E6CCB2] rounded-3xl p-6 md:p-10 shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-8 pb-4 border-b border-[#E6CCB2]/50">
+          <div className="mt-12 sm:mt-16 bg-gradient-to-br from-[#FDFBF7] to-[#FAF3EC] border border-[#E6CCB2] rounded-3xl p-4 sm:p-6 md:p-10 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6 sm:mb-8 pb-4 border-b border-[#E6CCB2]/50">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-0.5 bg-[#BC8F8F] text-white text-[11px] font-bold rounded-full uppercase tracking-wider">
+                  <span className="px-2.5 py-0.5 bg-[#BC8F8F] text-white text-[10px] sm:text-[11px] font-bold rounded-full uppercase tracking-wider">
                     AI Combo Suggestion
                   </span>
                   <Tag color="volcano" className="font-semibold text-xs border-none">
                     Tiết kiệm thêm 10%
                   </Tag>
                 </div>
-                <h3 className="text-xl md:text-2xl font-serif text-charcoal font-bold mt-2">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-serif text-charcoal font-bold mt-2">
                   Thường Được Mua Cùng Nhau
                 </h3>
                 <p className="text-xs text-gray/80 mt-0.5">
@@ -405,26 +405,26 @@ const ProductDetailPage: React.FC = () => {
               const finalComboTotal = originalTotal - comboDiscount;
 
               return (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
                   {/* Left: Product Images connected with '+' */}
-                  <div className="lg:col-span-8 flex flex-wrap items-center gap-3 md:gap-4 justify-center md:justify-start">
+                  <div className="lg:col-span-8 flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 justify-center md:justify-start">
                     {allBundle.map((item: any, idx: number) => {
                       const isChecked = selectedBundleItemIds.includes(item.productId);
                       const isMain = idx === 0;
                       return (
                         <React.Fragment key={item.productId}>
                           {idx > 0 && (
-                            <span className="text-xl md:text-2xl font-bold text-[#BC8F8F] px-1">+</span>
+                            <span className="text-lg sm:text-xl md:text-2xl font-bold text-[#BC8F8F] px-0.5 sm:px-1">+</span>
                           )}
                           <div
                             onClick={() => handleToggleBundleItem(item.productId)}
-                            className={`cursor-pointer transition-all duration-300 rounded-2xl p-3 border-2 bg-white flex flex-col items-center text-center w-36 md:w-44 ${
+                            className={`cursor-pointer transition-all duration-300 rounded-2xl p-2.5 sm:p-3 border-2 bg-white flex flex-col items-center text-center w-28 sm:w-36 md:w-44 ${
                               isChecked
                                 ? "border-[#BC8F8F] shadow-md scale-105"
                                 : "border-gray-200 opacity-50 hover:opacity-80"
                             }`}
                           >
-                            <div className="relative w-24 h-24 md:w-28 md:h-28 mb-2">
+                            <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 mb-2">
                               <img
                                 src={getImageUrl(item.imageUrl)}
                                 alt={item.productName}
@@ -499,23 +499,23 @@ const ProductDetailPage: React.FC = () => {
         )}
 
         {/* TABS CHI TIẾT & REVIEW */}
-        <div className="mt-24">
+        <div className="mt-12 sm:mt-24">
         <Tabs
           defaultActiveKey="1"
-          size="large"
+          size="middle"
           centered
           className="Linh-tabs"
           items={[
             {
               key: "1",
-              label: <span className="px-6 font-serif text-lg tracking-wide">Mô tả sản phẩm</span>,
+              label: <span className="px-2 sm:px-6 font-serif text-sm sm:text-lg tracking-wide">Mô tả sản phẩm</span>,
               children: (
-                <div className="max-w-4xl mx-auto py-8">
+                <div className="max-w-4xl mx-auto py-4 sm:py-8">
                   <div 
-                    className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray/10"
+                    className="bg-white p-4 sm:p-8 md:p-12 rounded-2xl shadow-sm border border-gray/10"
                   >
                     <div
-                      className="description-container leading-loose text-charcoal/80 text-base font-light"
+                      className="description-container leading-relaxed sm:leading-loose text-charcoal/80 text-sm sm:text-base font-light"
                       style={{ 
                         whiteSpace: 'pre-line',
                         wordBreak: 'break-word' 
@@ -529,7 +529,7 @@ const ProductDetailPage: React.FC = () => {
             },
             {
               key: "2",
-              label: <span className="px-6 font-serif text-lg tracking-wide">Đánh giá ({reviews.length})</span>,
+              label: <span className="px-2 sm:px-6 font-serif text-sm sm:text-lg tracking-wide">Đánh giá ({reviews.length})</span>,
               children: (
                 <div className="max-w-4xl mx-auto py-8">
                   {reviews.length === 0 ? (

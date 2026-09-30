@@ -217,7 +217,7 @@ const ProductFormPage: React.FC = () => {
       autoComplete="off"
     >
       {/* Sticky Header */}
-      <div className="flex justify-between items-center mb-8 sticky top-0 z-10 bg-gray-50/80 backdrop-blur-md py-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 sm:mb-8 sticky top-0 z-10 bg-gray-50/90 backdrop-blur-md py-3 sm:py-4">
         <Space size="middle">
           <Button
             shape="circle"
@@ -226,35 +226,34 @@ const ProductFormPage: React.FC = () => {
             className="hover:scale-110 transition-transform"
           />
           <div>
-            <Title level={3} style={{ margin: 0 }}>{isEdit ? "Chỉnh sửa" : "Thêm mới"} sản phẩm</Title>
-            <Text type="secondary">{isEdit ? `ID: ${id}` : "Tạo sản phẩm mới cho cửa hàng của bạn"}</Text>
+            <Title level={3} style={{ margin: 0 }} className="!text-xl sm:!text-2xl !font-serif">{isEdit ? "Chỉnh sửa" : "Thêm mới"} sản phẩm</Title>
+            <Text type="secondary" className="text-xs sm:text-sm">{isEdit ? `ID: ${id}` : "Tạo sản phẩm mới cho cửa hàng của bạn"}</Text>
           </div>
         </Space>
 
-        <Space size="middle">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto justify-start lg:justify-end">
           {!isEdit && (
             <Dropdown menu={{ items: templateMenuItems }} placement="bottomRight">
               <Button
                 icon={<ThunderboltOutlined />}
-                className="bg-gradient-to-r from-amber-500 to-[#BC8F8F] text-white font-semibold border-none hover:opacity-90 rounded-lg h-10 shadow-sm flex items-center gap-1"
+                className="bg-gradient-to-r from-amber-500 to-[#BC8F8F] text-white font-semibold border-none hover:opacity-90 rounded-lg h-9 sm:h-10 shadow-sm flex items-center gap-1 text-xs sm:text-sm"
               >
                 Gợi Ý Mẫu Hot Trend <DownOutlined style={{ fontSize: 10 }} />
               </Button>
             </Dropdown>
           )}
 
-          <Button size="large" onClick={() => navigate(-1)} className="rounded-lg h-10">Hủy</Button>
+          <Button size="large" onClick={() => navigate(-1)} className="rounded-lg h-9 sm:h-10 text-xs sm:text-sm">Hủy</Button>
           <Button
             type="primary"
             htmlType="submit"
             loading={loading}
-            size="large"
             icon={<SaveOutlined />}
-            className="bg-[#BC8F8F] hover:bg-[#a67c7c] text-white font-semibold rounded-lg px-8 shadow-md border-0 h-10 flex items-center justify-center transition-all"
+            className="bg-[#BC8F8F] hover:bg-[#a67c7c] text-white font-semibold rounded-lg px-6 sm:px-8 shadow-md border-0 h-9 sm:h-10 flex items-center justify-center transition-all text-xs sm:text-sm"
           >
             Lưu sản phẩm
           </Button>
-        </Space>
+        </div>
       </div>
 
       <Row gutter={[24, 24]}>

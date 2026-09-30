@@ -181,32 +181,36 @@ const PurchaseListPage: React.FC = () => {
   ];
 
   return (
-    <div className="p-6">
-      <Card
-        title={<Title level={4}>Quản lý Phiếu Nhập Hàng</Title>}
-        extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => navigate("/admin/purchase/create")}
-          >
-            Tạo phiếu mới
-          </Button>
-        }
-      >
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+        <Title level={2} className="!mb-0 !text-xl sm:!text-2xl !font-serif">
+          Quản lý Phiếu Nhập Hàng
+        </Title>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/admin/purchase/create")}
+        >
+          Tạo phiếu mới
+        </Button>
+      </div>
+
+      <Card>
         <Table
           columns={columns}
           dataSource={data}
           rowKey="id"
           loading={loading}
+          scroll={{ x: 700 }}
           pagination={{
             current: pagination.current,
             pageSize: pagination.pageSize,
             total: pagination.total,
             showSizeChanger: true,
+            responsive: true,
             pageSizeOptions: ["10", "20", "50"],
             showTotal: (total, range) =>
-              `${range[0]}-${range[1]} trên tổng ${total} phiếu nhập`,
+              `${range[0]}-${range[1]} / ${total}`,
           }}
           onChange={handleTableChange}
         />

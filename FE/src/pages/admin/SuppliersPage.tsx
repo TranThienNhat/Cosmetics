@@ -185,8 +185,8 @@ const SuppliersPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Title level={2} className="!mb-0">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+        <Title level={2} className="!mb-0 !text-xl sm:!text-2xl !font-serif">
           Nhà cung cấp
         </Title>
         <Button
@@ -199,15 +199,15 @@ const SuppliersPage: React.FC = () => {
       </div>
 
       <Card>
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 mb-6">
           <Search
             placeholder="Tìm tên, SĐT hoặc người đại diện..."
             allowClear
-            style={{ width: 400 }}
+            className="w-full sm:w-80"
             onChange={(e) => setSearchText(e.target.value)}
           />
           <Select
-            style={{ width: 180 }}
+            className="w-full sm:w-44"
             value={statusFilter}
             onChange={setStatusFilter}
           >
@@ -215,7 +215,7 @@ const SuppliersPage: React.FC = () => {
             <Select.Option value="active">Đang hợp tác</Select.Option>
             <Select.Option value="inactive">Tạm ngưng</Select.Option>
           </Select>
-          <Button icon={<ReloadOutlined />} onClick={fetchSuppliers}>
+          <Button icon={<ReloadOutlined />} onClick={fetchSuppliers} className="w-full sm:w-auto">
             Làm mới
           </Button>
         </div>
@@ -226,6 +226,7 @@ const SuppliersPage: React.FC = () => {
           rowKey="id"
           loading={loading}
           pagination={{ pageSize: 10 }}
+          scroll={{ x: 800 }}
         />
       </Card>
 
@@ -236,7 +237,7 @@ const SuppliersPage: React.FC = () => {
         onOk={() => form.submit()}
         okText="Lưu thông tin"
         cancelText="Hủy"
-        width={650}
+        width={window.innerWidth < 700 ? "95%" : 650}
       >
         <Form
           form={form}
@@ -246,7 +247,7 @@ const SuppliersPage: React.FC = () => {
           className="mt-4"
         >
           <Row gutter={16}>
-            <Col span={14}>
+            <Col xs={24} sm={14}>
               <Form.Item
                 name="name"
                 label="Tên nhà cung cấp"
@@ -255,13 +256,13 @@ const SuppliersPage: React.FC = () => {
                 <Input placeholder="Ví dụ: Mỹ phẩm Ohui" />
               </Form.Item>
             </Col>
-            <Col span={10}>
+            <Col xs={24} sm={10}>
               <Form.Item name="contact_name" label="Người đại diện">
                 <Input placeholder="Tên quản lý" />
               </Form.Item>
             </Col>
 
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="phone"
                 label="Số điện thoại"
@@ -270,7 +271,7 @@ const SuppliersPage: React.FC = () => {
                 <Input placeholder="090x xxx xxx" />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="email"
                 label="Email"

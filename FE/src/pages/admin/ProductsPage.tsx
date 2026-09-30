@@ -160,8 +160,8 @@ const ProductsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Title level={2} className="!mb-0 !font-serif">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+        <Title level={2} className="!mb-0 !font-serif !text-xl sm:!text-2xl">
           Quản lý sản phẩm
         </Title>
         <Link to="/admin/products/create">
@@ -172,17 +172,17 @@ const ProductsPage: React.FC = () => {
       </div>
 
       <Card className="rounded-2xl border-gray/10 shadow-sm overflow-hidden">
-        <div className="flex flex-wrap items-center gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 mb-6">
           <Search
             placeholder="Tìm kiếm sản phẩm..."
             allowClear
-            style={{ width: 280 }}
+            className="w-full sm:w-72"
             onSearch={setSearchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
           <Select
             placeholder="Trạng thái"
-            style={{ width: 140 }}
+            className="w-full sm:w-36"
             value={statusFilter}
             onChange={setStatusFilter}
           >
@@ -190,7 +190,7 @@ const ProductsPage: React.FC = () => {
             <Select.Option value="active">Hiển thị</Select.Option>
             <Select.Option value="hidden">Ẩn</Select.Option>
           </Select>
-          <Button icon={<ReloadOutlined />} onClick={loadProducts}>
+          <Button icon={<ReloadOutlined />} onClick={loadProducts} className="w-full sm:w-auto">
             Làm mới
           </Button>
         </div>
@@ -204,8 +204,9 @@ const ProductsPage: React.FC = () => {
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
+            responsive: true,
             showTotal: (total, range) =>
-              `${range[0]}-${range[1]} của ${total} sản phẩm`,
+              `${range[0]}-${range[1]} / ${total}`,
           }}
           scroll={{ x: 800 }}
         />

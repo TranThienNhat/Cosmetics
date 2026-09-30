@@ -185,8 +185,8 @@ const BrandsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Area */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>Quản lý Thương hiệu</Title>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+        <Title level={2} style={{ margin: 0 }} className="!text-xl sm:!text-2xl !font-serif">Quản lý Thương hiệu</Title>
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -198,11 +198,11 @@ const BrandsPage: React.FC = () => {
 
       <Card>
         {/* Search & Refresh Group */}
-        <div style={{ display: 'flex', gap: '16px', marginBottom: 24, alignItems: 'center' }}>
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 items-stretch sm:items-center">
           <Search
             placeholder="Tìm kiếm thương hiệu..."
             allowClear
-            style={{ width: 300 }}
+            className="w-full sm:w-72"
             onSearch={setSearchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
@@ -210,6 +210,7 @@ const BrandsPage: React.FC = () => {
             icon={<ReloadOutlined />}
             onClick={loadBrands}
             loading={loading}
+            className="w-full sm:w-auto"
           >
             Làm mới
           </Button>
@@ -221,6 +222,7 @@ const BrandsPage: React.FC = () => {
           loading={loading}
           rowKey="id"
           pagination={{ pageSize: 10 }}
+          scroll={{ x: 650 }}
         />
       </Card>
 
@@ -231,7 +233,7 @@ const BrandsPage: React.FC = () => {
         onCancel={() => setModalVisible(false)}
         footer={null}
         destroyOnClose
-        width={600}
+        width={window.innerWidth < 640 ? "95%" : 600}
       >
         <Form
           form={form}

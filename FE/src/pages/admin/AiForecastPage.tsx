@@ -168,7 +168,7 @@ const AiForecastPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Header & Action */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#FDFBF7] via-[#FAF3EC] to-[#F5EBE0] p-6 rounded-2xl border border-[#E6CCB2]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#FDFBF7] via-[#FAF3EC] to-[#F5EBE0] p-4 sm:p-6 rounded-2xl border border-[#E6CCB2]">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 bg-[#BC8F8F] text-white text-xs font-semibold rounded-full uppercase tracking-wider">
@@ -176,10 +176,10 @@ const AiForecastPage: React.FC = () => {
             </span>
             <span className="text-xs text-gray-500 font-medium">Scikit-Learn • Apriori • Time-Series</span>
           </div>
-          <Title level={3} className="!mt-2 !mb-1 text-[#2D2D2D] font-bold">
+          <Title level={3} className="!mt-2 !mb-1 text-[#2D2D2D] font-bold !text-xl sm:!text-2xl !font-serif">
             Trung Tâm Dự Báo & Phân Tích Thông Minh
           </Title>
-          <Text className="text-gray-600">
+          <Text className="text-gray-600 text-xs sm:text-sm">
             Dự báo doanh thu Random Forest, dự báo nhu cầu bán hàng, tối ưu chuỗi cung ứng & khai phá gợi ý mua kèm.
           </Text>
         </div>
@@ -609,6 +609,7 @@ const AiForecastPage: React.FC = () => {
                       dataSource={demandData?.productDemandList || []}
                       rowKey="productId"
                       pagination={{ pageSize: 8 }}
+                      scroll={{ x: 800 }}
                       columns={[
                         {
                           title: "Sản phẩm",
@@ -840,6 +841,7 @@ const AiForecastPage: React.FC = () => {
                       dataSource={fbtData?.topRules || []}
                       rowKey={(_, idx) => String(idx)}
                       pagination={{ pageSize: 6 }}
+                      scroll={{ x: 650 }}
                       columns={[
                         {
                           title: "Khi khách mua (Antecedent)",
@@ -939,6 +941,7 @@ const AiForecastPage: React.FC = () => {
                       dataSource={trendData?.trendingProducts || []}
                       rowKey="productId"
                       pagination={{ pageSize: 6 }}
+                      scroll={{ x: 750 }}
                       columns={[
                         {
                           title: "Sản phẩm",

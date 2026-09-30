@@ -28,11 +28,11 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-lg border-0 rounded-xl">
+    <div className="min-h-screen bg-background flex items-center justify-center p-3 sm:p-4 py-8 sm:py-12">
+      <Card className="w-full max-w-md shadow-lg border-0 rounded-xl p-2 sm:p-6" bodyStyle={{ padding: "16px" }}>
         <div className="text-center mb-6">
-          <Title level={2} className="!mb-1 font-serif">Đăng ký</Title>
-          <Paragraph type="secondary">Tạo tài khoản để bắt đầu mua sắm</Paragraph>
+          <Title level={2} className="!mb-1 font-serif !text-2xl sm:!text-3xl">Đăng ký</Title>
+          <Paragraph type="secondary" className="text-sm">Tạo tài khoản để bắt đầu mua sắm</Paragraph>
         </div>
 
         <Form form={form} layout="vertical" onFinish={onFinish} size="large" requiredMark={false}>

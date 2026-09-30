@@ -224,10 +224,10 @@ const CouponManagement: React.FC = () => {
   ];
 
   return (
-    <div className="p-6">
+    <div className="space-y-6">
       <Card>
-        <div className="flex justify-between items-center mb-6">
-          <Title level={2} className="!mb-0 flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <Title level={2} className="!mb-0 flex items-center gap-2 !text-xl sm:!text-2xl !font-serif">
             <GiftOutlined style={{ fontSize: 24, color: "#BC8F8F" }} />
             Quản lý mã giảm giá
           </Title>
@@ -245,10 +245,12 @@ const CouponManagement: React.FC = () => {
           dataSource={coupons}
           rowKey="id"
           loading={loading}
+          scroll={{ x: 800 }}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
+            responsive: true,
             showTotal: (total) => `Tổng ${total} mã giảm giá`,
           }}
         />
@@ -264,7 +266,7 @@ const CouponManagement: React.FC = () => {
           form.resetFields();
         }}
         footer={null}
-        width={600}>
+        width={window.innerWidth < 640 ? "95%" : 600}>
         <Form
           form={form}
           layout="vertical"

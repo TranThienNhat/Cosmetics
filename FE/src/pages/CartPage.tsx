@@ -206,37 +206,39 @@ const CartPage: React.FC = () => {
                       }`}
                     bodyStyle={{ padding: "20px" }}
                   >
-                    <div className="flex items-center gap-4">
-                      {/* CHECKBOX RIÊNG LẺ */}
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={() => handleSelectToggle(Number(item.variant_id))}
-                        className="scale-125"
-                      />
-
-                      {/* Ảnh sản phẩm */}
-                      <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray/5 flex-shrink-0 border border-gray/5">
-                        <img
-                          src={getImageUrl(item.image_url || "")}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/200x200?text=Product"; }}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        {/* CHECKBOX RIÊNG LẺ */}
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => handleSelectToggle(Number(item.variant_id))}
+                          className="scale-110 sm:scale-125 shrink-0"
                         />
-                      </div>
 
-                      {/* Thông tin */}
-                      <div className="flex-1 min-w-0">
-                        <Link to={`/products/${item.product_id}`} className="text-charcoal font-serif text-base hover:text-primary transition-colors block mb-1 truncate">
-                          {item.name}
-                        </Link>
-                        <Tag className="bg-primary/5 text-primary border-none rounded-md px-2 py-0.5 text-[10px] font-medium">
-                          {item.variant_name || "Mặc định"}
-                        </Tag>
+                        {/* Ảnh sản phẩm */}
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray/5 flex-shrink-0 border border-gray/5">
+                          <img
+                            src={getImageUrl(item.image_url || "")}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/200x200?text=Product"; }}
+                          />
+                        </div>
+
+                        {/* Thông tin */}
+                        <div className="flex-1 min-w-0">
+                          <Link to={`/products/${item.product_id}`} className="text-charcoal font-serif text-sm sm:text-base hover:text-primary transition-colors block mb-1 truncate">
+                            {item.name}
+                          </Link>
+                          <Tag className="bg-primary/5 text-primary border-none rounded-md px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium">
+                            {item.variant_name || "Mặc định"}
+                          </Tag>
+                        </div>
                       </div>
 
                       {/* Giá & Điều chỉnh số lượng */}
-                      <div className="flex flex-col items-end gap-3">
-                        <Text className="text-primary font-bold text-base">
+                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                        <Text className="text-primary font-bold text-sm sm:text-base">
                           {formatCurrency(Number(item.price) * item.quantity)}
                         </Text>
 
@@ -276,7 +278,7 @@ const CartPage: React.FC = () => {
 
               {/* AI GỢI Ý MUA KÈM THÔNG MINH (CART CROSS-SELL RECOMMENDATIONS) */}
               {cartRecommendations.length > 0 && (
-                <div className="mt-8 p-6 bg-gradient-to-br from-[#FDFBF7] to-[#FAF3EC] border border-[#E6CCB2] rounded-2xl">
+                <div className="mt-8 p-4 sm:p-6 bg-gradient-to-br from-[#FDFBF7] to-[#FAF3EC] border border-[#E6CCB2] rounded-2xl">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <div className="flex items-center gap-2">
@@ -288,7 +290,7 @@ const CartPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                     {cartRecommendations.map((rec: any) => (
                       <div key={rec.productId} className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
                         <div className="flex gap-3 items-center">

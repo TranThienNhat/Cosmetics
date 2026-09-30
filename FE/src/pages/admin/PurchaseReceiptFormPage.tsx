@@ -272,8 +272,8 @@ const PurchaseReceiptFormPage: React.FC = () => {
       initialValues={{ items: [{ quantity: 1, unit_price: 0 }] }}
       autoComplete="off"
     >
-      {/* Sticky Header - Đồng bộ 100% hiệu ứng chuyển động và cấu trúc văn bản */}
-      <div className="flex justify-between items-center mb-8 sticky top-0 z-10 bg-gray-50/80 backdrop-blur-md py-4">
+      {/* Sticky Header */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 sm:mb-8 sticky top-0 z-10 bg-gray-50/90 backdrop-blur-md py-3 sm:py-4">
         <Space size="middle">
           <Button
             shape="circle"
@@ -282,10 +282,10 @@ const PurchaseReceiptFormPage: React.FC = () => {
             className="hover:scale-110 transition-transform"
           />
           <div>
-            <Title level={3} style={{ margin: 0 }}>
+            <Title level={3} style={{ margin: 0 }} className="!text-xl sm:!text-2xl !font-serif">
               {isEdit ? "Chỉnh sửa" : "Tạo mới"} phiếu nhập hàng
             </Title>
-            <Text type="secondary">
+            <Text type="secondary" className="text-xs sm:text-sm">
               {isEdit
                 ? `ID: ${id}`
                 : "Nhập kho sản phẩm và quản lý nhà cung cấp"}
@@ -293,12 +293,12 @@ const PurchaseReceiptFormPage: React.FC = () => {
           </div>
         </Space>
 
-        <Space size="middle">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto justify-start lg:justify-end">
           {!isEdit && (
             <Button
               icon={<ThunderboltOutlined />}
               onClick={handleAutoFillFromAi}
-              className="bg-gradient-to-r from-amber-500 to-[#BC8F8F] text-white font-semibold border-none hover:opacity-90 rounded-lg h-10 shadow-sm flex items-center gap-1"
+              className="bg-gradient-to-r from-amber-500 to-[#BC8F8F] text-white font-semibold border-none hover:opacity-90 rounded-lg h-9 sm:h-10 shadow-sm flex items-center gap-1 text-xs sm:text-sm"
             >
               Nạp Đề Xuất AI
             </Button>
@@ -307,7 +307,7 @@ const PurchaseReceiptFormPage: React.FC = () => {
           <Button
             icon={<PlusSquareOutlined />}
             onClick={() => setIsProductModalOpen(true)}
-            className="border-[#BC8F8F] text-[#BC8F8F] hover:bg-[#BC8F8F]/5 hover:border-[#BC8F8F] font-medium rounded-lg h-10 transition-colors"
+            className="border-[#BC8F8F] text-[#BC8F8F] hover:bg-[#BC8F8F]/5 hover:border-[#BC8F8F] font-medium rounded-lg h-9 sm:h-10 transition-colors text-xs sm:text-sm"
           >
             Tạo SP mới
           </Button>
@@ -315,7 +315,7 @@ const PurchaseReceiptFormPage: React.FC = () => {
           <Button
             icon={<AppstoreAddOutlined />}
             onClick={() => setIsVariantModalOpen(true)}
-            className="border-[#BC8F8F] text-[#BC8F8F] hover:bg-[#BC8F8F]/5 hover:border-[#BC8F8F] font-medium rounded-lg h-10 transition-colors"
+            className="border-[#BC8F8F] text-[#BC8F8F] hover:bg-[#BC8F8F]/5 hover:border-[#BC8F8F] font-medium rounded-lg h-9 sm:h-10 transition-colors text-xs sm:text-sm"
           >
             Thêm biến thể
           </Button>
@@ -324,13 +324,12 @@ const PurchaseReceiptFormPage: React.FC = () => {
             type="primary"
             htmlType="submit"
             loading={loading}
-            size="large"
             icon={<SaveOutlined />}
-            className="bg-[#BC8F8F] hover:bg-[#a67c7c] text-white font-semibold rounded-lg px-8 shadow-md border-0 h-10 flex items-center justify-center transition-all"
+            className="bg-[#BC8F8F] hover:bg-[#a67c7c] text-white font-semibold rounded-lg px-6 sm:px-8 shadow-md border-0 h-9 sm:h-10 flex items-center justify-center transition-all text-xs sm:text-sm"
           >
             Lưu phiếu nhập
           </Button>
-        </Space>
+        </div>
       </div>
 
       <Row gutter={[24, 24]}>
@@ -495,6 +494,7 @@ const PurchaseReceiptFormPage: React.FC = () => {
         okText="Tạo sản phẩm"
         cancelText="Hủy"
         destroyOnClose
+        width={window.innerWidth < 640 ? "95%" : 560}
       >
         <Form
           form={quickProductForm}
@@ -511,7 +511,7 @@ const PurchaseReceiptFormPage: React.FC = () => {
           </Form.Item>
 
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="category_id"
                 label="Danh mục"
@@ -532,7 +532,7 @@ const PurchaseReceiptFormPage: React.FC = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="brand_id" label="Thương hiệu">
                 <Select
                   showSearch
@@ -594,6 +594,7 @@ const PurchaseReceiptFormPage: React.FC = () => {
         okText="Thêm biến thể"
         cancelText="Hủy"
         destroyOnClose
+        width={window.innerWidth < 640 ? "95%" : 500}
       >
         <Form
           form={quickVariantForm}

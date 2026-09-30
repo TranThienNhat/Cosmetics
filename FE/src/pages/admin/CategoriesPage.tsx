@@ -130,20 +130,33 @@ const CategoriesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <Title level={2} style={{ margin: 0 }}>Danh mục sản phẩm</Title>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+        <Title level={2} style={{ margin: 0 }} className="!text-xl sm:!text-2xl !font-serif">Danh mục sản phẩm</Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingCategory(null); form.resetFields(); setModalVisible(true); }}>Thêm mới</Button>
       </div>
 
       <Card>
-        <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
-          <Search placeholder="Tìm danh mục..." allowClear style={{ width: 300 }} onSearch={setSearchText} onChange={e => setSearchText(e.target.value)} />
+        <div className="flex flex-col sm:flex-row gap-3 mb-5">
+          <Search placeholder="Tìm danh mục..." allowClear className="w-full sm:w-72" onSearch={setSearchText} onChange={e => setSearchText(e.target.value)} />
           <Button icon={<ReloadOutlined />} onClick={loadCategories} loading={loading}>Làm mới</Button>
         </div>
-        <Table dataSource={categories.filter(c => c.name.toLowerCase().includes(searchText.toLowerCase()))} columns={columns} loading={loading} rowKey="id" />
+        <Table 
+          dataSource={categories.filter(c => c.name.toLowerCase().includes(searchText.toLowerCase()))} 
+          columns={columns} 
+          loading={loading} 
+          rowKey="id" 
+          scroll={{ x: 650 }}
+        />
       </Card>
 
-      <Modal title={editingCategory ? "Sửa danh mục" : "Thêm danh mục"} open={modalVisible} onCancel={() => setModalVisible(false)} footer={null} destroyOnClose width={600}>
+      <Modal 
+        title={editingCategory ? "Sửa danh mục" : "Thêm danh mục"} 
+        open={modalVisible} 
+        onCancel={() => setModalVisible(false)} 
+        footer={null} 
+        destroyOnClose 
+        width={window.innerWidth < 640 ? "95%" : 600}
+      >
         <Form form={form} layout="vertical" onFinish={handleSubmit} onValuesChange={v => v.name && form.setFieldsValue({ slug: createSlug(v.name) })}>
           <Form.Item name="name" label="Tên danh mục" rules={[{ required: true }]}><Input /></Form.Item>
           <Form.Item name="slug" label="Slug" rules={[{ required: true }]}><Input /></Form.Item>

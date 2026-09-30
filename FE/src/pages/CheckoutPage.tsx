@@ -174,9 +174,9 @@ const CheckoutPage: React.FC = () => {
   if (checkoutItems.length === 0 || !user) return null;
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
+    <div className="min-h-screen bg-background py-6 sm:py-10 px-3 sm:px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-10 gap-4 sm:gap-6">
           <div>
             <Button
               type="text"
@@ -187,24 +187,24 @@ const CheckoutPage: React.FC = () => {
               Quay lại giỏ hàng
             </Button>
 
-            <Title level={2} className="!font-serif !text-charcoal !m-0">
+            <Title level={2} className="!font-serif !text-charcoal !m-0 !text-2xl sm:!text-3xl">
               Thanh toán
             </Title>
           </div>
 
           <div className="w-full md:w-80">
-            <Steps current={0} size="small" className="custom-steps">
+            <Steps current={0} size="small" responsive className="custom-steps">
               <Step title="Thông tin" />
               <Step title="Hoàn tất" />
             </Steps>
           </div>
         </div>
 
-        <Row gutter={[32, 32]}>
+        <Row gutter={[{ xs: 16, sm: 24, lg: 32 }, { xs: 20, sm: 24, lg: 32 }]}>
           <Col xs={24} lg={14}>
-            <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
-              <div className="p-6 md:p-8">
-                <Title level={4} className="!mb-6 !font-serif">
+            <Card className="border-0 shadow-lg rounded-2xl overflow-hidden" bodyStyle={{ padding: 0 }}>
+              <div className="p-4 sm:p-6 md:p-8">
+                <Title level={4} className="!mb-4 sm:!mb-6 !font-serif">
                   Thông tin nhận hàng
                 </Title>
 
@@ -310,7 +310,7 @@ const CheckoutPage: React.FC = () => {
                     htmlType="submit"
                     loading={loading}
                     disabled={checkoutItems.length === 0}
-                    className="w-full bg-primary h-14 rounded-xl font-medium text-lg"
+                    className="w-full bg-primary h-12 sm:h-14 rounded-xl font-medium text-base sm:text-lg"
                   >
                     Xác nhận đặt hàng - {formatCurrency(finalTotal)}
                   </Button>
@@ -320,8 +320,8 @@ const CheckoutPage: React.FC = () => {
           </Col>
 
           <Col xs={24} lg={10}>
-            <Card className="border-0 shadow-lg rounded-2xl sticky top-8 overflow-hidden bg-white">
-              <div className="p-6 border-b border-gray/5">
+            <Card className="border-0 shadow-lg rounded-2xl sticky top-8 overflow-hidden bg-white" bodyStyle={{ padding: 0 }}>
+              <div className="p-4 sm:p-6 border-b border-gray/5">
                 <Title
                   level={4}
                   className="!m-0 !font-serif flex items-center gap-2"
@@ -331,14 +331,14 @@ const CheckoutPage: React.FC = () => {
                 </Title>
               </div>
 
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <div className="max-h-[350px] overflow-y-auto mb-6 space-y-4">
                   {checkoutItems.map((item) => (
                     <div
                       key={item.variant_id}
                       className="flex gap-4 items-center"
                     >
-                      <div className="w-14 h-14 rounded-lg overflow-hidden border border-gray/10 flex-shrink-0">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden border border-gray/10 flex-shrink-0">
                         <img
                           src={getImageUrl(item.image_url || "")}
                           alt={item.name}
@@ -351,23 +351,23 @@ const CheckoutPage: React.FC = () => {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <Text strong className="block text-sm truncate font-serif">
+                        <Text strong className="block text-xs sm:text-sm truncate font-serif">
                           {item.name}
                         </Text>
 
-                        <Text type="secondary" className="text-[11px] uppercase">
+                        <Text type="secondary" className="text-[10px] sm:text-[11px] uppercase">
                           {item.variant_name || "Mặc định"} × {item.quantity}
                         </Text>
                       </div>
 
-                      <Text className="font-medium whitespace-nowrap">
+                      <Text className="font-medium whitespace-nowrap text-xs sm:text-sm">
                         {formatCurrency(Number(item.price) * item.quantity)}
                       </Text>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-background p-6 rounded-2xl border border-gray/10 space-y-3">
+                <div className="bg-background p-4 sm:p-6 rounded-2xl border border-gray/10 space-y-3">
                   <div className="flex justify-between">
                     <Text className="text-gray">Tạm tính</Text>
 

@@ -42,7 +42,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ visible, onClose }) => {
       placement="right"
       onClose={onClose}
       open={visible}
-      width={400}
+      width={typeof window !== "undefined" && window.innerWidth < 420 ? "100%" : 400}
       extra={
         <CloseOutlined 
           style={{ fontSize: 16 }}

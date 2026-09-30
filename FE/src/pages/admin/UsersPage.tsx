@@ -197,23 +197,23 @@ const UsersPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Title level={2} className="!mb-0">
+        <Title level={2} className="!mb-0 !font-serif !text-xl sm:!text-2xl">
           Quản lý người dùng
         </Title>
       </div>
 
       <Card>
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 mb-6">
           <Search
             placeholder="Tìm kiếm theo tên hoặc email..."
             allowClear
-            style={{ width: 300 }}
+            className="w-full sm:w-72"
             onSearch={setSearchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
           <Select
             placeholder="Vai trò"
-            style={{ width: 150 }}
+            className="w-full sm:w-36"
             value={roleFilter}
             onChange={setRoleFilter}
           >
@@ -222,7 +222,7 @@ const UsersPage: React.FC = () => {
             <Select.Option value="staff">Nhân viên</Select.Option> {/* Thêm lọc Nhân viên */}
             <Select.Option value="user">Người dùng</Select.Option>
           </Select>
-          <Button icon={<SearchOutlined />} onClick={loadUsers}>
+          <Button icon={<SearchOutlined />} onClick={loadUsers} className="w-full sm:w-auto">
             Làm mới
           </Button>
         </div>
@@ -236,10 +236,11 @@ const UsersPage: React.FC = () => {
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
+            responsive: true,
             showTotal: (total, range) =>
-              `${range[0]}-${range[1]} của ${total} người dùng`,
+              `${range[0]}-${range[1]} / ${total}`,
           }}
-          scroll={{ x: 1000 }}
+          scroll={{ x: 850 }}
         />
       </Card>
 
@@ -252,7 +253,7 @@ const UsersPage: React.FC = () => {
           form.resetFields();
         }}
         footer={null}
-        width={600}
+        width={window.innerWidth < 640 ? "95%" : 560}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item

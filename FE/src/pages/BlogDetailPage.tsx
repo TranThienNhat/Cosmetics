@@ -66,11 +66,11 @@ const BlogDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] p-4 md:p-8">
+    <div className="min-h-screen bg-[#FDFBF7] p-3 sm:p-6 md:p-8">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <Breadcrumb
-          className="mb-8 text-[11px] uppercase tracking-[0.15em]"
+          className="mb-4 sm:mb-8 text-[11px] uppercase tracking-[0.15em]"
           items={[
             {
               title: (
@@ -102,9 +102,9 @@ const BlogDetailPage: React.FC = () => {
           ]}
         />
 
-        <Card className="shadow-sm border-0 rounded-xl overflow-hidden bg-white">
+        <Card className="shadow-sm border-0 rounded-xl overflow-hidden bg-white" bodyStyle={{ padding: "16px sm: 24px" }}>
           {/* Cover Image */}
-          <div className="relative h-[300px] md:h-[480px] w-full overflow-hidden rounded-lg mb-8">
+          <div className="relative h-[200px] sm:h-[320px] md:h-[460px] w-full overflow-hidden rounded-lg mb-6 sm:mb-8">
             <img
               src={getImageUrl(blog.cover_image)}
               alt={blog.title}
@@ -112,9 +112,9 @@ const BlogDetailPage: React.FC = () => {
             />
           </div>
 
-          <div className="px-2 md:px-8">
+          <div className="px-1 sm:px-4 md:px-8">
             {/* Meta Info */}
-            <Space className="mb-6 flex-wrap" size="large">
+            <Space className="mb-4 sm:mb-6 flex-wrap" size="middle">
               <Tag className="border-0 rounded-full px-4 m-0 uppercase text-[10px] font-bold bg-[#BC8F8F]/10 text-[#BC8F8F]">
                 Linh Cosmetics
               </Tag>
@@ -128,12 +128,12 @@ const BlogDetailPage: React.FC = () => {
             {/* Title */}
             <Title
               level={1}
-              className="!font-serif !mb-10 !leading-[1.3] !text-[#2D2D2D] md:!text-4xl !text-3xl"
+              className="!font-serif !mb-6 sm:!mb-10 !leading-[1.3] !text-[#2D2D2D] !text-2xl sm:!text-3xl md:!text-4xl"
             >
               {blog.title}
             </Title>
 
-            <Divider className="my-10 border-[#f0ece2]" />
+            <Divider className="my-6 sm:my-10 border-[#f0ece2]" />
 
             {/* Main Content */}
             <div

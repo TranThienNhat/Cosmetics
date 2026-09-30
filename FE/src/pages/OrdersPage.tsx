@@ -221,16 +221,20 @@ const OrdersPage: React.FC = () => {
 
                   <div className="space-y-4">
                     {order.items.slice(0, 1).map((item: any) => (
-                        <div key={item.id} className="flex gap-4 items-center">
-                          <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray/5 flex-shrink-0 border border-gray/10 p-1">
-                              <img src={getImageUrl(item.image_url)} alt={item.name} className="w-full h-full object-cover rounded-md" />
+                        <div key={item.id} className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray/5 flex-shrink-0 border border-gray/10 p-1">
+                                <img src={getImageUrl(item.image_url)} alt={item.name} className="w-full h-full object-cover rounded-md" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <Text strong className="block text-sm text-charcoal truncate mb-1">{item.name}</Text>
+                                <Text type="secondary" className="text-[11px] uppercase tracking-wider bg-background border border-gray/10 px-2 py-0.5 rounded-md inline-block mb-1">{item.variant_name}</Text>
+                                <div className="mt-1"><Text className="text-xs text-gray">SL: {item.quantity}</Text></div>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                              <Text strong className="block text-sm text-charcoal truncate mb-1">{item.name}</Text>
-                              <Text type="secondary" className="text-[11px] uppercase tracking-wider bg-background border border-gray/10 px-2 py-0.5 rounded-md inline-block mb-1">{item.variant_name}</Text>
-                              <div className="mt-1"><Text className="text-xs text-gray">SL: {item.quantity}</Text></div>
+                          <div className="text-right sm:text-right">
+                            <Text className="font-medium text-base text-primary">{formatCurrency(Number(item.price) * item.quantity)}</Text>
                           </div>
-                          <Text className="font-medium text-base text-primary">{formatCurrency(Number(item.price) * item.quantity)}</Text>
                         </div>
                     ))}
                   </div>
@@ -278,7 +282,7 @@ const OrdersPage: React.FC = () => {
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         footer={null}
-        width={750}
+        width={typeof window !== "undefined" && window.innerWidth < 768 ? "95%" : 750}
         centered
         closeIcon={null}
         styles={{ content: { borderRadius: "16px", padding: "0", overflow: "hidden" } }}
@@ -423,7 +427,7 @@ const OrdersPage: React.FC = () => {
         onCancel={() => setIsReviewModalOpen(false)} 
         footer={null} 
         centered 
-        width={450} 
+        width={typeof window !== "undefined" && window.innerWidth < 480 ? "95%" : 450} 
         styles={{ content: { borderRadius: "16px", padding: "32px" } }}
       >
         <div className="text-center">

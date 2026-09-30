@@ -196,18 +196,18 @@ const AdminOrdersPage: React.FC = () => {
       </style>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <Title level={2} className="!mb-0">Quản lý đơn hàng</Title>
+          <Title level={2} className="!mb-0 !text-xl sm:!text-2xl !font-serif">Quản lý đơn hàng</Title>
         </div>
 
         <Card>
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 mb-6">
             <Search
               placeholder="Tìm mã đơn, tên hoặc SĐT khách..."
               allowClear
-              style={{ width: 400 }}
+              className="w-full sm:w-80"
               onChange={(e) => setSearchText(e.target.value)}
             />
-            <Select style={{ width: 150 }} value={statusFilter} onChange={setStatusFilter}>
+            <Select className="w-full sm:w-40" value={statusFilter} onChange={setStatusFilter}>
               <Select.Option value="all">Tất cả trạng thái</Select.Option>
               <Select.Option value="pending">Chờ xử lý</Select.Option>
               <Select.Option value="processing">Đang xử lý</Select.Option>
@@ -215,7 +215,7 @@ const AdminOrdersPage: React.FC = () => {
               <Select.Option value="completed">Hoàn thành</Select.Option>
               <Select.Option value="cancelled">Đã hủy</Select.Option>
             </Select>
-            <Button icon={<SearchOutlined />} onClick={loadOrders}>Làm mới</Button>
+            <Button icon={<SearchOutlined />} onClick={loadOrders} className="w-full sm:w-auto">Làm mới</Button>
           </div>
 
           <Table
@@ -223,7 +223,7 @@ const AdminOrdersPage: React.FC = () => {
             columns={columns}
             loading={loading}
             rowKey="id"
-            scroll={{ x: 1000 }}
+            scroll={{ x: 900 }}
           />
         </Card>
 
@@ -233,7 +233,7 @@ const AdminOrdersPage: React.FC = () => {
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
           footer={null}
-          width={800}
+          width={window.innerWidth < 840 ? "95%" : 800}
         >
           {selectedOrder && (
             <div className="space-y-6">

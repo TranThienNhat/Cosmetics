@@ -73,14 +73,14 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex items-center justify-center px-3 sm:px-4 py-8 sm:py-12">
       <div className="w-full max-w-md">
-        <Card className="border-0 shadow-lg">
-          <div className="text-center mb-8">
-            <Title level={2} className="!text-charcoal !mb-2 font-serif">
+        <Card className="border-0 shadow-lg p-2 sm:p-6" bodyStyle={{ padding: "16px" }}>
+          <div className="text-center mb-6 sm:mb-8">
+            <Title level={2} className="!text-charcoal !text-2xl sm:!text-3xl !mb-2 font-serif">
               Đăng nhập
             </Title>
-            <Paragraph className="text-gray">
+            <Paragraph className="text-gray text-sm">
               Chào mừng bạn quay trở lại với Linh Cosmetics
             </Paragraph>
           </div>

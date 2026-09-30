@@ -12,6 +12,7 @@ import {
   Card,
   Avatar,
   List,
+  Drawer,
 } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -27,6 +28,7 @@ import {
   CloseOutlined,
   SendOutlined,
   ThunderboltOutlined,
+  MenuOutlined,
 } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "../../contexts/AuthContext";
@@ -59,6 +61,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // --- State xử lý cho AI Chatbox ---
   const [chatOpen, setChatOpen] = useState(false);
@@ -214,16 +217,26 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <Layout className="min-h-screen bg-[#FDFBF7]">
       {/* --- HEADER --- */}
-      <Header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100 h-20 flex items-center px-8">
+      <Header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100 h-16 sm:h-20 flex items-center px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between w-full">
-          <Link to="/" className="flex items-center">
-            <Title
-              level={3}
-              className="!mb-0 !text-[#2D2D2D] font-serif tracking-tighter"
-            >
-              Linh Cosmetics
-            </Title>
-          </Link>
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Hamburger button for mobile */}
+            <Button
+              type="text"
+              icon={<MenuOutlined style={{ fontSize: 20 }} />}
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden flex items-center justify-center p-1 text-gray-700 hover:text-[#BC8F8F]"
+              aria-label="Menu"
+            />
+            <Link to="/" className="flex items-center">
+              <Title
+                level={3}
+                className="!mb-0 !text-[#2D2D2D] font-serif tracking-tighter !text-xl sm:!text-2xl"
+              >
+                Linh Cosmetics
+              </Title>
+            </Link>
+          </div>
 
           <Menu
             mode="horizontal"
@@ -232,18 +245,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             className="flex-1 justify-center bg-transparent border-none hidden md:flex font-medium"
           />
 
-          <Space size="middle">
+          <Space size={window.innerWidth < 640 ? "small" : "middle"}>
             <Button
               type="text"
-              icon={<SearchOutlined style={{ fontSize: 20 }} />}
+              icon={<SearchOutlined style={{ fontSize: 18 }} />}
               onClick={() => setSearchModalVisible(true)}
+              className="p-1 sm:p-2"
+              aria-label="Tìm kiếm"
             />
 
-            <Badge count={cartItemCount} color="#BC8F8F">
+            <Badge count={cartItemCount} color="#BC8F8F" size="small">
               <Button
                 type="text"
-                icon={<ShoppingCartOutlined style={{ fontSize: 22 }} />}
+                icon={<ShoppingCartOutlined style={{ fontSize: 20 }} />}
                 onClick={() => navigate("/cart")}
+                className="p-1 sm:p-2"
+                aria-label="Giỏ hàng"
               />
             </Badge>
 
@@ -251,7 +268,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
                 <Button
                   type="text"
-                  className="flex items-center gap-2 font-medium"
+                  className="flex items-center gap-1 sm:gap-2 font-medium px-2"
                 >
                   <UserOutlined style={{ fontSize: 18 }} />
                   <span className="hidden lg:inline">{user?.name}</span>
@@ -261,7 +278,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <Link to="/login">
                 <Button
                   type="primary"
-                  className="bg-[#BC8F8F] border-none rounded-full px-6 hover:!bg-[#a37676]"
+                  className="bg-[#BC8F8F] border-none rounded-full px-3 sm:px-6 h-8 sm:h-9 text-xs sm:text-sm hover:!bg-[#a37676]"
                 >
                   Đăng nhập
                 </Button>
@@ -270,6 +287,97 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </Space>
         </div>
       </Header>
+
+      {/* --- MOBILE DRAWER NAVIGATION --- */}
+      <Drawer
+        title={
+          <div className="flex items-center justify-between w-full">
+            <span className="font-serif text-lg text-charcoal font-bold tracking-tight">
+              Linh Cosmetics
+            </span>
+          </div>
+        }
+        placement="left"
+        onClose={() => setMobileMenuOpen(false)}
+        open={mobileMenuOpen}
+        width={typeof window !== "undefined" && window.innerWidth < 360 ? "85%" : 300}
+        bodyStyle={{ padding: 0 }}
+      >
+        <div className="flex flex-col h-full justify-between">
+          <div className="p-4 space-y-1">
+            <Menu
+              mode="inline"
+              selectedKeys={[location.pathname]}
+              items={menuItems.map((item) => ({
+                ...item,
+                onClick: () => setMobileMenuOpen(false),
+              }))}
+              className="border-none font-medium"
+            />
+
+            <div className="pt-4 border-t border-gray-100 px-4 space-y-2">
+              {isAuthenticated ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-xl">
+                    <Avatar icon={<UserOutlined />} className="bg-[#BC8F8F]" />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm text-charcoal truncate">{user?.name}</div>
+                      <div className="text-xs text-gray-400 truncate">{user?.email}</div>
+                    </div>
+                  </div>
+                  <Link
+                    to="/orders"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 text-sm text-gray-700 hover:text-primary py-2 px-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <InboxOutlined style={{ fontSize: 16 }} />
+                    <span>Đơn hàng của tôi</span>
+                  </Link>
+                  {(user?.role === "admin" || user?.role === "staff") && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 text-sm text-primary font-medium py-2 px-2 rounded-lg hover:bg-primary/5 transition-colors"
+                    >
+                      <SettingOutlined style={{ fontSize: 16 }} />
+                      <span>Quản trị hệ thống</span>
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      logout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 text-sm text-red-500 hover:text-red-600 py-2 px-2 rounded-lg hover:bg-red-50 transition-colors text-left"
+                  >
+                    <LogoutOutlined style={{ fontSize: 16 }} />
+                    <span>Đăng xuất</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="pt-2">
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Button block type="primary" className="bg-[#BC8F8F] border-none rounded-xl h-10 mb-2 font-medium">
+                      Đăng nhập
+                    </Button>
+                  </Link>
+                  <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                    <Button block className="rounded-xl h-10 font-medium">
+                      Đăng ký tài khoản
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-gray-100 bg-[#FDFBF7] text-xs text-gray-500 space-y-2">
+            <div>Hotline: 1900 1234</div>
+            <div>Email: admin@linhcosmetics.vn</div>
+            <div className="text-[10px] text-gray-400">© 2026 Linh Cosmetics</div>
+          </div>
+        </div>
+      </Drawer>
 
       {/* --- BODY CONTENT --- */}
       <Content className="flex-1">{children}</Content>
@@ -368,7 +476,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* ======================================================== */}
       {/* ACTION FLOATING GÓC PHẢI DƯỚI */}
       {/* ======================================================== */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3 items-end">
+      <div className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 flex flex-col gap-3 items-end">
         {chatOpen ? (
           <div className="animate-in fade-in slide-in-from-bottom-5 duration-300">
             <Card
@@ -399,9 +507,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   />
                 </div>
               }
-              className="shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
+              className="shadow-2xl border border-gray-100 flex flex-col overflow-hidden max-w-[calc(100vw-32px)]"
               style={{
                 width: 380,
+                maxHeight: "calc(100vh - 100px)",
                 height: 480,
                 borderRadius: "20px",
               }}
@@ -409,7 +518,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 padding: "12px",
                 display: "flex",
                 flexDirection: "column",
-                height: "calc(480px - 65px)",
+                height: "calc(100% - 65px)",
+                maxHeight: "calc(100vh - 165px)",
                 overflow: "hidden",
               }}
             >
@@ -469,7 +579,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     onPressEnter={handleSendChatMessage}
                     disabled={chatLoading}
                     size="large"
-                    className="rounded-l-xl border-gray-200 focus:border-[#BC8F8F] focus:shadow-none"
+                    className="rounded-l-xl border-gray-200 focus:border-[#BC8F8F] focus:shadow-none text-sm"
                     style={{
                       height: "40px",
                     }}
@@ -498,8 +608,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               type="primary"
               shape="circle"
               onClick={() => setChatOpen(true)}
-              className="!w-14 !h-14 border-none shadow-xl transition-all duration-300 hover:scale-105 !bg-gradient-to-r from-[#BC8F8F] to-[#d4afaf] flex items-center justify-center"
-              icon={<CustomerServiceOutlined style={{ fontSize: 24, color: "#fff" }} />}
+              className="!w-12 !h-12 sm:!w-14 sm:!h-14 border-none shadow-xl transition-all duration-300 hover:scale-105 !bg-gradient-to-r from-[#BC8F8F] to-[#d4afaf] flex items-center justify-center"
+              icon={<CustomerServiceOutlined className="!text-xl sm:!text-2xl text-white" />}
             />
 
             {/* Nút liên hệ qua Zalo */}
@@ -507,12 +617,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               href="https://zalo.me/0334523154"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-14 h-14 bg-[#0068FF] rounded-full shadow-xl flex items-center justify-center hover:scale-105 transition-transform overflow-hidden animate-in fade-in"
+              className="w-12 h-12 sm:w-14 sm:h-14 bg-[#0068FF] rounded-full shadow-xl flex items-center justify-center hover:scale-105 transition-transform overflow-hidden animate-in fade-in"
             >
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg"
                 alt="Zalo"
-                className="w-8 h-8"
+                className="w-7 h-7 sm:w-8 sm:h-8"
               />
             </a>
           </>
