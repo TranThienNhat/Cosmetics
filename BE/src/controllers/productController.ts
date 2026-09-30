@@ -127,9 +127,12 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
       data: products,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(">>> Error index:", error);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
+      message: "Lỗi server", 
+      error: error?.message || String(error) 
+    });
   }
 };
 

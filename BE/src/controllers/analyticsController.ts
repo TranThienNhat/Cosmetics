@@ -4,6 +4,7 @@ import path from "path";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
 const ML_ENGINE_DIR = path.join(__dirname, "../../ml_engine");
+const PYTHON_CMD = process.platform === "win32" ? "python" : "python3";
 
 // Simple in-memory cache to prevent spawning heavy Python processes on every rapid request
 const cache: Record<string, { data: any; expiry: number }> = {};
@@ -15,7 +16,7 @@ const runPythonScript = (scriptName: string, args: string[] = []): Promise<any> 
     
     // Execute python with UTF-8 env
     execFile(
-      "python",
+      PYTHON_CMD,
       [scriptPath, ...args],
       {
         cwd: ML_ENGINE_DIR,

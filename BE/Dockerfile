@@ -29,10 +29,10 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages -r requirement
 COPY package*.json tsconfig.json ./
 RUN npm ci --omit=dev=false
 
-# 3. Copy source code & ML engine
+# 3. Copy source code, ML engine & assets
 COPY src ./src
 COPY ml_engine ./ml_engine
-RUN mkdir -p uploads
+COPY uploads ./uploads
 
 # 4. Build TypeScript to JavaScript
 RUN npm run build && npm prune --production
