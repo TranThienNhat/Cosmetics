@@ -17,13 +17,17 @@ async function initDB() {
   console.log(`\n⏳ Đang kết nối tới MySQL tại ${DB_HOST}:${DB_PORT} với user '${DB_USER}'...`);
 
   let connection;
-  try {
+    const isTiDB = DB_HOST.includes('tidbcloud.com');
     connection = await mysql.createConnection({
       host: DB_HOST,
-      port: Number(DB_PORT),
+      port: Number(DB_PORT) || (isTiDB ? 4000 : 3306),
       user: DB_USER,
       password: DB_PASSWORD,
       multipleStatements: true,
+      ssl: isTiDB || process.env.DB_SSL === 'true' ? {
+        minVersion: 'TLSv1.2',
+        rejectUnauthorized: true,
+      } : undefined,
     });
     console.log('✅ Đã kết nối MySQL thành công!');
   } catch (err) {
