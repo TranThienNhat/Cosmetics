@@ -1,3 +1,8 @@
+CREATE DATABASE IF NOT EXISTS `mypham_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+USE `mypham_db`;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
 DROP TABLE IF EXISTS `blogs`;
 CREATE TABLE `blogs` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -262,3 +267,6 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `role`, `is_act
 (4, 'Khách Hàng Mẫu', 'khachhang@gmail.com', '$2b$10$7Yjs.WqEgQfXNjX7mtbzVeS4DqVYbWsEaYpVe3c6syZ97JIBZjfV2', '0903456789', 'user', 1),
 (5, 'Nguyễn Thị Mai', 'mai@gmail.com', '$2b$10$7Yjs.WqEgQfXNjX7mtbzVeS4DqVYbWsEaYpVe3c6syZ97JIBZjfV2', '0904567890', 'user', 1)
 ON DUPLICATE KEY UPDATE `password`=VALUES(`password`), `role`=VALUES(`role`), `is_active`=1;
+
+SET FOREIGN_KEY_CHECKS = 1;
+

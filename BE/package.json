@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
+    "db:init": "node init-db.js",
+    "db:seed": "node seed.js",
+    "setup:ml": "python -m venv venv && .\\venv\\Scripts\\pip install -r requirements.txt",
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
