@@ -40,7 +40,7 @@ class ProductModel extends BaseModel<IProduct> {
       values.push(term, term);
     }
 
-    sql += ` GROUP BY p.id`;
+    sql += ` GROUP BY p.id, c.id, b.id, c.name, b.name`;
 
     if (options.minPrice !== undefined || options.maxPrice !== undefined) {
       sql += ` HAVING 1=1`;
