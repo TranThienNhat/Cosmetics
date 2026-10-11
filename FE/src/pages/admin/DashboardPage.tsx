@@ -12,6 +12,7 @@ import {
   Select,
   ConfigProvider,
   message,
+  Empty,
 } from "antd";
 import {
   ShoppingOutlined,
@@ -78,9 +79,9 @@ const themeConfig = {
 
 const cardStyle: React.CSSProperties = {
   backgroundColor: "#FFFFFF",
-  borderRadius: "14px",
-  border: "1px solid rgba(188, 143, 143, 0.12)",
-  boxShadow: "0 2px 10px rgba(0, 0, 0, 0.03)",
+  borderRadius: "16px",
+  border: "1px solid #ECE7E1",
+  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)",
 };
 
 const formatCompactNumber = (value: number) => {
@@ -124,6 +125,7 @@ const DashboardPage: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [filterType, setFilterType] = useState<string>("current_month");
+  const [selectedMonth, setSelectedMonth] = useState<Dayjs | null>(dayjs());
   const [selectedYear, setSelectedYear] = useState<Dayjs | null>(dayjs());
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null]>([
     dayjs().startOf("month"),
@@ -132,7 +134,7 @@ const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData();
-  }, [filterType, selectedYear, dateRange]);
+  }, [filterType, selectedMonth, selectedYear, dateRange]);
 
   const loadDashboardData = async () => {
     try {
@@ -143,6 +145,9 @@ const DashboardPage: React.FC = () => {
         params.append("filter", "current_month");
         params.append("year", dayjs().year().toString());
         params.append("month", (dayjs().month() + 1).toString());
+      } else if (filterType === "month" && selectedMonth) {
+        params.append("year", selectedMonth.year().toString());
+        params.append("month", (selectedMonth.month() + 1).toString());
       } else if (filterType === "year" && selectedYear) {
         params.append("filter", "year");
         params.append("year", selectedYear.year().toString());
@@ -160,7 +165,14 @@ const DashboardPage: React.FC = () => {
       }
 
       const response = await api.get(`/dashboard/stats?${params.toString()}`);
-      setData(response.data.data);
+      setData(
+        response.data?.data || {
+          overview: { totalOrders: 0, totalRevenue: 0, totalCancelled: 0, cancelRate: 0 },
+          charts: { revenueChartData: [], orderStatusChart: [] },
+          topProducts: [],
+          inventoryProducts: [],
+        }
+      );
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu dashboard:", error);
       message.error("Không thể tải dữ liệu thống kê");
@@ -174,28 +186,34 @@ const DashboardPage: React.FC = () => {
     try {
       const XLSX = await import("xlsx");
 
-      const topProductsData = data.topProducts.map((item, index) => ({
+      const topProductsData = (data.topProducts || []).map((item, index) => ({
         STT: index + 1,
         "Tên sản phẩm": item.name,
-        "Số lượng đã bán": Number(item.sold_qty),
-        "Tổng doanh thu (VNĐ)": Number(item.total_sales),
+        "Số lượng đã bán": Number(item.sold_qty) || 0,
+        "Tổng doanh thu (VNĐ)": Number(item.total_sales) || 0,
       }));
 
-      const inventoryData = data.inventoryProducts.map((item, index) => ({
+      const inventoryData = (data.inventoryProducts || []).map((item, index) => ({
         STT: index + 1,
         "Tên sản phẩm": item.name,
-        "Số lượng tồn kho": Number(item.total_stock),
+        "Số lượng tồn kho": Number(item.total_stock) || 0,
       }));
 
-      const revenueData = data.charts.revenueChartData.map((item) => ({
+      const revenueData = (data.charts?.revenueChartData || []).map((item) => ({
         "Thời gian": item.label,
-        "Số đơn hàng": Number(item.total_orders),
-        "Doanh thu (VNĐ)": Number(item.revenue),
+        "Số đơn hàng": Number(item.total_orders) || 0,
+        "Doanh thu (VNĐ)": Number(item.revenue) || 0,
       }));
 
-      const wsTopProducts = XLSX.utils.json_to_sheet(topProductsData);
-      const wsInventory = XLSX.utils.json_to_sheet(inventoryData);
-      const wsRevenue = XLSX.utils.json_to_sheet(revenueData);
+      const wsTopProducts = XLSX.utils.json_to_sheet(
+        topProductsData.length > 0 ? topProductsData : [{ Thông_báo: "Chưa có dữ liệu" }]
+      );
+      const wsInventory = XLSX.utils.json_to_sheet(
+        inventoryData.length > 0 ? inventoryData : [{ Thông_báo: "Chưa có dữ liệu" }]
+      );
+      const wsRevenue = XLSX.utils.json_to_sheet(
+        revenueData.length > 0 ? revenueData : [{ Thông_báo: "Chưa có dữ liệu" }]
+      );
 
       const wscols = [{ wch: 5 }, { wch: 45 }, { wch: 20 }, { wch: 25 }];
       wsTopProducts["!cols"] = wscols;
@@ -216,7 +234,33 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  const sanitizedRevenueChart = (data.charts?.revenueChartData || []).map((item) => ({
+    ...item,
+    revenue: Number(item.revenue) || 0,
+    total_orders: Number(item.total_orders) || 0,
+    cancelled_orders: Number(item.cancelled_orders) || 0,
+  }));
+
+  const sanitizedOrderStatusChart = (data.charts?.orderStatusChart || [])
+    .map((item) => ({
+      ...item,
+      value: Number(item.value) || 0,
+    }))
+    .filter((item) => item.value > 0);
+
   const topProductColumns = [
+    {
+      title: "STT",
+      key: "rank",
+      width: 55,
+      align: "center" as const,
+      render: (_: any, __: any, index: number) => {
+        if (index === 0) return <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-700 font-bold text-xs">🥇</span>;
+        if (index === 1) return <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-xs">🥈</span>;
+        if (index === 2) return <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-700 font-bold text-xs">🥉</span>;
+        return <span className="text-gray-400 text-xs font-semibold">#{index + 1}</span>;
+      },
+    },
     {
       title: "Tên sản phẩm",
       dataIndex: "name",
@@ -227,7 +271,7 @@ const DashboardPage: React.FC = () => {
       render: (name: string, record: any) => (
         <Link
           to={`/admin/products/${record.id}/edit`}
-          className="text-[#BC8F8F] font-medium hover:underline block truncate max-w-[240px]"
+          className="text-[#BC8F8F] font-medium hover:underline block truncate max-w-[220px]"
           title={name}
         >
           {name}
@@ -241,8 +285,8 @@ const DashboardPage: React.FC = () => {
       width: 90,
       align: "center" as const,
       render: (val: number) => (
-        <Tag color="#E6D3D3" style={{ color: "#806060", borderRadius: "6px" }} className="m-0">
-          {val}
+        <Tag color="#FAF5F0" style={{ color: "#806060", borderColor: "#E8D8CC", borderRadius: "6px" }} className="m-0 font-medium">
+          {Number(val || 0).toLocaleString("vi-VN")}
         </Tag>
       ),
     },
@@ -253,8 +297,8 @@ const DashboardPage: React.FC = () => {
       width: 140,
       align: "right" as const,
       render: (val: number) => (
-        <Text strong style={{ color: "#2D2D2D" }} className="whitespace-nowrap font-medium">
-          {formatCurrency(val)}
+        <Text strong style={{ color: "#2D2D2D" }} className="whitespace-nowrap font-medium font-serif">
+          {formatCurrency(Number(val || 0))}
         </Text>
       ),
     },
@@ -268,92 +312,122 @@ const DashboardPage: React.FC = () => {
       ellipsis: {
         showTitle: true,
       },
-      render: (name: string) => (
-        <span className="block truncate max-w-[240px] text-charcoal font-medium" title={name}>
+      render: (name: string, record: any) => (
+        <Link
+          to={`/admin/products/${record.id}/edit`}
+          className="block truncate max-w-[220px] text-gray-800 font-medium hover:text-[#BC8F8F]"
+          title={name}
+        >
           {name}
-        </span>
+        </Link>
       ),
     },
     {
       title: "Tồn kho",
       dataIndex: "total_stock",
       key: "total_stock",
-      width: 120,
+      width: 130,
       align: "center" as const,
-      render: (val: number) => (
-        <Tag
-          color={val > 10 ? "#A5A58D" : "#806060"}
-          style={{ borderRadius: "6px" }}
-          className="m-0 whitespace-nowrap"
-        >
-          {val} sản phẩm
-        </Tag>
-      ),
+      render: (val: number) => {
+        const stock = Number(val || 0);
+        if (stock === 0) {
+          return (
+            <Tag color="#806060" style={{ borderRadius: "6px" }} className="m-0 whitespace-nowrap">
+              Hết hàng (0)
+            </Tag>
+          );
+        }
+        if (stock <= 5) {
+          return (
+            <Tag color="#CB997E" style={{ borderRadius: "6px" }} className="m-0 whitespace-nowrap">
+              Sắp hết ({stock})
+            </Tag>
+          );
+        }
+        return (
+          <Tag
+            color="#A5A58D"
+            style={{ borderRadius: "6px" }}
+            className="m-0 whitespace-nowrap"
+          >
+            {stock} sản phẩm
+          </Tag>
+        );
+      },
     },
   ];
 
   return (
     <ConfigProvider theme={themeConfig}>
-      <div className="bg-[#FDFBF7] min-h-screen -m-3 sm:-m-6 md:-m-8 p-3 sm:p-6 md:p-8">
-        {/* Sticky Header */}
-        <div
-          className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 sticky top-0 z-10 -m-3 sm:-m-6 md:-m-8 mb-6 sm:mb-8 p-3 sm:p-6"
-          style={{
-            background: "rgba(253, 251, 247, 0.92)",
-            backdropFilter: "blur(12px)",
-            borderBottom: "1px solid rgba(188, 143, 143, 0.15)",
-          }}
-        >
+      <div className="space-y-6">
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-5 border-b border-[#F0EBE1]">
           <div>
             <Title level={3} style={{ margin: 0, color: "#2D2D2D" }} className="!font-serif font-bold !text-xl sm:!text-2xl">
               Tổng quan thống kê
             </Title>
-            <Text type="secondary" style={{ color: "#555555" }}>
-              Theo dõi hiệu suất và doanh thu cửa hàng của bạn
+            <Text type="secondary" style={{ color: "#777777" }} className="text-sm">
+              Theo dõi hiệu suất và doanh thu của cửa hàng
             </Text>
           </div>
 
-          <Space size="middle" className="flex-wrap">
+          <Space size="middle" className="flex-wrap items-center">
             <Select
-              size="large"
+              size="middle"
               value={filterType}
               onChange={(val) => setFilterType(val)}
-              style={{ width: 160 }}
+              style={{ width: 150 }}
               options={[
                 { label: "Tháng hiện tại", value: "current_month" },
+                { label: "Theo tháng", value: "month" },
                 { label: "Theo năm", value: "year" },
                 { label: "Khoảng thời gian", value: "range" },
               ]}
             />
 
+            {filterType === "month" && (
+              <DatePicker
+                picker="month"
+                size="middle"
+                value={selectedMonth}
+                onChange={(date) => setSelectedMonth(date)}
+                placeholder="Chọn tháng"
+                format="MM/YYYY"
+                style={{ width: 130 }}
+                allowClear={false}
+              />
+            )}
+
             {filterType === "year" && (
               <DatePicker
                 picker="year"
-                size="large"
+                size="middle"
                 value={selectedYear}
                 onChange={(date) => setSelectedYear(date)}
                 placeholder="Chọn năm"
-                style={{ width: 120 }}
+                style={{ width: 110 }}
                 allowClear={false}
               />
             )}
 
             {filterType === "range" && (
               <RangePicker
-                size="large"
+                size="middle"
                 value={dateRange as any}
                 onChange={(dates) => setDateRange(dates as any)}
                 placeholder={["Từ ngày", "Đến ngày"]}
+                format="DD/MM/YYYY"
+                style={{ width: 240 }}
               />
             )}
 
             {/* NÚT LÀM MỚI VÀ XUẤT EXCEL */}
-            <Space>
+            <Space size="small">
               <Button
                 onClick={loadDashboardData}
                 loading={loading}
-                size="large"
-                icon={<ReloadOutlined />}
+                size="middle"
+                icon={<ReloadOutlined spin={loading} />}
                 style={{ fontWeight: 500, borderRadius: "8px" }}
               >
                 Làm mới
@@ -361,9 +435,9 @@ const DashboardPage: React.FC = () => {
               <Button
                 type="primary"
                 onClick={exportToExcel}
-                size="large"
+                size="middle"
                 icon={<FileExcelOutlined />}
-                className="shadow-md"
+                className="shadow-sm"
                 style={{
                   fontWeight: 500,
                   borderRadius: "8px",
@@ -377,108 +451,134 @@ const DashboardPage: React.FC = () => {
           </Space>
         </div>
 
-        <div className="space-y-6">
-          {/* THẺ THỐNG KÊ (OVERVIEW) - ĐỒNG BỘ GIAO DIỆN PREMIUM */}
-          <Row gutter={[24, 24]}>
-            <Col xs={24} sm={12} lg={6}>
-              <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1 pr-3">
-                    <Text className="text-xs uppercase tracking-wider font-semibold text-[#806060] block truncate mb-1">
-                      Tổng đơn hàng
-                    </Text>
-                    <div className="text-2xl font-bold text-[#2D2D2D] truncate font-serif">
-                      {data.overview.totalOrders}
-                    </div>
+        {/* THẺ THỐNG KÊ (OVERVIEW) */}
+        <Row gutter={[20, 20]}>
+          <Col xs={24} sm={12} lg={6}>
+            <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300 h-full border-[#ECE7E1]">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0 flex-1 pr-3">
+                  <Text className="text-xs uppercase tracking-wider font-semibold text-[#806060] block truncate mb-1">
+                    Tổng đơn hàng
+                  </Text>
+                  <div className="text-2xl sm:text-3xl font-bold text-[#2D2D2D] truncate font-serif">
+                    {data.overview.totalOrders.toLocaleString("vi-VN")}
                   </div>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-[#BC8F8F]/15 text-[#BC8F8F]">
-                    <ShoppingOutlined style={{ fontSize: 22 }} />
-                  </div>
-                </div>
-              </Card>
-            </Col>
-
-            <Col xs={24} sm={12} lg={6}>
-              <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1 pr-3">
-                    <Text className="text-xs uppercase tracking-wider font-semibold text-[#806060] block truncate mb-1">
-                      Tổng doanh thu
-                    </Text>
-                    <div className="text-2xl font-bold text-[#2D2D2D] truncate font-serif" title={formatCurrency(data.overview.totalRevenue)}>
-                      {formatCurrency(data.overview.totalRevenue)}
-                    </div>
-                  </div>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-[#A5A58D]/20 text-[#6B705C]">
-                    <DollarCircleOutlined style={{ fontSize: 22 }} />
+                  <div className="mt-2 text-xs text-gray-500 truncate flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#BC8F8F]" />
+                    Đơn hàng trong kỳ
                   </div>
                 </div>
-              </Card>
-            </Col>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-[#BC8F8F]/15 text-[#BC8F8F]">
+                  <ShoppingOutlined style={{ fontSize: 22 }} />
+                </div>
+              </div>
+            </Card>
+          </Col>
 
-            <Col xs={24} sm={12} lg={6}>
-              <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1 pr-3">
-                    <Text className="text-xs uppercase tracking-wider font-semibold text-[#806060] block truncate mb-1">
-                      Đơn bị huỷ
-                    </Text>
-                    <div className="text-2xl font-bold text-[#2D2D2D] truncate font-serif">
-                      {data.overview.totalCancelled}
-                    </div>
+          <Col xs={24} sm={12} lg={6}>
+            <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300 h-full border-[#ECE7E1]">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0 flex-1 pr-3">
+                  <Text className="text-xs uppercase tracking-wider font-semibold text-[#6B705C] block truncate mb-1">
+                    Tổng doanh thu
+                  </Text>
+                  <div className="text-2xl sm:text-3xl font-bold text-[#2D2D2D] truncate font-serif" title={formatCurrency(data.overview.totalRevenue)}>
+                    {formatCurrency(data.overview.totalRevenue)}
                   </div>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-[#806060]/15 text-[#806060]">
-                    <CloseCircleOutlined style={{ fontSize: 22 }} />
+                  <div className="mt-2 text-xs text-gray-500 truncate flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#A5A58D]" />
+                    Đơn hoàn tất thành công
                   </div>
                 </div>
-              </Card>
-            </Col>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-[#A5A58D]/20 text-[#6B705C]">
+                  <DollarCircleOutlined style={{ fontSize: 22 }} />
+                </div>
+              </div>
+            </Card>
+          </Col>
 
-            <Col xs={24} sm={12} lg={6}>
-              <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1 pr-3">
-                    <Text className="text-xs uppercase tracking-wider font-semibold text-[#806060] block truncate mb-1">
-                      Tỷ lệ huỷ đơn
-                    </Text>
-                    <div className="text-2xl font-bold text-[#2D2D2D] truncate font-serif">
-                      {data.overview.cancelRate}%
-                    </div>
+          <Col xs={24} sm={12} lg={6}>
+            <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300 h-full border-[#ECE7E1]">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0 flex-1 pr-3">
+                  <Text className="text-xs uppercase tracking-wider font-semibold text-[#806060] block truncate mb-1">
+                    Đơn bị huỷ
+                  </Text>
+                  <div className="text-2xl sm:text-3xl font-bold text-[#2D2D2D] truncate font-serif">
+                    {data.overview.totalCancelled.toLocaleString("vi-VN")}
                   </div>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-[#CB997E]/20 text-[#CB997E]">
-                    <PercentageOutlined style={{ fontSize: 22 }} />
+                  <div className="mt-2 text-xs text-gray-500 truncate flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#806060]" />
+                    Đơn huỷ / hoàn
                   </div>
                 </div>
-              </Card>
-            </Col>
-          </Row>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-[#806060]/15 text-[#806060]">
+                  <CloseCircleOutlined style={{ fontSize: 22 }} />
+                </div>
+              </div>
+            </Card>
+          </Col>
 
-          {/* BIỂU ĐỒ (CHARTS) */}
-          <Row gutter={[24, 24]}>
-            <Col xs={24} lg={16}>
-              <Card
-                title={
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-bold text-gray-800 text-base flex items-center gap-2">
-                      <AreaChartOutlined style={{ color: "#BC8F8F", fontSize: 18 }} />
-                      Biểu đồ Doanh thu & Tăng trưởng đơn hàng
+          <Col xs={24} sm={12} lg={6}>
+            <Card style={cardStyle} loading={loading} className="hover:shadow-md transition-all duration-300 h-full border-[#ECE7E1]">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0 flex-1 pr-3">
+                  <Text className="text-xs uppercase tracking-wider font-semibold text-[#CB997E] block truncate mb-1">
+                    Tỷ lệ huỷ đơn
+                  </Text>
+                  <div className="text-2xl sm:text-3xl font-bold text-[#2D2D2D] truncate font-serif">
+                    {data.overview.cancelRate}%
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500 truncate flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${data.overview.cancelRate > 10 ? "bg-red-500" : "bg-emerald-500"}`} />
+                    {data.overview.cancelRate > 10 ? "Cần kiểm soát" : "Mức an toàn"}
+                  </div>
+                </div>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-[#CB997E]/20 text-[#CB997E]">
+                  <PercentageOutlined style={{ fontSize: 22 }} />
+                </div>
+              </div>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* BIỂU ĐỒ (CHARTS) */}
+        <Row gutter={[20, 20]}>
+          <Col xs={24} lg={15}>
+            <Card
+              title={
+                <div className="flex flex-wrap items-center justify-between gap-2 py-1">
+                  <span className="font-bold text-gray-800 text-base flex items-center gap-2">
+                    <AreaChartOutlined style={{ color: "#BC8F8F", fontSize: 18 }} />
+                    Biểu đồ Doanh thu & Tăng trưởng đơn hàng
+                  </span>
+                  <div className="flex items-center gap-2 text-xs font-normal">
+                    <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-[#BC8F8F] border border-rose-200 font-medium flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-[#BC8F8F]" /> Doanh thu (VND)
                     </span>
-                    <div className="flex items-center gap-2 text-xs font-normal">
-                      <span className="px-2.5 py-1 rounded-full bg-rose-50 text-[#BC8F8F] border border-rose-200 font-medium">
-                        ● Doanh thu (VND)
-                      </span>
-                      <span className="px-2.5 py-1 rounded-full bg-amber-50 text-[#CB997E] border border-amber-200 font-medium">
-                        ■ Số lượng đơn
-                      </span>
-                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-[#CB997E] border border-amber-200 font-medium flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-sm bg-[#CB997E]" /> Số lượng đơn
+                    </span>
                   </div>
-                }
-                style={cardStyle}
-                loading={loading}
-              >
-                <ResponsiveContainer width="100%" height={360}>
+                </div>
+              }
+              style={cardStyle}
+              loading={loading}
+            >
+              {sanitizedRevenueChart.length === 0 ? (
+                <div className="h-[340px] flex flex-col items-center justify-center text-center p-6 bg-[#FCFBF9]/60 rounded-xl border border-dashed border-[#EAE4DC]">
+                  <div className="w-14 h-14 rounded-2xl bg-[#BC8F8F]/10 text-[#BC8F8F] flex items-center justify-center text-2xl mb-3">
+                    <AreaChartOutlined />
+                  </div>
+                  <Text strong className="text-gray-700 text-sm">Chưa có dữ liệu doanh thu</Text>
+                  <Text type="secondary" className="text-xs text-gray-500 mt-1 max-w-sm">
+                    Chưa ghi nhận đơn hàng phát sinh trong khoảng thời gian này. Hãy thử chọn mốc thời gian khác.
+                  </Text>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={340}>
                   <ComposedChart
-                    data={data.charts.revenueChartData}
+                    data={sanitizedRevenueChart}
                     margin={{ top: 20, right: 20, bottom: 0, left: 10 }}
                   >
                     <defs>
@@ -516,11 +616,12 @@ const DashboardPage: React.FC = () => {
                       axisLine={false}
                       tickLine={false}
                       tick={{ fill: "#666666", fontSize: 12 }}
+                      allowDecimals={false}
                     />
                     <RechartsTooltip
                       formatter={(value: any, name: any) => {
                         if (name === "Doanh thu" || name === "Doanh thu (VND)")
-                          return [formatCurrency(value), "Doanh thu"];
+                          return [formatCurrency(Number(value) || 0), "Doanh thu"];
                         return [`${value} đơn`, "Số đơn hàng"];
                       }}
                       labelFormatter={(label) => `Thời gian: ${label}`}
@@ -532,7 +633,7 @@ const DashboardPage: React.FC = () => {
                         padding: "10px 14px",
                       }}
                     />
-                    <Legend wrapperStyle={{ paddingTop: "16px" }} />
+                    <Legend wrapperStyle={{ paddingTop: "14px" }} />
                     <Bar
                       yAxisId="right"
                       dataKey="total_orders"
@@ -553,28 +654,47 @@ const DashboardPage: React.FC = () => {
                     />
                   </ComposedChart>
                 </ResponsiveContainer>
-              </Card>
-            </Col>
+              )}
+            </Card>
+          </Col>
 
-            <Col xs={24} lg={8}>
-              <Card
-                title={
+          <Col xs={24} lg={9}>
+            <Card
+              title={
+                <div className="flex items-center justify-between py-1">
                   <span className="font-bold text-gray-800 text-base flex items-center gap-2">
                     <PieChartOutlined style={{ color: "#CB997E", fontSize: 18 }} />
                     Cơ cấu Trạng thái Đơn hàng
                   </span>
-                }
-                style={cardStyle}
-                loading={loading}
-              >
-                <ResponsiveContainer width="100%" height={360}>
+                  {data.overview.totalOrders > 0 && (
+                    <Tag color="#FAF5F0" style={{ color: "#806060", borderColor: "#E8D8CC" }} className="m-0 font-medium">
+                      {data.overview.totalOrders} đơn
+                    </Tag>
+                  )}
+                </div>
+              }
+              style={cardStyle}
+              loading={loading}
+            >
+              {sanitizedOrderStatusChart.length === 0 || data.overview.totalOrders === 0 ? (
+                <div className="h-[340px] flex flex-col items-center justify-center text-center p-6 bg-[#FCFBF9]/60 rounded-xl border border-dashed border-[#EAE4DC]">
+                  <div className="w-14 h-14 rounded-2xl bg-[#CB997E]/10 text-[#CB997E] flex items-center justify-center text-2xl mb-3">
+                    <PieChartOutlined />
+                  </div>
+                  <Text strong className="text-gray-700 text-sm">Chưa có dữ liệu đơn hàng</Text>
+                  <Text type="secondary" className="text-xs text-gray-500 mt-1 max-w-sm">
+                    Không có trạng thái đơn hàng để hiển thị biểu đồ trong khoảng thời gian này.
+                  </Text>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={340}>
                   <PieChart>
                     <Pie
-                      data={data.charts.orderStatusChart}
+                      data={sanitizedOrderStatusChart}
                       cx="50%"
                       cy="48%"
-                      innerRadius={70}
-                      outerRadius={110}
+                      innerRadius={65}
+                      outerRadius={105}
                       paddingAngle={3}
                       dataKey="value"
                       nameKey="label"
@@ -584,7 +704,7 @@ const DashboardPage: React.FC = () => {
                         `${STATUS_TRANSLATION[name] || name} ${((percent || 0) * 100).toFixed(0)}%`
                       }
                     >
-                      {data.charts.orderStatusChart.map((entry, index) => (
+                      {sanitizedOrderStatusChart.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={STATUS_COLORS[entry.label] || "#d9d9d9"}
@@ -604,71 +724,94 @@ const DashboardPage: React.FC = () => {
                       }}
                     />
                     <Legend
-                      formatter={(value) => (
-                        <span className="text-xs text-gray-700 font-medium">
-                          {STATUS_TRANSLATION[value] || value}
-                        </span>
-                      )}
+                      formatter={(value, entry: any) => {
+                        const count = entry?.payload?.value;
+                        return (
+                          <span className="text-xs text-gray-700 font-medium">
+                            {STATUS_TRANSLATION[value] || value} {count !== undefined ? `(${count})` : ""}
+                          </span>
+                        );
+                      }}
                       verticalAlign="bottom"
                     />
                   </PieChart>
                 </ResponsiveContainer>
-              </Card>
-            </Col>
-          </Row>
+              )}
+            </Card>
+          </Col>
+        </Row>
 
-          {/* BẢNG DỮ LIỆU (TABLES) */}
-          <Row gutter={[24, 24]}>
-            <Col xs={24} lg={12}>
-              <Card
-                title={
-                  <span className="flex items-center gap-2 font-bold text-gray-800">
-                    <TrophyOutlined style={{ color: "#BC8F8F" }} />
-                    Top 10 Sản phẩm bán chạy
-                  </span>
-                }
-                extra={
-                  <Link to="/admin/products" style={{ color: "#BC8F8F" }} className="hover:underline font-medium text-xs">
-                    Xem tất cả
-                  </Link>
-                }
-                style={cardStyle}
-              >
-                <Table
-                  dataSource={data.topProducts}
-                  columns={topProductColumns}
-                  pagination={false}
-                  size="middle"
-                  loading={loading}
-                  rowKey="id"
-                  scroll={{ x: 420 }}
-                />
-              </Card>
-            </Col>
+        {/* BẢNG DỮ LIỆU (TABLES) */}
+        <Row gutter={[20, 20]}>
+          <Col xs={24} lg={12}>
+            <Card
+              title={
+                <span className="flex items-center gap-2 font-bold text-gray-800">
+                  <TrophyOutlined style={{ color: "#BC8F8F" }} />
+                  Top 10 Sản phẩm bán chạy
+                </span>
+              }
+              extra={
+                <Link to="/admin/products" style={{ color: "#BC8F8F" }} className="hover:underline font-medium text-xs">
+                  Xem tất cả →
+                </Link>
+              }
+              style={cardStyle}
+            >
+              <Table
+                dataSource={data.topProducts}
+                columns={topProductColumns}
+                pagination={false}
+                size="middle"
+                loading={loading}
+                rowKey="id"
+                scroll={{ x: 420 }}
+                locale={{
+                  emptyText: (
+                    <div className="py-6 text-center text-gray-400">
+                      <TrophyOutlined style={{ fontSize: 24, marginBottom: 8 }} />
+                      <div>Chưa có sản phẩm nào phát sinh doanh số trong kỳ này</div>
+                    </div>
+                  ),
+                }}
+              />
+            </Card>
+          </Col>
 
-            <Col xs={24} lg={12}>
-              <Card
-                title={
-                  <span className="flex items-center gap-2 font-bold text-gray-800">
-                    <WarningOutlined style={{ color: "#CB997E" }} />
-                    Cảnh báo Tồn kho hiện tại
-                  </span>
-                }
-                style={cardStyle}
-              >
-                <Table
-                  dataSource={data.inventoryProducts}
-                  columns={inventoryColumns}
-                  pagination={{ pageSize: 5 }}
-                  size="middle"
-                  loading={loading}
-                  rowKey="id"
-                  scroll={{ x: 380 }}
-                />
-              </Card>
-            </Col>
-          </Row>
-        </div>
+          <Col xs={24} lg={12}>
+            <Card
+              title={
+                <span className="flex items-center gap-2 font-bold text-gray-800">
+                  <WarningOutlined style={{ color: "#CB997E" }} />
+                  Cảnh báo Tồn kho hiện tại
+                </span>
+              }
+              extra={
+                <Link to="/admin/purchases" style={{ color: "#CB997E" }} className="hover:underline font-medium text-xs">
+                  Nhập kho →
+                </Link>
+              }
+              style={cardStyle}
+            >
+              <Table
+                dataSource={data.inventoryProducts}
+                columns={inventoryColumns}
+                pagination={{ pageSize: 5, size: "small" }}
+                size="middle"
+                loading={loading}
+                rowKey="id"
+                scroll={{ x: 380 }}
+                locale={{
+                  emptyText: (
+                    <div className="py-6 text-center text-gray-400">
+                      <div>Không có sản phẩm nào cần cảnh báo</div>
+                    </div>
+                  ),
+                }}
+              />
+            </Card>
+          </Col>
+        </Row>
       </div>
     </ConfigProvider>
   );
