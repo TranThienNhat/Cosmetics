@@ -22,6 +22,9 @@ import {
   CheckCircleOutlined,
   SafetyCertificateOutlined,
   CarOutlined,
+  FireFilled,
+  AppstoreOutlined,
+  RightOutlined,
 } from "@ant-design/icons"; 
 import { ProductVariant } from "../types";
 import api from "../utils/api";
@@ -50,12 +53,39 @@ const ProductDetailPage: React.FC = () => {
   const [selectedBundleItemIds, setSelectedBundleItemIds] = useState<number[]>([]);
   const [addingBundle, setAddingBundle] = useState(false);
 
+  // Recommendations: Similar & Hot products
+  const [similarProducts, setSimilarProducts] = useState<any[]>([]);
+  const [hotProducts, setHotProducts] = useState<any[]>([]);
+  const [recLoading, setRecLoading] = useState(false);
+  const [activeRecTab, setActiveRecTab] = useState<"similar" | "hot">("similar");
+
   useEffect(() => {
     if (id) {
       loadProduct();
       loadFrequentlyBoughtTogether(id);
+      loadRecommendations(id);
     }
   }, [id]);
+
+  const loadRecommendations = async (productId: string) => {
+    try {
+      setRecLoading(true);
+      const [simRes, hotRes] = await Promise.all([
+        api.get(`/products/${productId}/similar?limit=8`),
+        api.get(`/products/hot?limit=8`),
+      ]);
+      if (simRes.data?.data) {
+        setSimilarProducts(simRes.data.data);
+      }
+      if (hotRes.data?.data) {
+        setHotProducts(hotRes.data.data);
+      }
+    } catch (err) {
+      console.error("Error loading product recommendations:", err);
+    } finally {
+      setRecLoading(false);
+    }
+  };
 
   const loadFrequentlyBoughtTogether = async (productId: string) => {
     try {
@@ -579,6 +609,169 @@ const ProductDetailPage: React.FC = () => {
           ]}
         />
       </div>
+
+        {/* ======================================================== */}
+        {/* SẢN PHẨM TƯƠNG TỰ & SẢN PHẨM HOT BÁN CHẠY Ở CUỐI TRANG */}
+        {/* ======================================================== */}
+        <div className="mt-16 sm:mt-24 pt-12 border-t border-gray/10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 border border-rose-200/60 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                <span>Gợi ý làm đẹp cho bạn</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-serif text-charcoal font-bold tracking-tight m-0">
+                Khám Phá Thêm Dành Cho Nàng
+              </h2>
+              <p className="text-gray text-xs sm:text-sm mt-1 max-w-xl">
+                Lựa chọn từ các sản phẩm tương tự cùng chuyên mục dưỡng da hoặc các siêu phẩm hot đang được săn đón nhất tại Linh Cosmetics.
+              </p>
+            </div>
+
+            {/* TAB SELECTOR PILLS */}
+            <div className="inline-flex p-1 bg-gray-100 rounded-xl self-start md:self-auto border border-gray-200/60">
+              <button
+                type="button"
+                onClick={() => setActiveRecTab("similar")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                  activeRecTab === "similar"
+                    ? "bg-white text-rose-600 shadow-sm font-semibold"
+                    : "text-gray-600 hover:text-charcoal"
+                }`}
+              >
+                <AppstoreOutlined />
+                <span>Sản phẩm tương tự</span>
+                {similarProducts.length > 0 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold">
+                    {similarProducts.length}
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveRecTab("hot")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                  activeRecTab === "hot"
+                    ? "bg-white text-rose-600 shadow-sm font-semibold"
+                    : "text-gray-600 hover:text-charcoal"
+                }`}
+              >
+                <FireFilled style={{ color: "#e11d48" }} />
+                <span>Sản phẩm Hot bán chạy</span>
+                {hotProducts.length > 0 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold">
+                    {hotProducts.length}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* PRODUCT GRID */}
+          {recLoading ? (
+            <div className="text-center py-16">
+              <Spin size="large" className="text-rose-600" />
+            </div>
+          ) : (
+            <>
+              {(() => {
+                const displayedList = activeRecTab === "similar" ? similarProducts : hotProducts;
+                if (!displayedList || displayedList.length === 0) {
+                  return (
+                    <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200 text-gray italic font-serif">
+                      Đang cập nhật thêm gợi ý sản phẩm phù hợp...
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                    {displayedList.map((p: any) => (
+                      <div
+                        key={p.id}
+                        onClick={() => {
+                          navigate(`/products/${p.id}`);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        className="group bg-white rounded-2xl border border-gray-100 hover:border-rose-200 p-3 sm:p-4 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer hover:-translate-y-1 relative"
+                      >
+                        {/* BADGES */}
+                        <div className="absolute top-4 left-4 z-10 flex flex-col gap-1 items-start">
+                          {activeRecTab === "hot" ? (
+                            <span className="bg-gradient-to-r from-red-500 to-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1">
+                              <FireFilled className="text-[10px]" /> HOT
+                            </span>
+                          ) : p.brand_name ? (
+                            <span className="bg-white/95 backdrop-blur text-charcoal border border-gray-100 text-[10px] font-medium px-2 py-0.5 rounded-full shadow-xs">
+                              {p.brand_name}
+                            </span>
+                          ) : null}
+                        </div>
+
+                        {/* PRODUCT IMAGE */}
+                        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-3 flex items-center justify-center p-2">
+                          <img
+                            src={getImageUrl(p.thumb_image)}
+                            alt={p.name}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = DEFAULT_PLACEHOLDER_IMAGE;
+                            }}
+                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </div>
+
+                        {/* BRAND / CATEGORY */}
+                        <div className="text-[11px] text-gray uppercase tracking-wider font-semibold mb-1 truncate">
+                          {p.brand_name || p.category_name || "Linh Cosmetics"}
+                        </div>
+
+                        {/* PRODUCT NAME */}
+                        <h4 className="text-xs sm:text-sm font-serif font-semibold text-charcoal line-clamp-2 min-h-[36px] group-hover:text-rose-600 transition-colors mb-2">
+                          {p.name}
+                        </h4>
+
+                        {/* RATING & SALES */}
+                        <div className="flex items-center justify-between text-[11px] text-gray mb-3 pt-1 border-t border-gray-50">
+                          <div className="flex items-center gap-1 text-amber-500 font-semibold">
+                            <StarOutlined className="text-xs" />
+                            <span>{Number(p.avg_rating || 5).toFixed(1)}</span>
+                          </div>
+                          {Number(p.total_sold || 0) > 0 ? (
+                            <span className="text-gray/70">Đã bán {p.total_sold}</span>
+                          ) : (
+                            <span className="text-emerald-600 font-medium">Chính hãng</span>
+                          )}
+                        </div>
+
+                        {/* PRICE & BUTTON */}
+                        <div className="mt-auto pt-2 flex items-center justify-between border-t border-gray-50">
+                          <div>
+                            <span className="text-xs text-gray block text-[10px] uppercase font-bold">Giá từ</span>
+                            <span className="text-sm sm:text-base font-bold text-rose-600">
+                              {formatCurrency(Number(p.min_price || 0))}
+                            </span>
+                          </div>
+
+                          <Button
+                            type="text"
+                            size="small"
+                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg text-xs font-semibold flex items-center gap-1 px-2.5 h-8 border border-rose-200/80"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/products/${p.id}`);
+                              window.scrollTo({ top: 0, behavior: "smooth" });
+                            }}
+                          >
+                            Xem <RightOutlined style={{ fontSize: 9 }} />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Cart Drawer trượt ra khi thêm hàng */}
