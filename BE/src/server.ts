@@ -1,6 +1,8 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { Application } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import path from "path";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
@@ -8,10 +10,11 @@ import brandRoutes from "./routes/brandRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import cartRoutes from "./routes/cartRoutes";
 import orderRoutes from "./routes/orderRoutes";
+import addressRoutes from "./routes/addressRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
 import userRoutes from "./routes/userRoutes";
-import couponRoutes from "./routes/couponRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
+import couponRoutes from "./routes/couponRoutes";
 import blogRoutes from "./routes/blogRoutes";
 import supplierRoutes from "./routes/supplierRoutes";
 import purchaseRoutes from "./routes/purchaseRoutes";
@@ -19,8 +22,6 @@ import aiRoutes from "./routes/aiRoutes";
 import analyticsRoutes from "./routes/analyticsRoutes";
 
 import fs from "fs";
-
-dotenv.config();
 
 const app: Application = express();
 const PORT = process.env.PORT || 3000;
@@ -74,9 +75,10 @@ app.use("/api/products", productRoutes);
 app.use("/api/brands", brandRoutes);
 app.use("/api/categories", categoryRoutes);
 
-// 3. Shopping (Giỏ hàng, Đặt hàng, Mã giảm giá)
+// 3. Shopping (Giỏ hàng, Đặt hàng, Mã giảm giá, Địa chỉ)
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/addresses", addressRoutes);
 app.use("/api/coupons", couponRoutes);
 
 // 4. Social (Đánh giá)

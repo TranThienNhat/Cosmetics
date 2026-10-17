@@ -2,7 +2,9 @@ import { HTTP_STATUS } from "../constants/httpStatus";
 import { Request, Response } from "express";
 import Order from "../models/OrderModel";
 import Cart from "../models/CartModel";
+import AddressModel from "../models/AddressModel";
 import { IUser } from "../interfaces/User";
+import momoService from "../services/momoService";
 
 interface AuthRequest extends Request {
   user?: IUser;
@@ -15,11 +17,25 @@ export const checkout = async (req: Request, res: Response): Promise<Response> =
 
     if (!userId) return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Vui lòng đăng nhập để đặt hàng" });
 
-    // 1. LẤY DANH SÁCH ITEMS ĐƯỢC CHỌN TỪ REQ.BODY
-    const { shipping_info, payment_method, notes, items: selectedItems } = req.body; 
+    // 1. LẤY THÔNG TIN GIAO HÀNG (Hỗ trợ linh hoạt cả shipping_info và shipping_address)
+    const {
+      shipping_info: reqShippingInfo,
+      shipping_address: reqShippingAddress,
+      payment_method,
+      notes,
+      items: selectedItems,
+      save_address,
+    } = req.body; 
     
-    if (!shipping_info?.name || !shipping_info?.phone || !shipping_info?.address) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: "Thiếu thông tin giao hàng" });
+    const shipping = reqShippingInfo || reqShippingAddress;
+    const shippingName = shipping?.name || shipping?.recipient_name;
+    const shippingPhone = shipping?.phone;
+    const shippingAddr = shipping?.address || shipping?.address_line;
+
+    if (!shippingName || !shippingPhone || !shippingAddr) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        message: "Thiếu thông tin giao hàng (vui lòng cung cấp đầy đủ tên, số điện thoại và địa chỉ nhận hàng)",
+      });
     }
 
     if (!Array.isArray(selectedItems) || selectedItems.length === 0) {
@@ -68,17 +84,41 @@ export const checkout = async (req: Request, res: Response): Promise<Response> =
         shipping_fee,
         final_amount,
         coupon_id: cartInfo.couponId || undefined,
-        shipping_name: shipping_info.name,
-        shipping_phone: shipping_info.phone,
-        shipping_address: shipping_info.address,
-        shipping_email: authReq.user?.email,
+        shipping_name: shippingName,
+        shipping_phone: shippingPhone,
+        shipping_address: shippingAddr,
+        shipping_email: shipping?.email || authReq.user?.email,
         notes: notes || null,                    
-        payment_method,
+        payment_method: payment_method || "cod",
       },
       checkoutItems // Chỉ truyền các item được chọn vào đơn hàng
     );
 
-    // 5. XỬ LÝ XÓA CÁC SẢN PHẨM ĐÃ ĐẶT RA KHỎI GIỎ HÀNG BẰNG VÒNG LẶP (HẾT LỖI COMPILER TS)
+    // 5. TỰ ĐỘNG LƯU ĐỊA CHỈ NẾU ĐƯỢC YÊU CẦU HOẶC NẾU NGƯỜI DÙNG CHƯA CÓ ĐỊA CHỈ NÀO
+    if (userId) {
+      try {
+        const existingAddresses = await AddressModel.findByUserId(userId);
+        const alreadyExists = existingAddresses.some(
+          (a) => a.address_line === shippingAddr && a.phone === shippingPhone
+        );
+
+        if ((save_address || existingAddresses.length === 0) && !alreadyExists) {
+          await AddressModel.createAddress({
+            user_id: userId,
+            recipient_name: shippingName,
+            phone: shippingPhone,
+            address_line: shipping.address_line ? String(shipping.address_line).trim() : shippingAddr,
+            province: shipping.province ? String(shipping.province).trim() : null,
+            ward: shipping.ward ? String(shipping.ward).trim() : null,
+            is_default: existingAddresses.length === 0,
+          });
+        }
+      } catch (addrErr) {
+        console.warn("Không thể tự động lưu sổ địa chỉ:", addrErr);
+      }
+    }
+
+    // 6. XỬ LÝ XÓA CÁC SẢN PHẨM ĐÃ ĐẶT RA KHỎI GIỎ HÀNG BẰNG VÒNG LẶP (HẾT LỖI COMPILER TS)
     const cartModelAny = Cart as any;
     for (const variantId of selectedVariantIds) {
       if (typeof cartModelAny.removeItem === 'function') {
@@ -90,20 +130,53 @@ export const checkout = async (req: Request, res: Response): Promise<Response> =
       }
     }
 
+    // 7. XỬ LÝ THANH TOÁN MOMO NẾU ĐƯỢC CHỌN
+    let momoPaymentData: any = null;
+    if (payment_method === "momo") {
+      let clientOrigin = "http://localhost:5173";
+      if (req.headers.origin) {
+        clientOrigin = req.headers.origin as string;
+      } else if (req.headers.referer) {
+        try {
+          clientOrigin = new URL(req.headers.referer as string).origin;
+        } catch {
+          clientOrigin = "http://localhost:5173";
+        }
+      }
+
+      const host = req.get("host") || "localhost:3000";
+      const protocol = req.protocol || "http";
+      const ipnUrl = `${protocol}://${host}/api/orders/momo-ipn`;
+      const redirectUrl = `${clientOrigin}/checkout/momo-return`;
+
+      try {
+        momoPaymentData = await momoService.createPayment({
+          orderId: order_code,
+          amount: Math.round(final_amount),
+          orderInfo: `Thanh toán đơn hàng ${order_code} tại Linh Cosmetics`,
+          redirectUrl,
+          ipnUrl,
+        });
+      } catch (momoErr: any) {
+        console.error(">>> MoMo Create Payment Error:", momoErr);
+      }
+    }
+
     // --- TRẢ DATA ĐẦY ĐỦ VỀ FRONTEND ---
     return res.json({ 
-      message: "Đặt hàng thành công", 
+      message: payment_method === "momo" ? "Khởi tạo thanh toán MoMo thành công" : "Đặt hàng thành công", 
       order: {
         id: orderId,
         order_code,
         shipping_info: {
-          name: shipping_info.name,
-          phone: shipping_info.phone,
-          address: shipping_info.address,
+          name: shippingName,
+          phone: shippingPhone,
+          address: shippingAddr,
           notes: notes || null
         },
         items: checkoutItems, // Trả về đúng các item đã chọn mua ra trang Success
-        payment_method,
+        payment_method: payment_method || "cod",
+        payment_status: "unpaid",
         summary: {
           subtotal: checkoutSubtotal,
           discount: applicableDiscount,
@@ -111,7 +184,11 @@ export const checkout = async (req: Request, res: Response): Promise<Response> =
           final_amount
         },
         created_at: new Date()
-      }
+      },
+      payUrl: momoPaymentData?.payUrl,
+      qrCodeUrl: momoPaymentData?.qrCodeUrl,
+      deeplink: momoPaymentData?.deeplink,
+      isSimulated: momoPaymentData?.isSimulated
     });
   } catch (error) {
     console.error(">>> Checkout Error:", error);
@@ -209,4 +286,102 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response): Promis
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Lỗi hệ thống, nàng vui lòng thử lại sau" });
   }
 };
+
+/**
+ * Xử lý IPN (Instant Payment Notification) từ máy chủ MoMo
+ */
+export const handleMomoIpn = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const {
+      orderId,
+      resultCode,
+      transId,
+      message: momoMsg,
+    } = req.body;
+
+    console.log(">>> Nhận MoMo IPN Callback:", { orderId, resultCode, transId, momoMsg });
+
+    if (orderId && Number(resultCode) === 0) {
+      await Order.updatePaymentInfo(
+        String(orderId),
+        "paid",
+        String(transId || `MOMO_${Date.now()}`),
+        "processing"
+      );
+      console.log(`Đã cập nhật đơn hàng ${orderId} sang trạng thái đã thanh toán MoMo.`);
+    }
+
+    return res.status(HTTP_STATUS.OK).json({ message: "IPN received successfully", resultCode: 0 });
+  } catch (error) {
+    console.error(">>> Lỗi xử lý MoMo IPN:", error);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "IPN processing error" });
+  }
+};
+
+/**
+ * Xác nhận kết quả thanh toán khi người dùng được chuyển hướng về trang web
+ */
+export const confirmMomoReturn = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { orderId, resultCode, transId } = req.body;
+
+    if (!orderId) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Thiếu mã đơn hàng" });
+    }
+
+    const order = await Order.findByOrderCode(String(orderId));
+    if (!order) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Không tìm thấy đơn hàng" });
+    }
+
+    const isSuccess = Number(resultCode) === 0;
+
+    if (isSuccess) {
+      await Order.updatePaymentInfo(
+        String(orderId),
+        "paid",
+        String(transId || order.momo_trans_id || `MOMO_${Date.now()}`),
+        "processing"
+      );
+    }
+
+    const updatedOrder = await Order.findByOrderCode(String(orderId));
+
+    return res.json({
+      success: isSuccess,
+      message: isSuccess ? "Thanh toán MoMo thành công!" : "Giao dịch MoMo không thành công hoặc người dùng đã hủy.",
+      order: updatedOrder,
+    });
+  } catch (error) {
+    console.error(">>> Lỗi xác nhận MoMo Return:", error);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, message: "Lỗi hệ thống khi xác nhận thanh toán" });
+  }
+};
+
+/**
+ * Kiểm tra trạng thái thanh toán MoMo của đơn hàng
+ */
+export const checkMomoStatus = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { orderCode } = req.params;
+    const order = await Order.findByOrderCode(orderCode);
+
+    if (!order) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: "Không tìm thấy đơn hàng" });
+    }
+
+    return res.json({
+      order_code: order.order_code,
+      payment_method: order.payment_method,
+      payment_status: order.payment_status,
+      status: order.status,
+      final_amount: order.final_amount,
+      momo_trans_id: order.momo_trans_id,
+    });
+  } catch (error) {
+    console.error(">>> Lỗi kiểm tra trạng thái đơn:", error);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
+  }
+};
+
 

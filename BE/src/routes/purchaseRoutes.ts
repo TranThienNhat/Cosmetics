@@ -1,14 +1,14 @@
 import { Router } from "express";
 import { PurchaseController } from "../controllers/purchaseController";
-import { authenticate, requireAdmin } from "../middlewares/authMiddleware";
+import { authenticate, authorize } from "../middlewares/authMiddleware";
 
 const router = Router();
 
-// --- Quản lý Phiếu Nhập (Yêu cầu quyền Admin) ---
-router.get("/all", authenticate, PurchaseController.index);
-router.get("/:id", authenticate, PurchaseController.show);
-router.post("/", authenticate, PurchaseController.create);
-router.put("/:id", authenticate, PurchaseController.update);
-router.delete("/:id", authenticate, PurchaseController.remove);
+// --- Quản lý Phiếu Nhập (Admin và Staff) ---
+router.get("/all", authenticate, authorize("admin", "staff"), PurchaseController.index);
+router.get("/:id", authenticate, authorize("admin", "staff"), PurchaseController.show);
+router.post("/", authenticate, authorize("admin", "staff"), PurchaseController.create);
+router.put("/:id", authenticate, authorize("admin", "staff"), PurchaseController.update);
+router.delete("/:id", authenticate, authorize("admin", "staff"), PurchaseController.remove);
 
 export default router;

@@ -126,6 +126,9 @@ CREATE TABLE `orders` (
   `discount_amount` decimal(15,2) DEFAULT '0.00',
   `final_amount` decimal(15,2) NOT NULL,
   `coupon_id` bigint DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT 'cod',
+  `payment_status` enum('unpaid','paid','refunded') DEFAULT 'unpaid',
+  `momo_trans_id` varchar(100) DEFAULT NULL,
   `status` enum('pending','processing','shipped','completed','cancelled') DEFAULT 'pending',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -268,5 +271,47 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `role`, `is_act
 (5, 'Nguyễn Thị Mai', 'mai@gmail.com', '$2b$10$7Yjs.WqEgQfXNjX7mtbzVeS4DqVYbWsEaYpVe3c6syZ97JIBZjfV2', '0904567890', 'user', 1)
 ON DUPLICATE KEY UPDATE `password`=VALUES(`password`), `role`=VALUES(`role`), `is_active`=1;
 
+-- Bảng sổ địa chỉ nhận hàng của người dùng
+DROP TABLE IF EXISTS `user_addresses`;
+CREATE TABLE `user_addresses` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL,
+  `recipient_name` varchar(255) NOT NULL,
+  `phone` varchar(50) NOT NULL,
+  `address_line` text NOT NULL,
+  `province` varchar(100) DEFAULT NULL,
+  `district` varchar(100) DEFAULT NULL,
+  `ward` varchar(100) DEFAULT NULL,
+  `is_default` tinyint(1) DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  CONSTRAINT `fk_user_addresses_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
+-- Table structure for chat_knowledge_base (AI Chat Memory & Model Fine-tuning Dataset)
+-- ----------------------------
+DROP TABLE IF EXISTS `chat_knowledge_base`;
+CREATE TABLE `chat_knowledge_base` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_query` TEXT NOT NULL,
+  `normalized_query` VARCHAR(500) NOT NULL,
+  `intent` VARCHAR(100) DEFAULT 'BEAUTY_ADVICE',
+  `response` MEDIUMTEXT NOT NULL,
+  `suggested_products` JSON DEFAULT NULL,
+  `quick_suggestions` JSON DEFAULT NULL,
+  `source` VARCHAR(50) DEFAULT 'llm',
+  `use_count` INT DEFAULT 1,
+  `is_active` TINYINT(1) DEFAULT 1,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_norm_query` (`normalized_query`(255)),
+  INDEX `idx_intent` (`intent`),
+  INDEX `idx_is_active` (`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
+
 

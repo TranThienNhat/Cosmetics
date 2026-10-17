@@ -7,10 +7,20 @@ export const compressProductsImages = async (
   res: Response,
   next: NextFunction
 ) => {
-  const files = req.files as Express.Multer.File[] | undefined;
+  let files: Express.Multer.File[] = [];
+
+  if (req.file) {
+    files.push(req.file);
+  } else if (req.files) {
+    if (Array.isArray(req.files)) {
+      files = req.files;
+    } else {
+      files = Object.values(req.files).flat();
+    }
+  }
   
   // Nếu không có file nào được upload, bỏ qua và chuyển sang bước tiếp theo
-  if (!files || files.length === 0) {
+  if (files.length === 0) {
     return next();
   }
 

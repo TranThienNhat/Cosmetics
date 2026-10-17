@@ -121,6 +121,13 @@ class ProductModel extends BaseModel<IProduct> {
         c.name AS category_name,
         b.name AS brand_name,
         b.description AS brand_description,
+        (
+          SELECT image_url 
+          FROM product_galleries 
+          WHERE product_id = p.id 
+          ORDER BY is_main DESC, sort_order ASC 
+          LIMIT 1
+        ) AS image_url,
         pv.id AS variant_id,
         pv.sku,
         pv.variant_name,
@@ -148,6 +155,7 @@ class ProductModel extends BaseModel<IProduct> {
             name: row.brand_name,
             description: row.brand_description
           },
+          image_url: row.image_url || null,
           description: row.description,
           variants: []
         };

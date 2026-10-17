@@ -13,30 +13,36 @@ async findAll(options: any = {}) {
     // Câu lệnh SQL "linh hồn" của hệ thống
     let sql = `
       SELECT o.*,
-             GROUP_CONCAT(
-               JSON_OBJECT(
-                 'id', oi.id,
-                 'product_id', pv.product_id,    -- Lấy ID sản phẩm gốc để Review
-                 'variant_id', oi.variant_id,
-                 'name', p.name,
-                 'variant_name', pv.variant_name,
-                 'price', oi.price,
-                 'quantity', oi.quantity,
-                 'image_url', (
-                    SELECT image_url 
-                    FROM product_galleries 
-                    WHERE product_id = p.id 
-                    ORDER BY is_main DESC, sort_order ASC 
-                    LIMIT 1
-                  ),
-                 -- Kiểm tra xem món này trong đơn này đã được nàng Review chưa
-                 'is_reviewed', (
-                    SELECT COUNT(*) 
-                    FROM reviews 
-                    WHERE reviews.order_id = o.id 
-                    AND reviews.product_id = pv.product_id
-                  ) > 0
-               )
+             COALESCE(
+               JSON_ARRAYAGG(
+                 IF(oi.id IS NOT NULL,
+                   JSON_OBJECT(
+                     'id', oi.id,
+                     'product_id', pv.product_id,    -- Lấy ID sản phẩm gốc để Review
+                     'variant_id', oi.variant_id,
+                     'name', p.name,
+                     'variant_name', pv.variant_name,
+                     'price', oi.price,
+                     'quantity', oi.quantity,
+                     'image_url', (
+                        SELECT image_url 
+                        FROM product_galleries 
+                        WHERE product_id = p.id 
+                        ORDER BY is_main DESC, sort_order ASC 
+                        LIMIT 1
+                      ),
+                     -- Kiểm tra xem món này trong đơn này đã được nàng Review chưa
+                     'is_reviewed', (
+                        SELECT COUNT(*) 
+                        FROM reviews 
+                        WHERE reviews.order_id = o.id 
+                        AND reviews.product_id = pv.product_id
+                      ) > 0
+                   ),
+                   NULL
+                 )
+               ),
+               JSON_ARRAY()
              ) as items_json
       FROM orders o
       LEFT JOIN order_items oi ON o.id = oi.order_id
@@ -77,13 +83,15 @@ async findAll(options: any = {}) {
     try {
       const [rows]: any = await this.db.query(sql, values);
 
-      // 5. PARSE DỮ LIỆU: Biến chuỗi items_json thành mảng JSON xịn cho Frontend
+      // 5. PARSE DỮ LIỆU: Chuẩn hóa items thành mảng JSON cho Frontend
       return rows.map((row: any) => {
-        let items = [];
+        let items: any[] = [];
         if (row.items_json) {
           try {
-            // GROUP_CONCAT trả về chuỗi {obj1},{obj2} -> Cần bọc [] để thành mảng
-            items = JSON.parse(`[${row.items_json}]`);
+            const raw = typeof row.items_json === "string" ? JSON.parse(row.items_json) : row.items_json;
+            if (Array.isArray(raw)) {
+              items = raw.filter((item: any) => item && item.id !== null);
+            }
           } catch (e) {
             console.error(`Lỗi Parse JSON cho đơn hàng ${row.id}:`, e);
             items = [];
@@ -112,13 +120,14 @@ async findAll(options: any = {}) {
     try {
       await connection.beginTransaction();
 
-      // 1. Insert order với ĐẦY ĐỦ các cột: shipping_name, shipping_phone, shipping_address, notes, shipping_fee
+      // 1. Insert order với ĐẦY ĐỦ các cột kể cả payment_method, payment_status, momo_trans_id
       const sqlOrder = `
         INSERT INTO orders (
           user_id, order_code, shipping_name, shipping_phone, 
           shipping_address, notes, shipping_fee, total_amount, 
-          discount_amount, final_amount, coupon_id, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          discount_amount, final_amount, coupon_id, payment_method,
+          payment_status, momo_trans_id, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const [orderResult]: any = await connection.query(sqlOrder, [
@@ -133,6 +142,9 @@ async findAll(options: any = {}) {
         orderData.discount_amount || 0,
         orderData.final_amount,
         orderData.coupon_id || null,
+        orderData.payment_method || 'cod',
+        orderData.payment_status || 'unpaid',
+        orderData.momo_trans_id || null,
         orderData.status || 'pending'
       ]);
       
@@ -178,6 +190,31 @@ async findAll(options: any = {}) {
     } finally {
       connection.release();
     }
+  }
+
+  async findByOrderCode(orderCode: string) {
+    const list = await this.findAll({ where: { order_code: orderCode }, limit: 1 });
+    return list.length > 0 ? list[0] : null;
+  }
+
+  async updatePaymentInfo(orderCode: string, paymentStatus: "unpaid" | "paid" | "refunded", momoTransId?: string, orderStatus?: string) {
+    const fields: string[] = ["payment_status = ?"];
+    const values: any[] = [paymentStatus];
+
+    if (momoTransId) {
+      fields.push("momo_trans_id = ?");
+      values.push(momoTransId);
+    }
+
+    if (orderStatus) {
+      fields.push("status = ?");
+      values.push(orderStatus);
+    }
+
+    values.push(orderCode);
+    const sql = `UPDATE orders SET ${fields.join(", ")} WHERE order_code = ?`;
+    const [result]: any = await pool.query(sql, values);
+    return result.affectedRows > 0;
   }
 }
 

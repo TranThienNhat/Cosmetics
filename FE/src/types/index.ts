@@ -107,8 +107,16 @@ export interface Order {
   order_code: string;
   total_amount: number;
   discount_amount: number;
+  shipping_fee?: number;
   final_amount: number;
   coupon_id?: number;
+  shipping_name?: string;
+  shipping_phone?: string;
+  shipping_address?: string;
+  notes?: string;
+  payment_method?: "cod" | "momo" | string;
+  payment_status?: "unpaid" | "paid" | "refunded";
+  momo_trans_id?: string;
   status: "pending" | "processing" | "shipped" | "completed" | "cancelled";
   created_at: string;
   items: OrderItem[];
@@ -147,3 +155,18 @@ export interface CheckoutData {
   phone: string;
   address: string;
 }
+
+export interface UserAddress {
+  id: number;
+  user_id: number;
+  recipient_name: string;
+  phone: string;
+  address_line: string;
+  province?: string | null;
+  district?: string | null;
+  ward?: string | null;
+  is_default: boolean | number;
+  created_at?: string;
+  updated_at?: string;
+}
+
