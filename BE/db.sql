@@ -265,10 +265,9 @@ CREATE TABLE `users` (
 -- Default sample accounts (Password: 123456)
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `role`, `is_active`) VALUES
 (1, 'Admin Linh', 'admin@gmail.com', '$2b$10$7Yjs.WqEgQfXNjX7mtbzVeS4DqVYbWsEaYpVe3c6syZ97JIBZjfV2', '0901234567', 'admin', 1),
-(2, 'Từ Thế V', 'v@gmail.com', '$2b$10$7Yjs.WqEgQfXNjX7mtbzVeS4DqVYbWsEaYpVe3c6syZ97JIBZjfV2', '0909999999', 'admin', 1),
-(3, 'Nhân Viên Bán Hàng', 'staff@gmail.com', '$2b$10$7Yjs.WqEgQfXNjX7mtbzVeS4DqVYbWsEaYpVe3c6syZ97JIBZjfV2', '0902345678', 'staff', 1),
-(4, 'Khách Hàng Mẫu', 'khachhang@gmail.com', '$2b$10$7Yjs.WqEgQfXNjX7mtbzVeS4DqVYbWsEaYpVe3c6syZ97JIBZjfV2', '0903456789', 'user', 1),
-(5, 'Nguyễn Thị Mai', 'mai@gmail.com', '$2b$10$7Yjs.WqEgQfXNjX7mtbzVeS4DqVYbWsEaYpVe3c6syZ97JIBZjfV2', '0904567890', 'user', 1)
+(2, 'Nhân Viên Bán Hàng', 'staff@gmail.com', '$2b$10$7Yjs.WqEgQfXNjX7mtbzVeS4DqVYbWsEaYpVe3c6syZ97JIBZjfV2', '0902345678', 'staff', 1),
+(3, 'Khách Hàng Mẫu', 'khachhang@gmail.com', '$2b$10$7Yjs.WqEgQfXNjX7mtbzVeS4DqVYbWsEaYpVe3c6syZ97JIBZjfV2', '0903456789', 'user', 1),
+(4, 'Nguyễn Thị Mai', 'mai@gmail.com', '$2b$10$7Yjs.WqEgQfXNjX7mtbzVeS4DqVYbWsEaYpVe3c6syZ97JIBZjfV2', '0904567890', 'user', 1)
 ON DUPLICATE KEY UPDATE `password`=VALUES(`password`), `role`=VALUES(`role`), `is_active`=1;
 
 -- Bảng sổ địa chỉ nhận hàng của người dùng
