@@ -59,7 +59,7 @@ export class ChatIntentService {
         matched: true,
         intent: "GIBBERISH_OR_SHORT",
         response:
-          "Dạ em chào nàng! Em là **Linh Beauty Advisor** 🌸. Nàng đang muốn tìm dòng mỹ phẩm chăm sóc da, đồ trang điểm hay cần em hỗ trợ về đơn hàng và chính sách của shop không ạ? Nàng nhắn em câu hỏi cụ thể nhé! ✨",
+          "Dạ em chào nàng! Em là **Linh Beauty Advisor** 🌸. Nàng đang muốn tìm dòng mỹ phẩm chăm sóc da, đồ trang điểm hay cần em tư vấn gì không ạ? Nàng nhắn em câu hỏi cụ thể nhé! ✨",
         quickSuggestions: [
           "Tư vấn da dầu mụn",
           "Kem chống nắng kiềm dầu",
@@ -83,7 +83,7 @@ export class ChatIntentService {
         matched: true,
         intent: "GREETING",
         response:
-          "Em chào nàng xinh đẹp! 🌸 Rất vui được đón tiếp nàng tại **Linh Cosmetics**.\n\nEm là trợ lý làm đẹp độc quyền của shop, sẵn sàng tư vấn liệu trình skincare, chọn màu son, gợi ý kem chống nắng hay giải đáp thắc mắc về đơn hàng cho nàng. Nàng đang quan tâm đến sản phẩm hay vấn đề da nào hôm nay ạ? ✨💄",
+          "Em chào nàng xinh đẹp! 🌸 Rất vui được đón tiếp nàng tại **Linh Cosmetics**.\n\nEm là trợ lý làm đẹp độc quyền của shop, sẵn sàng tư vấn liệu trình skincare, chọn màu son hay gợi ý kem chống nắng phù hợp cho nàng. Nàng đang quan tâm đến sản phẩm hay vấn đề da nào hôm nay ạ? ✨💄",
         quickSuggestions: [
           "Routine da dầu mụn",
           "Kem chống nắng best-seller",
@@ -115,7 +115,7 @@ export class ChatIntentService {
         quickSuggestions: [
           "Phương thức thanh toán",
           "Chính sách đổi trả",
-          "Kiểm tra đơn hàng của tôi",
+          "Tư vấn kem chống nắng",
         ],
       };
     }
@@ -137,7 +137,7 @@ export class ChatIntentService {
           "Nàng có thể chọn phương thức mình thích ngay tại bước **[Thanh toán](/checkout)** nhé! 🌸",
         quickSuggestions: [
           "Chính sách Freeship",
-          "Kiểm tra đơn hàng",
+          "Sản phẩm bán chạy nhất",
           "Chính sách bảo hành đổi trả",
         ],
       };
@@ -184,30 +184,33 @@ export class ChatIntentService {
           "• **Hỗ trợ tận tình**: Nàng chỉ cần giữ lại bao bì và liên hệ hotline **1900 1234** hoặc nhắn tin cho shop để được đổi mới tận nhà nhanh chóng!",
         quickSuggestions: [
           "Hotline hỗ trợ CSKH",
-          "Kiểm tra đơn hàng",
+          "Phương thức thanh toán",
           "Phí vận chuyển",
         ],
       };
     }
 
-    // 7. THEO DÕI & KIỂM TRA ĐƠN HÀNG (ORDER TRACKING)
-    const trackingKeywords = [
+    // 7. HƯỚNG DẪN XEM ĐƠN HÀNG (ORDER_REDIRECT) - Khách hỏi đơn hàng hoặc gửi mã ORD
+    const orderKeywords = [
       "kiem tra don", "tra cuu don", "don hang cua toi", "xem don hang",
       "khi nao giao don", "trang thai don hang", "don hang den dau",
-      "don hang ord", "huy don hang", "theo doi don"
+      "don hang ord", "huy don hang", "theo doi don", "ma don hang", "ma don"
     ];
-    if (trackingKeywords.some(kw => normalized.includes(kw))) {
+    const isOrderCode = /\bord[-\s]?\d+/i.test(raw);
+    if (isOrderCode || orderKeywords.some(kw => normalized.includes(kw))) {
       return {
         matched: true,
-        intent: "ORDER_TRACKING",
+        intent: "ORDER_REDIRECT",
         response:
-          "Dạ, để theo dõi tiến độ đơn hàng:\n\n" +
-          "👉 Nàng hãy bấm vào mục **[Đơn hàng của tôi](/orders)** để xem chi tiết mã vận đơn, trạng thái xử lý và hành trình giao hàng từ shipper.\n\n" +
-          "Nếu cần kiểm tra gấp, nàng gửi mã đơn hàng (ví dụ: `ORD-179...`) ngay tại khung chat này hoặc gọi Hotline **1900 1234**, nhân viên sẽ hỗ trợ kiểm tra tức thì cho nàng nhé! 🛍️",
+          "Dạ, em là trợ lý tư vấn sắc đẹp và mỹ phẩm nên không thể tra cứu dữ liệu đơn hàng nội bộ trực tiếp trong khung chat này ạ! 🌸\n\n" +
+          "👉 Để xem tình trạng và tiến độ giao hàng, nàng hãy bấm vào mục **[Đơn hàng của tôi](/orders)** trên website nha.\n\n" +
+          "Nếu cần hỗ trợ gấp về đơn hàng, nàng liên hệ ngay Hotline **1900 1234** để được các bạn CSKH hỗ trợ trực tiếp tức thì nhé! 🛍️\n\n" +
+          "Nàng có cần em tư vấn thêm về sản phẩm dưỡng da hay mỹ phẩm làm đẹp nào không nè? ✨💄",
         quickSuggestions: [
-          "Hotline chăm sóc khách hàng",
+          "Sản phẩm bán chạy nhất",
+          "Tư vấn kem chống nắng",
           "Chính sách giao hàng",
-          "Phương thức thanh toán",
+          "Hotline chăm sóc khách hàng",
         ],
       };
     }

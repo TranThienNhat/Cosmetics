@@ -22,6 +22,17 @@ const COSMETIC_KEY_TERMS = [
 class ChatKnowledgeModel extends BaseModel<IChatKnowledge> {
   constructor() {
     super("chat_knowledge_base");
+    this.cleanOrderTrackingRecords();
+  }
+
+  private async cleanOrderTrackingRecords() {
+    try {
+      await this.db.query(
+        "DELETE FROM chat_knowledge_base WHERE user_query LIKE '%ORD%' OR user_query LIKE '%don hang%' OR user_query LIKE '%tra cuu%'"
+      );
+    } catch {
+      // Ignore
+    }
   }
 
   /**
@@ -156,6 +167,11 @@ class ChatKnowledgeModel extends BaseModel<IChatKnowledge> {
     source?: "llm" | "intent_engine" | "manual" | "trained";
   }): Promise<number> {
     const norm = this.normalizeQuery(data.user_query);
+
+    // Không lưu các câu hỏi về tra cứu đơn hàng hoặc mã đơn ORD vào bộ nhớ tri thức
+    if (/\bord[-\s]?\d+/i.test(data.user_query) || norm.includes("kiem tra don") || norm.includes("don hang ord") || norm.includes("tra cuu don")) {
+      return 0;
+    }
 
     // Kiểm tra xem đã có câu hỏi tương tự >= 90% chưa
     const existing = await this.findSimilarKnowledge(data.user_query, 0.90);
