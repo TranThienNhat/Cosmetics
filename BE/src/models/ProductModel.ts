@@ -174,6 +174,171 @@ class ProductModel extends BaseModel<IProduct> {
 
     return Object.values(productMap);
   }
+
+  // ==========================================
+  // 🔥 LẤY SẢN PHẨM TƯƠNG TỰ
+  // ==========================================
+  async getSimilarProducts(productId: number, limit: number = 8): Promise<any[]> {
+    const [current]: any = await this.db.query(
+      "SELECT id, category_id, brand_id FROM products WHERE id = ? AND deleted_at IS NULL",
+      [productId]
+    );
+    if (!current || current.length === 0) return [];
+    const { category_id, brand_id } = current[0];
+
+    const sql = `
+      SELECT 
+        p.id,
+        p.name,
+        p.slug,
+        p.category_id,
+        p.brand_id,
+        c.name AS category_name,
+        b.name AS brand_name,
+        MIN(pv.price) AS min_price,
+        MAX(pv.price) AS max_price,
+        SUM(pv.stock_quantity) AS total_stock,
+        (
+          SELECT image_url 
+          FROM product_galleries 
+          WHERE product_id = p.id 
+          ORDER BY is_main DESC, sort_order ASC 
+          LIMIT 1
+        ) AS thumb_image,
+        COALESCE(AVG(r.rating), 5) AS avg_rating,
+        COUNT(DISTINCT r.id) AS review_count,
+        COALESCE(SUM(oi.quantity), 0) AS total_sold,
+        (
+          CASE 
+            WHEN p.category_id = ? AND p.brand_id = ? THEN 3
+            WHEN p.category_id = ? THEN 2
+            WHEN p.brand_id = ? THEN 1
+            ELSE 0
+          END
+        ) AS match_score
+      FROM products p
+      LEFT JOIN product_variants pv ON p.id = pv.product_id
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN brands b ON p.brand_id = b.id
+      LEFT JOIN reviews r ON p.id = r.product_id AND r.is_approved = 1
+      LEFT JOIN order_items oi ON pv.id = oi.variant_id
+      WHERE p.status = 'active'
+        AND p.deleted_at IS NULL
+        AND p.id != ?
+        AND (
+          (? IS NOT NULL AND p.category_id = ?) 
+          OR (? IS NOT NULL AND p.brand_id = ?)
+        )
+      GROUP BY p.id, c.id, b.id, c.name, b.name
+      ORDER BY match_score DESC, total_sold DESC, p.id DESC
+      LIMIT ?
+    `;
+
+    const [rows]: any = await this.db.query(sql, [
+      category_id || 0,
+      brand_id || 0,
+      category_id || 0,
+      brand_id || 0,
+      productId,
+      category_id,
+      category_id,
+      brand_id,
+      brand_id,
+      Number(limit),
+    ]);
+
+    let results = Array.isArray(rows) ? [...rows] : [];
+
+    // Fallback nếu kết quả ít hơn limit: lấy thêm các sản phẩm active khác để lấp đầy
+    if (results.length < limit) {
+      const excludeIds = [productId, ...results.map((r: any) => r.id)];
+      const remaining = limit - results.length;
+      const placeholders = excludeIds.map(() => "?").join(",");
+      const fallbackSql = `
+        SELECT 
+          p.id,
+          p.name,
+          p.slug,
+          p.category_id,
+          p.brand_id,
+          c.name AS category_name,
+          b.name AS brand_name,
+          MIN(pv.price) AS min_price,
+          MAX(pv.price) AS max_price,
+          SUM(pv.stock_quantity) AS total_stock,
+          (
+            SELECT image_url 
+            FROM product_galleries 
+            WHERE product_id = p.id 
+            ORDER BY is_main DESC, sort_order ASC 
+            LIMIT 1
+          ) AS thumb_image,
+          COALESCE(AVG(r.rating), 5) AS avg_rating,
+          COUNT(DISTINCT r.id) AS review_count,
+          COALESCE(SUM(oi.quantity), 0) AS total_sold
+        FROM products p
+        LEFT JOIN product_variants pv ON p.id = pv.product_id
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN brands b ON p.brand_id = b.id
+        LEFT JOIN reviews r ON p.id = r.product_id AND r.is_approved = 1
+        LEFT JOIN order_items oi ON pv.id = oi.variant_id
+        WHERE p.status = 'active'
+          AND p.deleted_at IS NULL
+          AND p.id NOT IN (${placeholders})
+        GROUP BY p.id, c.id, b.id, c.name, b.name
+        ORDER BY total_sold DESC, p.id DESC
+        LIMIT ?
+      `;
+      const [fallbackRows]: any = await this.db.query(fallbackSql, [...excludeIds, Number(remaining)]);
+      if (Array.isArray(fallbackRows)) {
+        results = [...results, ...fallbackRows];
+      }
+    }
+
+    return results;
+  }
+
+  // ==========================================
+  // 🔥 LẤY SẢN PHẨM HOT / BÁN CHẠY
+  // ==========================================
+  async getHotProducts(limit: number = 8): Promise<any[]> {
+    const sql = `
+      SELECT 
+        p.id,
+        p.name,
+        p.slug,
+        p.category_id,
+        p.brand_id,
+        c.name AS category_name,
+        b.name AS brand_name,
+        MIN(pv.price) AS min_price,
+        MAX(pv.price) AS max_price,
+        SUM(pv.stock_quantity) AS total_stock,
+        (
+          SELECT image_url 
+          FROM product_galleries 
+          WHERE product_id = p.id 
+          ORDER BY is_main DESC, sort_order ASC 
+          LIMIT 1
+        ) AS thumb_image,
+        COALESCE(AVG(r.rating), 5) AS avg_rating,
+        COUNT(DISTINCT r.id) AS review_count,
+        COALESCE(SUM(oi.quantity), 0) AS total_sold
+      FROM products p
+      LEFT JOIN product_variants pv ON p.id = pv.product_id
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN brands b ON p.brand_id = b.id
+      LEFT JOIN reviews r ON p.id = r.product_id AND r.is_approved = 1
+      LEFT JOIN order_items oi ON pv.id = oi.variant_id
+      WHERE p.status = 'active'
+        AND p.deleted_at IS NULL
+      GROUP BY p.id, c.id, b.id, c.name, b.name
+      ORDER BY total_sold DESC, review_count DESC, p.id DESC
+      LIMIT ?
+    `;
+    const [rows] = await this.db.query(sql, [Number(limit)]);
+    return rows as any[];
+  }
 }
 
 // --- PRODUCT VARIANT MODEL ---

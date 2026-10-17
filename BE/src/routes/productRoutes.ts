@@ -7,6 +7,8 @@ import {
   remove,
   allVariants,
   addVariant,
+  getSimilar,
+  getHot,
 } from "../controllers/productController";
 import { authenticate, checkRoleForProduct, authorize } from "../middlewares/authMiddleware";
 import { uploadProduct } from "../middlewares/uploadMiddleware";
@@ -15,8 +17,10 @@ import { compressProductsImages } from "../middlewares/compressImage";
 const router = Router();
 
 // --- Public Routes ---
-router.get("/", checkRoleForProduct, index);  
+router.get("/", checkRoleForProduct, index);
+router.get("/hot", getHot);
 router.get("/purchase/all-variants", allVariants);
+router.get("/:id/similar", getSimilar);
 router.get("/:id", checkRoleForProduct, show);
 
 // --- Protected Routes (Dành cho Admin & Staff) ---

@@ -550,3 +550,52 @@ export const allVariants = async (req: Request, res: Response) => {
   }
 };
 
+// --- 7. LẤY SẢN PHẨM TƯƠNG TỰ ---
+export const getSimilar = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { id } = req.params;
+    const limit = parseInt(req.query.limit as string) || 8;
+    const productId = Number(id);
+
+    if (isNaN(productId) || productId <= 0) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message: "ID sản phẩm không hợp lệ",
+      });
+    }
+
+    const products = await Product.getSimilarProducts(productId, limit);
+    return res.json({
+      success: true,
+      data: products,
+    });
+  } catch (error: any) {
+    console.error(">>> Error getSimilar:", error);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Lỗi lấy sản phẩm tương tự",
+      error: error.message,
+    });
+  }
+};
+
+// --- 8. LẤY SẢN PHẨM HOT / BÁN CHẠY ---
+export const getHot = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 8;
+    const products = await Product.getHotProducts(limit);
+    return res.json({
+      success: true,
+      data: products,
+    });
+  } catch (error: any) {
+    console.error(">>> Error getHot:", error);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Lỗi lấy sản phẩm hot",
+      error: error.message,
+    });
+  }
+};
+
+
