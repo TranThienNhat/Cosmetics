@@ -26,6 +26,7 @@ import {
   TruckOutlined,
   ImportOutlined,
   RiseOutlined,
+  RobotOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -69,6 +70,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             key: "/admin/ai-forecast",
             icon: <RiseOutlined />,
             label: <Link to="/admin/ai-forecast" onClick={() => isMobile && setMobileDrawerOpen(false)}>Dự báo & Phân tích AI</Link>,
+          },
+          {
+            key: "/admin/ai-knowledge",
+            icon: <RobotOutlined />,
+            label: <Link to="/admin/ai-knowledge" onClick={() => isMobile && setMobileDrawerOpen(false)}>Tri thức Chatbot & Dataset</Link>,
           },
         ]
       : []),

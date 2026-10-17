@@ -4,17 +4,26 @@ import {
   getMyOrders,
   getAllOrders,
   updateOrderStatus,
+  handleMomoIpn,
+  confirmMomoReturn,
+  checkMomoStatus,
 } from "../controllers/orderController";
-import { authenticate, requireAdmin } from "../middlewares/authMiddleware";
+import { authenticate, authorize } from "../middlewares/authMiddleware";
 
 const router = Router();
+
+// MoMo Webhook & Callbacks (Public endpoints)
+router.post("/momo-ipn", handleMomoIpn);
+router.post("/momo-return-confirm", confirmMomoReturn);
+router.get("/check-momo-status/:orderCode", checkMomoStatus);
 
 // User routes
 router.post("/checkout", authenticate, checkout);
 router.get("/my-orders", authenticate, getMyOrders);
 
-// Admin routes
-router.get("/", authenticate, getAllOrders);
+// Admin & Staff routes
+router.get("/", authenticate, authorize("admin", "staff"), getAllOrders);
 router.put("/:id", authenticate, updateOrderStatus);
 
 export default router;
+

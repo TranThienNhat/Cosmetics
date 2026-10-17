@@ -29,11 +29,14 @@ import {
   SendOutlined,
   ThunderboltOutlined,
   MenuOutlined,
+  ArrowRightOutlined,
+  BulbOutlined,
 } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCart } from "../../contexts/CartContext";
 import api from "../../utils/api";
+import { getImageUrl, formatCurrency } from "../../utils/helpers";
 
 const { Header, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -42,10 +45,24 @@ interface MainLayoutProps {
   children: React.ReactNode;
 }
 
+export interface ChatProduct {
+  id: number;
+  name: string;
+  brand?: string;
+  category?: string;
+  price?: number;
+  image?: string | null;
+  inStock?: boolean;
+  url?: string;
+}
+
 interface ChatMessage {
   id: number;
   sender: "user" | "ai";
   text: string;
+  products?: ChatProduct[];
+  quickSuggestions?: string[];
+  intent?: string;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
@@ -72,7 +89,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     {
       id: 1,
       sender: "ai",
-      text: "✨ Xin chào! Mình là trợ lý ảo của **Linh Cosmetics**. Bạn cần tư vấn về sản phẩm mỹ phẩm hay routine chăm sóc da nào hôm nay ạ? 🌸",
+      text: "✨ Xin chào! Em là **Linh Beauty Advisor** 🌸. Nàng đang muốn tìm dòng mỹ phẩm chăm sóc da nào hay cần hỗ trợ thông tin gì hôm nay ạ?",
+      quickSuggestions: [
+        "🚚 Phí ship & Freeship",
+        "💳 Thanh toán MoMo / COD",
+        "📍 Địa chỉ showroom",
+        "🌟 Sản phẩm bán chạy",
+        "📞 Hotline tổng đài CSKH",
+        "🛡️ Chính sách đổi trả",
+      ],
     },
   ]);
 
@@ -85,12 +110,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   }, [chatMessages, chatLoading, chatOpen]);
 
-  // Hàm xử lý gửi tin nhắn lên API backend
-  const handleSendChatMessage = async () => {
-    if (!chatInputValue.trim() || chatLoading) return;
+  // Hàm xử lý gửi tin nhắn lên API backend (hỗ trợ nhập text hoặc click quick-suggestion)
+  const sendChatMessage = async (textToSend?: string) => {
+    const rawText = textToSend !== undefined ? textToSend : chatInputValue;
+    if (!rawText.trim() || chatLoading) return;
 
-    const userText = chatInputValue.trim();
-    setChatInputValue("");
+    const userText = rawText.trim();
+    if (textToSend === undefined) {
+      setChatInputValue("");
+    }
 
     // 1. Thêm tin nhắn của User vào khung chat
     setChatMessages((prev) => [
@@ -105,7 +133,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     setChatLoading(true);
 
     try {
-      // 2. Gọi API Express kết hợp GPT/Gemini Fallback
+      // 2. Gọi API Express kết hợp Intent Engine + LLM fallback
       const response = await api.post("/ai/ask", {
         userMessage: userText,
       });
@@ -113,13 +141,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       const data = response.data;
 
       if (data.success) {
-        // 3. Thêm câu trả lời của AI vào khung chat
+        // 3. Thêm câu trả lời của AI vào khung chat kèm danh sách sản phẩm gợi ý và quick suggestions
         setChatMessages((prev) => [
           ...prev,
           {
             id: Date.now() + 1,
             sender: "ai",
             text: data.answer,
+            products: data.products,
+            quickSuggestions: data.quickSuggestions,
+            intent: data.intent,
           },
         ]);
       } else {
@@ -544,8 +575,114 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           }`}
                         >
                           {isAI ? (
-                            <div className="markdown-body">
-                              <ReactMarkdown>{item.text}</ReactMarkdown>
+                            <div>
+                              <div className="markdown-body">
+                                <ReactMarkdown
+                                  components={{
+                                    a: ({ node, href, children, ...props }) => {
+                                      const isInternalProduct = href && (href.startsWith("/products") || href.startsWith("/"));
+                                      if (isInternalProduct) {
+                                        return (
+                                          <a
+                                            href={href}
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              navigate(href);
+                                            }}
+                                            className="font-semibold text-[#BC8F8F] hover:text-[#806060] underline decoration-[#BC8F8F]/50 hover:decoration-[#806060] transition-colors cursor-pointer inline-flex items-center gap-0.5"
+                                            {...props}
+                                          >
+                                            {children}
+                                          </a>
+                                        );
+                                      }
+                                      return (
+                                        <a
+                                          href={href}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-[#BC8F8F] underline"
+                                          {...props}
+                                        >
+                                          {children}
+                                        </a>
+                                      );
+                                    },
+                                  }}
+                                >
+                                  {item.text}
+                                </ReactMarkdown>
+                              </div>
+
+                              {/* Hiển thị Card các sản phẩm được AI đề xuất trực tiếp */}
+                              {item.products && item.products.length > 0 && (
+                                <div className="mt-3 pt-2.5 border-t border-gray-200/70 space-y-2">
+                                  <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>🛍️ Sản phẩm gợi ý:</span>
+                                  </div>
+                                  <div className="space-y-2">
+                                    {item.products.map((p) => (
+                                      <div
+                                        key={p.id}
+                                        onClick={() => navigate(`/products/${p.id}`)}
+                                        className="flex items-center gap-2.5 p-2 bg-white rounded-xl border border-gray-200/80 hover:border-[#BC8F8F] hover:shadow-md transition-all cursor-pointer group"
+                                      >
+                                        <img
+                                          src={getImageUrl(p.image)}
+                                          alt={p.name}
+                                          className="w-11 h-11 rounded-lg object-cover bg-gray-50 flex-shrink-0 border border-gray-100"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                          <div className="text-xs font-medium text-gray-800 line-clamp-1 group-hover:text-[#BC8F8F] transition-colors">
+                                            {p.name}
+                                          </div>
+                                          <div className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1.5">
+                                            {p.brand && <span>{p.brand}</span>}
+                                            {p.brand && <span>•</span>}
+                                            <span className="font-semibold text-[#BC8F8F]">
+                                              {formatCurrency(p.price)}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/products/${p.id}`);
+                                          }}
+                                          className="px-2.5 py-1 bg-[#FAF3EC] text-[#BC8F8F] group-hover:bg-[#BC8F8F] group-hover:text-white rounded-lg text-xs font-medium transition-colors flex-shrink-0 flex items-center gap-1 shadow-2xs"
+                                        >
+                                          <span>Xem</span>
+                                          <ArrowRightOutlined className="text-[10px]" />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Gợi ý câu hỏi nhanh (Quick Suggestion Chips) */}
+                              {item.quickSuggestions && item.quickSuggestions.length > 0 && (
+                                <div className="mt-3 pt-2.5 border-t border-gray-200/60">
+                                  <div className="text-[11px] font-semibold text-gray-400 mb-1.5 flex items-center gap-1.5">
+                                    <BulbOutlined className="text-[#BC8F8F]" />
+                                    <span>Gợi ý nhanh:</span>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {item.quickSuggestions.map((sug, sIdx) => (
+                                      <button
+                                        key={sIdx}
+                                        type="button"
+                                        disabled={chatLoading}
+                                        onClick={() => sendChatMessage(sug)}
+                                        className="text-[11px] bg-white hover:bg-[#FAF3EC] text-[#BC8F8F] hover:text-[#806060] border border-[#BC8F8F]/30 hover:border-[#BC8F8F] rounded-full px-2.5 py-1 transition-all cursor-pointer font-medium shadow-2xs text-left active:scale-95 disabled:opacity-50"
+                                      >
+                                        {sug}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <span className="whitespace-pre-wrap">
@@ -561,7 +698,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 {chatLoading && (
                   <div className="flex justify-start mb-3">
                     <div className="bg-gray-100 text-gray-400 text-xs px-4 py-2 rounded-2xl rounded-tl-none italic animate-pulse">
-                      Trợ lý đang kiểm tra kho hàng...
+                      Trợ lý đang phản hồi...
                     </div>
                   </div>
                 )}
@@ -576,7 +713,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     placeholder="Hỏi về sản phẩm, da liễu..."
                     value={chatInputValue}
                     onChange={(e) => setChatInputValue(e.target.value)}
-                    onPressEnter={handleSendChatMessage}
+                    onPressEnter={() => sendChatMessage()}
                     disabled={chatLoading}
                     size="large"
                     className="rounded-l-xl border-gray-200 focus:border-[#BC8F8F] focus:shadow-none text-sm"
@@ -588,7 +725,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <Button
                     type="primary"
                     icon={<SendOutlined />}
-                    onClick={handleSendChatMessage}
+                    onClick={() => sendChatMessage()}
                     loading={chatLoading}
                     size="large"
                     className="bg-[#BC8F8F] border-none rounded-r-xl hover:!bg-[#a37676] flex items-center justify-center"

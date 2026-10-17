@@ -17,6 +17,7 @@ import RegisterPage from "./pages/RegisterPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import CheckoutSuccessPage from "./pages/CheckoutSuccessPage";
+import MomoReturnPage from "./pages/MomoReturnPage";
 import OrdersPage from "./pages/OrdersPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
@@ -38,6 +39,7 @@ import SuppliersPage from "./pages/admin/SuppliersPage";
 import PurchaseListPage from "./pages/admin/PurchaseListPage";
 import PurchaseReceiptFormPage from "./pages/admin/PurchaseReceiptFormPage";
 import AiForecastPage from "./pages/admin/AiForecastPage";
+import AiKnowledgePage from "./pages/admin/AiKnowledgePage";
 
 import "./index.css";
 
@@ -77,6 +79,7 @@ const App: React.FC = () => {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+              <Route path="/checkout/momo-return" element={<MomoReturnPage />} />
 
               {/* === ADMIN & STAFF ROUTES === */}
               <Route
@@ -103,6 +106,14 @@ const App: React.FC = () => {
                           element={
                             <ProtectedRoute allowedRoles={["admin"]}>
                               <AiForecastPage />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/ai-knowledge"
+                          element={
+                            <ProtectedRoute allowedRoles={["admin"]}>
+                              <AiKnowledgePage />
                             </ProtectedRoute>
                           }
                         />

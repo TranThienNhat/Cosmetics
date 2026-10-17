@@ -31,6 +31,9 @@ interface Order {
   discount_amount: number;
   final_amount: number;
   coupon_id?: number;
+  payment_method?: string;
+  payment_status?: "unpaid" | "paid" | "refunded";
+  momo_trans_id?: string;
   status: "pending" | "processing" | "shipped" | "completed" | "cancelled";
   created_at: string;
   items: any[];
@@ -139,6 +142,34 @@ const AdminOrdersPage: React.FC = () => {
         <span className="whitespace-nowrap font-medium">{formatCurrency(Number(final_amount))}</span>
       ),
       sorter: (a: Order, b: Order) => Number(a.final_amount) - Number(b.final_amount),
+    },
+    {
+      title: "Thanh toán",
+      key: "payment",
+      render: (_: any, record: Order) => {
+        const isMomo = record.payment_method === "momo";
+        const isPaid = record.payment_status === "paid";
+        return (
+          <div className="space-y-1">
+            <div>
+              {isMomo ? (
+                <Tag color="magenta" className="rounded-full text-xs font-medium">
+                  Ví MoMo
+                </Tag>
+              ) : (
+                <Tag className="rounded-full text-xs bg-gray/5 border-gray/20 text-gray-600">
+                  COD
+                </Tag>
+              )}
+            </div>
+            <div>
+              <Tag color={isPaid ? "green" : "orange"} className="text-[11px] rounded-full border-0">
+                {isPaid ? "Đã thanh toán" : "Chưa thanh toán"}
+              </Tag>
+            </div>
+          </div>
+        );
+      },
     },
     {
       title: "Trạng thái",
@@ -266,6 +297,23 @@ const AdminOrdersPage: React.FC = () => {
                   <Text type="danger" strong>{formatCurrency(Number(selectedOrder.final_amount))}</Text>
                 </Descriptions.Item>
                 
+                <Descriptions.Item label="Phương thức TT">
+                  {selectedOrder.payment_method === "momo" ? (
+                    <Tag color="magenta">Ví MoMo</Tag>
+                  ) : (
+                    <Tag>Tiền mặt (COD)</Tag>
+                  )}
+                </Descriptions.Item>
+                <Descriptions.Item label="Trạng thái TT">
+                  <Tag color={selectedOrder.payment_status === "paid" ? "green" : "orange"}>
+                    {selectedOrder.payment_status === "paid" ? "Đã thanh toán" : "Chưa thanh toán"}
+                  </Tag>
+                  {selectedOrder.momo_trans_id && (
+                    <div className="text-xs font-mono text-gray-500 mt-1">
+                      Mã GD: {selectedOrder.momo_trans_id}
+                    </div>
+                  )}
+                </Descriptions.Item>
                 <Descriptions.Item label="Trạng thái">
                   <Tag color={getStatusColor(selectedOrder.status)}>{getStatusText(selectedOrder.status)}</Tag>
                 </Descriptions.Item>

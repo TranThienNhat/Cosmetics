@@ -14,8 +14,8 @@ router.post(
   "/", 
   authenticate, 
   requireAdmin, 
-  compressProductsImages, // Middleware nén ảnh nếu có  
-  uploadBrand.single("image"), // Multer phải đứng sau Auth
+  uploadBrand.single("image"), // Multer phải đứng trước để có req.file
+  compressProductsImages,      // Nén ảnh sau khi Multer đã lưu
   create
 );
 
@@ -24,8 +24,8 @@ router.put(
   "/:id", 
   authenticate, 
   requireAdmin, 
-  compressProductsImages, // Middleware nén ảnh nếu có  
   uploadBrand.single("image"), 
+  compressProductsImages,
   update
 );
 

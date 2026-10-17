@@ -7,7 +7,7 @@ import {
   updateCoupon,
   deleteCoupon,
 } from "../controllers/couponController";
-import { authenticate } from "../middlewares/authMiddleware";
+import { authenticate, requireAdmin } from "../middlewares/authMiddleware";
 
 const router = Router();
 
@@ -16,9 +16,9 @@ router.post("/validate", validateCoupon);
 router.get("/available", getAvailableCoupons);
 
 // Admin routes
-router.post("/", authenticate, createCoupon);
-router.get("/", authenticate, getAllCoupons);
-router.put("/:id", authenticate, updateCoupon);
-router.delete("/:id", authenticate, deleteCoupon);
+router.post("/", authenticate, requireAdmin, createCoupon);
+router.get("/", authenticate, requireAdmin, getAllCoupons);
+router.put("/:id", authenticate, requireAdmin, updateCoupon);
+router.delete("/:id", authenticate, requireAdmin, deleteCoupon);
 
 export default router;

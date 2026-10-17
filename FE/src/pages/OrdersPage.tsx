@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Typography, Spin, Empty, Button, Modal, Divider, Row, Col, Rate, Input, message, Popconfirm } from "antd";
+import { Card, Typography, Spin, Empty, Button, Modal, Divider, Row, Col, Rate, Input, message, Popconfirm, Tag } from "antd";
 import { Link, Navigate } from "react-router-dom";
 import { 
   ShoppingOutlined, 
@@ -23,6 +23,7 @@ const OrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("all");
   
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,6 +36,11 @@ const OrdersPage: React.FC = () => {
     rating: 5,
     comment: ""
   });
+
+  const filteredOrders = React.useMemo(() => {
+    if (activeTab === "all") return orders;
+    return orders.filter((o) => o.status === activeTab);
+  }, [orders, activeTab]);
 
   useEffect(() => {
     if (isAuthenticated) loadOrders();
@@ -173,6 +179,32 @@ const OrdersPage: React.FC = () => {
           <Text className="text-gray italic text-base">Quản lý và theo dõi lịch sử mua sắm của bạn.</Text>
         </div>
 
+        {/* STATUS TABS FILTER */}
+        {orders.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none">
+            {[
+              { key: "all", label: `Tất cả (${orders.length})` },
+              { key: "pending", label: `Chờ xác nhận (${orders.filter(o => o.status === "pending").length})` },
+              { key: "processing", label: `Đang xử lý (${orders.filter(o => o.status === "processing").length})` },
+              { key: "shipped", label: `Đang giao (${orders.filter(o => o.status === "shipped").length})` },
+              { key: "completed", label: `Hoàn tất (${orders.filter(o => o.status === "completed").length})` },
+              { key: "cancelled", label: `Đã hủy (${orders.filter(o => o.status === "cancelled").length})` },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
+                  activeTab === tab.key
+                    ? "bg-primary text-white shadow-sm"
+                    : "bg-white text-charcoal border border-gray/15 hover:border-primary/50"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {orders.length === 0 ? (
           <Empty 
             description={<span className="text-gray text-base">Bạn chưa có đơn hàng nào</span>} 
@@ -184,9 +216,14 @@ const OrdersPage: React.FC = () => {
               </Button>
             </Link>
           </Empty>
+        ) : filteredOrders.length === 0 ? (
+          <Empty 
+            description={<span className="text-gray text-base">Không có đơn hàng nào ở trạng thái này</span>} 
+            className="bg-white p-12 rounded-2xl shadow-sm border border-gray/10"
+          />
         ) : (
           <div className="space-y-6">
-            {orders.map((order) => (
+            {filteredOrders.map((order) => (
               <Card 
                 key={order.id} 
                 className="border border-gray/10 shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition-all group bg-white"
@@ -216,7 +253,18 @@ const OrdersPage: React.FC = () => {
                             </Text>
                         </div>
                     </div>
-                    {getStatusTag(order.status)}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {order.payment_method === "momo" ? (
+                        <Tag color="magenta" className="rounded-full px-2.5 py-0.5 text-xs font-medium">
+                          Ví MoMo {order.payment_status === "paid" ? "• Đã TT" : "• Chờ TT"}
+                        </Tag>
+                      ) : (
+                        <Tag className="rounded-full px-2.5 py-0.5 text-xs bg-gray/5 border-gray/20 text-gray-600">
+                          Tiền mặt (COD)
+                        </Tag>
+                      )}
+                      {getStatusTag(order.status)}
+                    </div>
                   </div>
 
                   <div className="space-y-4">
@@ -327,9 +375,21 @@ const OrdersPage: React.FC = () => {
                         <Text strong className="text-xs text-charcoal uppercase tracking-widest">Thanh toán</Text>
                     </div>
                     <div className="bg-background p-5 rounded-xl border border-gray/10 h-full flex flex-col justify-center">
-                        <Text strong className="block text-charcoal mb-1 text-sm">
-                          {selectedOrder.payment_method === 'cod' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản ngân hàng'}
-                        </Text>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Text strong className="text-charcoal text-sm">
+                            {selectedOrder.payment_method === 'momo' ? 'Ví điện tử MoMo' : 'Thanh toán khi nhận hàng (COD)'}
+                          </Text>
+                          {selectedOrder.payment_method === 'momo' && (
+                            <Tag color={selectedOrder.payment_status === 'paid' ? 'success' : 'warning'} className="rounded-full text-[11px] px-2">
+                              {selectedOrder.payment_status === 'paid' ? 'Đã thanh toán' : 'Chờ thanh toán'}
+                            </Tag>
+                          )}
+                        </div>
+                        {selectedOrder.momo_trans_id && (
+                          <Text type="secondary" className="block text-xs font-mono text-gray mb-1">
+                            Mã GD: {selectedOrder.momo_trans_id}
+                          </Text>
+                        )}
                         <Text type="secondary" className="block text-xs text-gray">
                           Ngày đặt: {new Date(selectedOrder.created_at).toLocaleString("vi-VN")}
                         </Text>
