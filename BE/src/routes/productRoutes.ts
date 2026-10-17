@@ -8,7 +8,7 @@ import {
   allVariants,
   addVariant,
 } from "../controllers/productController";
-import { authenticate, checkRoleForProduct, requireAdmin } from "../middlewares/authMiddleware";
+import { authenticate, checkRoleForProduct, authorize } from "../middlewares/authMiddleware";
 import { uploadProduct } from "../middlewares/uploadMiddleware";
 import { compressProductsImages } from "../middlewares/compressImage";
 
@@ -18,45 +18,45 @@ const router = Router();
 router.get("/", checkRoleForProduct, index);  
 router.get("/purchase/all-variants", allVariants);
 router.get("/:id", checkRoleForProduct, show);
-// --- Protected Routes (Chỉ dành cho Admin) ---
+
+// --- Protected Routes (Dành cho Admin & Staff) ---
 
 /**
  * TẠO MỚI SẢN PHẨM
- * - authenticate: Kiểm tra token
- * - requireAdmin: Kiểm tra quyền admin
- * - uploadProduct.array("images", 10): Nhận tối đa 10 file với key là "images"
  */
 router.post(
   "/",
   authenticate,
-  compressProductsImages,
+  authorize("admin", "staff"),
   uploadProduct.array("images", 10),
+  compressProductsImages,
   create,
 );
 
 /**
- * CẬP NHẬT SẢN PHẨM
- * Tương tự như tạo mới, cho phép gửi kèm ảnh mới để thay thế gallery cũ
+ * CẬP NHẬT BIẾN THỂ / SẢN PHẨM
  */
 router.put(
   "/:id/variants",
   authenticate,
-  
+  authorize("admin", "staff"),
   uploadProduct.array("images", 10),
+  compressProductsImages,
   addVariant,
 );
 
 router.put(
   "/:id",
   authenticate,
-  compressProductsImages,
+  authorize("admin", "staff"),
   uploadProduct.array("images", 10),
+  compressProductsImages,
   update,
 );
 
 /**
  * XÓA SẢN PHẨM
  */
-router.delete("/:id", authenticate,  remove);
+router.delete("/:id", authenticate, authorize("admin", "staff"), remove);
 
 export default router;

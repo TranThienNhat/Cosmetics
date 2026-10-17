@@ -3,8 +3,17 @@ import { execFile } from "child_process";
 import path from "path";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+import fs from "fs";
+
 const ML_ENGINE_DIR = path.join(__dirname, "../../ml_engine");
-const PYTHON_CMD = process.platform === "win32" ? "python" : "python3";
+
+const getPythonCmd = (): string => {
+  const venvPythonWin = path.join(__dirname, "../../venv/Scripts/python.exe");
+  const venvPythonUnix = path.join(__dirname, "../../venv/bin/python");
+  if (fs.existsSync(venvPythonWin)) return venvPythonWin;
+  if (fs.existsSync(venvPythonUnix)) return venvPythonUnix;
+  return process.platform === "win32" ? "python" : "python3";
+};
 
 // Simple in-memory cache to prevent spawning heavy Python processes on every rapid request
 const cache: Record<string, { data: any; expiry: number }> = {};
@@ -13,10 +22,12 @@ const CACHE_TTL = 3 * 60 * 1000; // 3 minutes
 const runPythonScript = (scriptName: string, args: string[] = []): Promise<any> => {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(ML_ENGINE_DIR, scriptName);
+    const pythonCmd = getPythonCmd();
+    console.log(`[ML Engine] Running ${scriptName} with python: ${pythonCmd}`);
     
     // Execute python with UTF-8 env
     execFile(
-      PYTHON_CMD,
+      pythonCmd,
       [scriptPath, ...args],
       {
         cwd: ML_ENGINE_DIR,

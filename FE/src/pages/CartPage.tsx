@@ -38,15 +38,24 @@ const CartPage: React.FC = () => {
     isLoading,
     couponCode,
     discount,
+    addToCart,
   } = useCart();
 
   const [couponInput, setCouponInput] = useState("");
 
   // 1. STATE QUẢN LÝ CÁC SẢN PHẨM ĐƯỢC CHỌN (LƯU VARIANT_ID)
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
-  const { addToCart } = useCart();
+  const [hasInitializedSelection, setHasInitializedSelection] = useState(false);
   const [cartRecommendations, setCartRecommendations] = useState<any[]>([]);
   const [addingRecId, setAddingRecId] = useState<number | null>(null);
+
+  // Tự động chọn tất cả sản phẩm khi vừa vào giỏ hàng
+  useEffect(() => {
+    if (items.length > 0 && !hasInitializedSelection) {
+      setSelectedItemIds(items.map((i) => Number(i.variant_id)));
+      setHasInitializedSelection(true);
+    }
+  }, [items, hasInitializedSelection]);
 
   // Load smart cross-sell recommendations for cart
   useEffect(() => {

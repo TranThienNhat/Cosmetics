@@ -57,7 +57,9 @@ const CheckoutSuccessPage: React.FC = () => {
               </div>
               <div className="flex justify-between items-start gap-4">
                 <Text className="text-gray text-sm">Thanh toán</Text>
-                <Text className="text-charcoal text-sm font-medium text-right">Thanh toán khi nhận hàng (COD)</Text>
+                <Text className="text-charcoal text-sm font-medium text-right">
+                  {order?.payment_method === "momo" ? "Ví điện tử MoMo" : "Thanh toán khi nhận hàng (COD)"}
+                </Text>
               </div>
               <div className="flex justify-between items-start gap-4">
                 <Text className="text-gray text-sm">Hotline hỗ trợ</Text>
