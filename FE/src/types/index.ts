@@ -115,7 +115,7 @@ export interface Order {
   shipping_address?: string;
   notes?: string;
   payment_method?: "cod" | "momo" | string;
-  payment_status?: "unpaid" | "paid" | "refunded";
+  payment_status?: "unpaid" | "paid" | "refunded" | "cancelled";
   momo_trans_id?: string;
   status: "pending" | "processing" | "shipped" | "completed" | "cancelled";
   created_at: string;

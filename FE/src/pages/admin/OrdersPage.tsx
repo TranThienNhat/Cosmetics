@@ -149,6 +149,7 @@ const AdminOrdersPage: React.FC = () => {
       render: (_: any, record: Order) => {
         const isMomo = record.payment_method === "momo";
         const isPaid = record.payment_status === "paid";
+        const isCancelled = record.status === "cancelled";
         return (
           <div className="space-y-1">
             <div>
@@ -163,9 +164,15 @@ const AdminOrdersPage: React.FC = () => {
               )}
             </div>
             <div>
-              <Tag color={isPaid ? "green" : "orange"} className="text-[11px] rounded-full border-0">
-                {isPaid ? "Đã thanh toán" : "Chưa thanh toán"}
-              </Tag>
+              {isCancelled ? (
+                <Tag color={isPaid ? "orange" : "default"} className="text-[11px] rounded-full border-0">
+                  {isPaid ? "Đã hoàn tiền" : "Đã hủy"}
+                </Tag>
+              ) : (
+                <Tag color={isPaid ? "green" : "orange"} className="text-[11px] rounded-full border-0">
+                  {isPaid ? "Đã thanh toán" : "Chờ thanh toán"}
+                </Tag>
+              )}
             </div>
           </div>
         );

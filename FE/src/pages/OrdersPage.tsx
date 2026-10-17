@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, Typography, Spin, Empty, Button, Modal, Divider, Row, Col, Rate, Input, message, Popconfirm, Tag } from "antd";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { 
   ShoppingOutlined, 
   RightOutlined, 
@@ -10,7 +10,8 @@ import {
   InboxOutlined, 
   CreditCardOutlined, 
   CheckCircleOutlined, 
-  CopyOutlined 
+  CopyOutlined,
+  ReloadOutlined
 } from "@ant-design/icons";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../utils/api";
@@ -19,10 +20,13 @@ import { getImageUrl, formatCurrency } from "../utils/helpers";
 const { Title, Text } = Typography;
 
 const OrdersPage: React.FC = () => {
+  const navigate = useNavigate();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [repayingId, setRepayingId] = useState<number | null>(null);
+  const [reorderingId, setReorderingId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<string>("all");
   
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -99,15 +103,90 @@ const OrdersPage: React.FC = () => {
       await api.put(`/orders/${orderId}`, { status: "cancelled" });
       message.success("Đã hủy đơn hàng thành công.");
       
-      const updatedOrders = orders.map(o => o.id === orderId ? { ...o, status: "cancelled" } : o);
+      const updatedOrders = orders.map((o) => {
+        if (o.id === orderId) {
+          const newPaymentStatus = o.payment_status === "paid" ? "refunded" : "cancelled";
+          return { ...o, status: "cancelled", payment_status: newPaymentStatus };
+        }
+        return o;
+      });
       setOrders(updatedOrders);
       if (selectedOrder?.id === orderId) {
-        setSelectedOrder({ ...selectedOrder, status: "cancelled" });
+        const newPaymentStatus = selectedOrder.payment_status === "paid" ? "refunded" : "cancelled";
+        setSelectedOrder({ ...selectedOrder, status: "cancelled", payment_status: newPaymentStatus });
       }
     } catch (error: any) {
       message.error(error.response?.data?.message || "Không thể hủy đơn hàng lúc này.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  /**
+   * Thanh toán lại qua MoMo cho đơn hàng chưa hoàn tất
+   */
+  const handleRepayMomo = async (order: any) => {
+    try {
+      setRepayingId(order.id);
+      message.loading({ content: "Đang kết nối cổng thanh toán Ví MoMo...", key: "repay" });
+      const res = await api.post(`/orders/${order.id}/repay-momo`);
+      if (res.data?.payUrl) {
+        message.success({ content: "Đang chuyển hướng sang Ví MoMo...", key: "repay" });
+        window.location.href = res.data.payUrl;
+      } else {
+        message.info({ content: res.data?.message || "Khởi tạo thanh toán thành công", key: "repay" });
+      }
+    } catch (error: any) {
+      message.error({ content: error.response?.data?.message || "Không thể thanh toán lại lúc này.", key: "repay" });
+    } finally {
+      setRepayingId(null);
+    }
+  };
+
+  /**
+   * Đổi phương thức sang thanh toán khi nhận hàng (COD)
+   */
+  const handleSwitchToCod = async (orderId: number) => {
+    try {
+      setSubmitting(true);
+      const res = await api.post(`/orders/${orderId}/switch-to-cod`);
+      message.success(res.data?.message || "Đã chuyển sang thanh toán khi nhận hàng (COD)");
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, payment_method: "cod", payment_status: "unpaid" } : o))
+      );
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder((prev: any) => ({ ...prev, payment_method: "cod", payment_status: "unpaid" }));
+      }
+    } catch (error: any) {
+      message.error(error.response?.data?.message || "Không thể đổi sang COD");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  /**
+   * Mua lại đơn hàng (Re-order) cho đơn đã hủy
+   */
+  const handleReorder = async (order: any) => {
+    try {
+      setReorderingId(order.id);
+      message.loading({ content: "Đang chuẩn bị giỏ hàng của nàng...", key: "reorder" });
+      for (const item of order.items) {
+        try {
+          await api.post("/cart/add", {
+            variantId: item.variant_id,
+            quantity: item.quantity || 1,
+          });
+        } catch (itemErr) {
+          console.warn("Lỗi thêm item khi mua lại:", itemErr);
+        }
+      }
+      message.success({ content: "Đã thêm sản phẩm vào giỏ hàng! Đang chuyển đến trang thanh toán...", key: "reorder" });
+      navigate("/checkout");
+    } catch (error: any) {
+      message.error({ content: "Có lỗi khi mua lại sản phẩm", key: "reorder" });
+    } finally {
+      setReorderingId(null);
     }
   };
 
@@ -164,6 +243,34 @@ const OrdersPage: React.FC = () => {
     };
     const s = config[status] || config.pending;
     return <span className={`px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border ${s.bg} ${s.color} border-${s.color.split('-')[1]}-100`}>{s.text}</span>;
+  };
+
+  /**
+   * Hiển thị Tag Phương thức & Trạng thái thanh toán thông minh, không mâu thuẫn
+   */
+  const renderPaymentBadge = (order: any) => {
+    const isCancelled = order.status === "cancelled";
+    if (order.payment_method === "momo") {
+      if (isCancelled) {
+        if (order.payment_status === "paid" || order.payment_status === "refunded") {
+          return <Tag color="orange" className="rounded-full px-2.5 py-0.5 text-xs font-medium">Ví MoMo • Đã hoàn tiền</Tag>;
+        }
+        return <Tag className="rounded-full px-2.5 py-0.5 text-xs bg-gray-100 text-gray-500 border-gray-200">Ví MoMo • Đã hủy</Tag>;
+      }
+      if (order.payment_status === "paid") {
+        return <Tag color="green" className="rounded-full px-2.5 py-0.5 text-xs font-medium">Ví MoMo • Đã TT</Tag>;
+      }
+      return <Tag color="magenta" className="rounded-full px-2.5 py-0.5 text-xs font-medium">Ví MoMo • Chờ TT</Tag>;
+    }
+
+    // COD
+    if (isCancelled) {
+      return <Tag className="rounded-full px-2.5 py-0.5 text-xs bg-gray-100 text-gray-500 border-gray-200">COD • Đã hủy</Tag>;
+    }
+    if (order.status === "completed") {
+      return <Tag color="green" className="rounded-full px-2.5 py-0.5 text-xs font-medium">COD • Đã TT</Tag>;
+    }
+    return <Tag className="rounded-full px-2.5 py-0.5 text-xs bg-gray-50 border-gray-200 text-gray-600">Tiền mặt (COD)</Tag>;
   };
 
   if (!authLoading && !isAuthenticated) return <Navigate to="/login" replace />;
@@ -254,15 +361,7 @@ const OrdersPage: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      {order.payment_method === "momo" ? (
-                        <Tag color="magenta" className="rounded-full px-2.5 py-0.5 text-xs font-medium">
-                          Ví MoMo {order.payment_status === "paid" ? "• Đã TT" : "• Chờ TT"}
-                        </Tag>
-                      ) : (
-                        <Tag className="rounded-full px-2.5 py-0.5 text-xs bg-gray/5 border-gray/20 text-gray-600">
-                          Tiền mặt (COD)
-                        </Tag>
-                      )}
+                      {renderPaymentBadge(order)}
                       {getStatusTag(order.status)}
                     </div>
                   </div>
@@ -287,11 +386,60 @@ const OrdersPage: React.FC = () => {
                     ))}
                   </div>
 
-                  <div className="mt-6 pt-4 border-t border-gray/10 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
+                  <div className="mt-6 pt-4 border-t border-gray/10 flex flex-wrap justify-between items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <Button type="text" className="text-primary text-sm p-0 flex items-center gap-1 font-medium hover:text-primary/80 transition-colors">
                           Xem chi tiết <RightOutlined style={{ fontSize: 13 }} />
                       </Button>
+
+                      {/* Thanh toán lại MoMo nếu đơn chưa trả và còn hiệu lực */}
+                      {order.status === "pending" && order.payment_status !== "paid" && order.payment_method === "momo" && (
+                        <Button
+                          type="primary"
+                          size="small"
+                          icon={<CreditCardOutlined />}
+                          loading={repayingId === order.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRepayMomo(order);
+                          }}
+                          className="bg-[#D82D8B] hover:!bg-[#b82274] border-[#D82D8B] text-white rounded-lg text-xs font-semibold px-3 h-8 shadow-sm flex items-center gap-1"
+                        >
+                          Thanh toán lại MoMo
+                        </Button>
+                      )}
+
+                      {/* Đổi sang COD */}
+                      {order.status === "pending" && order.payment_status !== "paid" && order.payment_method === "momo" && (
+                        <Button
+                          size="small"
+                          loading={submitting}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSwitchToCod(order.id);
+                          }}
+                          className="rounded-lg text-xs border-gray-300 text-charcoal hover:border-primary h-8"
+                        >
+                          Đổi sang COD
+                        </Button>
+                      )}
+
+                      {/* Mua lại đơn này nếu đơn đã hủy */}
+                      {order.status === "cancelled" && (
+                        <Button
+                          type="primary"
+                          size="small"
+                          icon={<ReloadOutlined />}
+                          loading={reorderingId === order.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReorder(order);
+                          }}
+                          className="bg-[#BC8F8F] hover:!bg-[#a37676] border-[#BC8F8F] text-white rounded-lg text-xs font-semibold px-3.5 h-8 shadow-sm flex items-center gap-1.5"
+                        >
+                          Mua lại đơn này
+                        </Button>
+                      )}
 
                       {(order.status === "pending" || order.status === "processing") && (
                           <Popconfirm
@@ -305,7 +453,7 @@ const OrdersPage: React.FC = () => {
                               <Button 
                                 type="text" 
                                 danger 
-                                className="text-sm font-medium p-0" 
+                                className="text-xs font-medium p-0 hover:underline" 
                                 onClick={(e: any) => e.stopPropagation()}
                               >
                                   Hủy đơn
@@ -313,7 +461,7 @@ const OrdersPage: React.FC = () => {
                           </Popconfirm>
                       )}
                     </div>
-                    <div className="text-right">
+                    <div className="text-right ml-auto">
                       <Text className="text-gray text-[10px] uppercase tracking-widest block mb-1">Tổng thanh toán</Text>
                       <Text className="text-xl font-serif text-primary font-bold leading-none">{formatCurrency(Number(order.final_amount))}</Text>
                     </div>
@@ -375,15 +523,11 @@ const OrdersPage: React.FC = () => {
                         <Text strong className="text-xs text-charcoal uppercase tracking-widest">Thanh toán</Text>
                     </div>
                     <div className="bg-background p-5 rounded-xl border border-gray/10 h-full flex flex-col justify-center">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <Text strong className="text-charcoal text-sm">
                             {selectedOrder.payment_method === 'momo' ? 'Ví điện tử MoMo' : 'Thanh toán khi nhận hàng (COD)'}
                           </Text>
-                          {selectedOrder.payment_method === 'momo' && (
-                            <Tag color={selectedOrder.payment_status === 'paid' ? 'success' : 'warning'} className="rounded-full text-[11px] px-2">
-                              {selectedOrder.payment_status === 'paid' ? 'Đã thanh toán' : 'Chờ thanh toán'}
-                            </Tag>
-                          )}
+                          {renderPaymentBadge(selectedOrder)}
                         </div>
                         {selectedOrder.momo_trans_id && (
                           <Text type="secondary" className="block text-xs font-mono text-gray mb-1">
@@ -461,21 +605,62 @@ const OrdersPage: React.FC = () => {
                   </div>
               </div>
 
-              {(selectedOrder.status === "pending" || selectedOrder.status === "processing") && (
-                <div className="mt-8 pt-6 border-t border-gray/10">
-                    <Popconfirm
-                        title="Xác nhận hủy đơn hàng này?"
-                        onConfirm={() => handleCancelOrder(selectedOrder.id)}
-                        okText="Hủy đơn"
-                        cancelText="Đóng"
-                        okButtonProps={{ danger: true, loading: submitting }}
+              <div className="mt-8 pt-6 border-t border-gray/10 flex flex-col sm:flex-row gap-3 justify-end items-center">
+                {selectedOrder.status === "cancelled" && (
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<ReloadOutlined />}
+                    loading={reorderingId === selectedOrder.id}
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      handleReorder(selectedOrder);
+                    }}
+                    className="bg-[#BC8F8F] hover:!bg-[#a37676] border-[#BC8F8F] h-12 rounded-xl font-medium px-6 w-full sm:w-auto shadow-sm"
+                  >
+                    Mua lại đơn hàng này
+                  </Button>
+                )}
+
+                {selectedOrder.status === "pending" && selectedOrder.payment_status !== "paid" && selectedOrder.payment_method === "momo" && (
+                  <>
+                    <Button
+                      size="large"
+                      loading={submitting}
+                      onClick={() => handleSwitchToCod(selectedOrder.id)}
+                      className="h-12 rounded-xl font-medium px-6 border-gray-300 hover:border-primary text-charcoal w-full sm:w-auto"
                     >
-                        <Button block danger type="primary" size="large" className="h-12 rounded-lg font-medium text-base shadow-sm">
-                            Xác nhận hủy đơn
-                        </Button>
-                    </Popconfirm>
-                </div>
-              )}
+                      Đổi sang COD
+                    </Button>
+
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={<CreditCardOutlined />}
+                      loading={repayingId === selectedOrder.id}
+                      onClick={() => handleRepayMomo(selectedOrder)}
+                      className="bg-[#D82D8B] hover:!bg-[#b82274] border-[#D82D8B] h-12 rounded-xl font-medium px-6 text-white w-full sm:w-auto shadow-md"
+                    >
+                      Thanh toán lại MoMo
+                    </Button>
+                  </>
+                )}
+
+                {(selectedOrder.status === "pending" || selectedOrder.status === "processing") && (
+                  <Popconfirm
+                    title="Xác nhận hủy đơn hàng này?"
+                    description="Sau khi hủy, số lượng sản phẩm sẽ được hoàn lại kho."
+                    onConfirm={() => handleCancelOrder(selectedOrder.id)}
+                    okText="Hủy đơn"
+                    cancelText="Đóng"
+                    okButtonProps={{ danger: true, loading: submitting }}
+                  >
+                    <Button block danger type="primary" size="large" className="h-12 rounded-lg font-medium text-base shadow-sm w-full sm:w-auto">
+                      Xác nhận hủy đơn
+                    </Button>
+                  </Popconfirm>
+                )}
+              </div>
             </div>
           </div>
         )}

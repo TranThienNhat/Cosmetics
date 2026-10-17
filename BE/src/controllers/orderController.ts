@@ -203,6 +203,12 @@ export const getMyOrders = async (req: Request, res: Response): Promise<Response
     if (!userId) return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Vui lòng đăng nhập" });
 
     const orders = await Order.findAll({ where: { user_id: userId }, orderBy: "created_at", orderDir: "DESC" });
+    // Đồng bộ: Đơn đã hủy không được để payment_status là unpaid
+    orders.forEach((o: any) => {
+      if (o.status === "cancelled" && (!o.payment_status || o.payment_status === "unpaid")) {
+        o.payment_status = "cancelled";
+      }
+    });
     return res.json({ message: "Lấy danh sách đơn hàng thành công", data: orders });
   } catch (error) {
     console.error(error);
@@ -213,6 +219,11 @@ export const getMyOrders = async (req: Request, res: Response): Promise<Response
 export const getAllOrders = async (req: Request, res: Response): Promise<Response> => {
   try {
     const orders = await Order.findAll({ orderBy: "created_at", orderDir: "DESC" });
+    orders.forEach((o: any) => {
+      if (o.status === "cancelled" && (!o.payment_status || o.payment_status === "unpaid")) {
+        o.payment_status = "cancelled";
+      }
+    });
     return res.json({ message: "Lấy danh sách đơn hàng thành công", data: orders });
   } catch (error) {
     console.error(error);
@@ -258,7 +269,7 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response): Promis
        return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: "Đơn hàng đã được gửi đi, nàng vui lòng liên hệ hotline để hỗ trợ nhé" });
     }
 
-    // 4. XỬ LÝ HOÀN KHO (Nếu status mới là cancelled)
+    // 4. XỬ LÝ HOÀN KHO & CẬP NHẬT TRẠNG THÁI THANH TOÁN (Nếu status mới là cancelled)
     if (status === "cancelled") {
       const [items]: any = await (Order as any).db.query(
         "SELECT variant_id, quantity FROM order_items WHERE order_id = ?",
@@ -271,6 +282,13 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response): Promis
           [item.quantity, item.variant_id]
         );
       }
+
+      // Khi hủy đơn: nếu đã thanh toán thì chuyển thành refunded, nếu chưa thì chuyển thành cancelled
+      const newPaymentStatus = currentOrder.payment_status === "paid" ? "refunded" : "cancelled";
+      await (Order as any).db.query(
+        "UPDATE orders SET payment_status = ? WHERE id = ?",
+        [newPaymentStatus, orderId]
+      );
     }
 
     // 5. Cập nhật trạng thái
@@ -370,10 +388,14 @@ export const checkMomoStatus = async (req: Request, res: Response): Promise<Resp
       return res.status(HTTP_STATUS.NOT_FOUND).json({ message: "Không tìm thấy đơn hàng" });
     }
 
+    const paymentStatus = (order.status === "cancelled" && (!order.payment_status || order.payment_status === "unpaid")) 
+      ? "cancelled" 
+      : order.payment_status;
+
     return res.json({
       order_code: order.order_code,
       payment_method: order.payment_method,
-      payment_status: order.payment_status,
+      payment_status: paymentStatus,
       status: order.status,
       final_amount: order.final_amount,
       momo_trans_id: order.momo_trans_id,
@@ -383,5 +405,132 @@ export const checkMomoStatus = async (req: Request, res: Response): Promise<Resp
     return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Lỗi server" });
   }
 };
+
+/**
+ * Khởi tạo lại liên kết thanh toán MoMo cho đơn hàng chưa hoàn tất thanh toán
+ */
+export const repayMomo = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const authReq = req as AuthRequest;
+    const { id } = req.params;
+    const orderId = parseInt(id);
+    const currentUser = authReq.user;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: "Không tìm thấy đơn hàng" });
+    }
+
+    const isAdmin = currentUser?.role === "admin";
+    const isOwner = currentUser?.id === order.user_id;
+    if (!isAdmin && !isOwner) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({ message: "Nàng không có quyền thanh toán đơn hàng này" });
+    }
+
+    if (order.payment_status === "paid") {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: "Đơn hàng này đã được thanh toán thành công rồi nhé" });
+    }
+
+    if (order.status === "cancelled") {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
+        message: "Đơn hàng này đã bị hủy. Nàng vui lòng bấm 'Mua lại đơn này' để tạo đơn mới nhé!",
+        isCancelled: true
+      });
+    }
+
+    if (order.status === "completed") {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: "Đơn hàng này đã hoàn tất" });
+    }
+
+    let clientOrigin = "http://localhost:5173";
+    if (req.headers.origin) {
+      clientOrigin = req.headers.origin as string;
+    } else if (req.headers.referer) {
+      try {
+        clientOrigin = new URL(req.headers.referer as string).origin;
+      } catch {
+        clientOrigin = "http://localhost:5173";
+      }
+    }
+
+    const host = req.get("host") || "localhost:3000";
+    const protocol = req.protocol || "http";
+    const ipnUrl = `${protocol}://${host}/api/orders/momo-ipn`;
+    const redirectUrl = `${clientOrigin}/checkout/momo-return`;
+
+    const momoPaymentData = await momoService.createPayment({
+      orderId: order.order_code,
+      amount: Math.round(Number(order.final_amount)),
+      orderInfo: `Thanh toán lại đơn hàng ${order.order_code} tại Linh Cosmetics`,
+      redirectUrl,
+      ipnUrl,
+    });
+
+    // Cập nhật phương thức sang MoMo nếu trước đó chưa phải
+    await (Order as any).db.query(
+      "UPDATE orders SET payment_method = 'momo', payment_status = 'unpaid' WHERE id = ?",
+      [orderId]
+    );
+
+    return res.json({
+      success: true,
+      message: "Khởi tạo thanh toán MoMo thành công",
+      order_code: order.order_code,
+      payUrl: momoPaymentData.payUrl,
+      qrCodeUrl: momoPaymentData.qrCodeUrl,
+      deeplink: momoPaymentData.deeplink,
+      isSimulated: momoPaymentData.isSimulated
+    });
+  } catch (error) {
+    console.error(">>> Repay MoMo Error:", error);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Lỗi khi khởi tạo lại thanh toán MoMo" });
+  }
+};
+
+/**
+ * Chuyển phương thức thanh toán sang Tiền mặt khi nhận hàng (COD)
+ */
+export const switchToCod = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const authReq = req as AuthRequest;
+    const { id } = req.params;
+    const orderId = parseInt(id);
+    const currentUser = authReq.user;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: "Không tìm thấy đơn hàng" });
+    }
+
+    const isAdmin = currentUser?.role === "admin";
+    const isOwner = currentUser?.id === order.user_id;
+    if (!isAdmin && !isOwner) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({ message: "Nàng không có quyền thao tác đơn hàng này" });
+    }
+
+    if (order.payment_status === "paid") {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: "Đơn hàng này đã thanh toán rồi, không thể đổi sang COD" });
+    }
+
+    if (order.status === "cancelled") {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: "Đơn hàng này đã bị hủy, không thể thay đổi" });
+    }
+
+    await (Order as any).db.query(
+      "UPDATE orders SET payment_method = 'cod', payment_status = 'unpaid' WHERE id = ?",
+      [orderId]
+    );
+
+    return res.json({
+      success: true,
+      message: "Đã chuyển sang thanh toán Tiền mặt khi nhận hàng (COD) thành công!",
+      order: { ...order, payment_method: "cod", payment_status: "unpaid" }
+    });
+  } catch (error) {
+    console.error(">>> Switch to COD Error:", error);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Lỗi hệ thống khi chuyển phương thức thanh toán" });
+  }
+};
+
 
 

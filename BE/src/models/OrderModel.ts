@@ -5,6 +5,28 @@ import pool from "../config/db";
 class OrderModel extends BaseModel<IOrder> {
   constructor() {
     super("orders");
+    this.ensureSchema();
+  }
+
+  private async ensureSchema() {
+    try {
+      await pool.query(
+        "ALTER TABLE orders MODIFY COLUMN payment_status VARCHAR(50) DEFAULT 'unpaid'"
+      );
+    } catch (e: any) {
+      // Schema may already be modified or constrained
+    }
+
+    try {
+      const [res]: any = await pool.query(
+        "UPDATE orders SET payment_status = 'cancelled' WHERE status = 'cancelled' AND (payment_status IS NULL OR payment_status = 'unpaid')"
+      );
+      if (res?.affectedRows > 0) {
+        console.log(`Đã đồng bộ ${res.affectedRows} đơn hàng đã hủy sang payment_status = 'cancelled'`);
+      }
+    } catch (e: any) {
+      console.warn("Lỗi đồng bộ payment_status đơn hủy:", e.message);
+    }
   }
 
 async findAll(options: any = {}) {
@@ -197,7 +219,7 @@ async findAll(options: any = {}) {
     return list.length > 0 ? list[0] : null;
   }
 
-  async updatePaymentInfo(orderCode: string, paymentStatus: "unpaid" | "paid" | "refunded", momoTransId?: string, orderStatus?: string) {
+  async updatePaymentInfo(orderCode: string, paymentStatus: "unpaid" | "paid" | "refunded" | "cancelled", momoTransId?: string, orderStatus?: string) {
     const fields: string[] = ["payment_status = ?"];
     const values: any[] = [paymentStatus];
 

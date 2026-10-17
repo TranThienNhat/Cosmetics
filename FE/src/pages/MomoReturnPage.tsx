@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { Card, Button, Typography, Tag, Spin, Result } from "antd";
+import { Card, Button, Typography, Tag, Spin, Result, message } from "antd";
 import {
   CheckCircleFilled,
   CloseCircleFilled,
@@ -8,6 +8,7 @@ import {
   CopyOutlined,
   ArrowRightOutlined,
   HomeOutlined,
+  CreditCardOutlined,
 } from "@ant-design/icons";
 import api from "../utils/api";
 import { formatCurrency } from "../utils/helpers";
@@ -29,6 +30,8 @@ const MomoReturnPage: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [copied, setCopied] = useState(false);
+  const [repaying, setRepaying] = useState(false);
+  const [switchingCod, setSwitchingCod] = useState(false);
 
   useEffect(() => {
     const confirmPayment = async () => {
@@ -64,6 +67,41 @@ const MomoReturnPage: React.FC = () => {
     navigator.clipboard.writeText(orderId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleRepayMomo = async () => {
+    const targetOrderId = order?.id || orderId;
+    if (!targetOrderId) return;
+    try {
+      setRepaying(true);
+      message.loading({ content: "Đang tạo liên kết thanh toán Ví MoMo mới...", key: "repay" });
+      const res = await api.post(`/orders/${targetOrderId}/repay-momo`);
+      if (res.data?.payUrl) {
+        message.success({ content: "Đang chuyển hướng sang Ví MoMo...", key: "repay" });
+        window.location.href = res.data.payUrl;
+      } else {
+        message.info({ content: res.data?.message || "Khởi tạo thanh toán thành công", key: "repay" });
+      }
+    } catch (err: any) {
+      message.error({ content: err.response?.data?.message || "Không thể khởi tạo lại thanh toán lúc này.", key: "repay" });
+    } finally {
+      setRepaying(false);
+    }
+  };
+
+  const handleSwitchToCod = async () => {
+    const targetOrderId = order?.id || orderId;
+    if (!targetOrderId) return;
+    try {
+      setSwitchingCod(true);
+      const res = await api.post(`/orders/${targetOrderId}/switch-to-cod`);
+      message.success(res.data?.message || "Đã chuyển sang thanh toán khi nhận hàng (COD) thành công!");
+      navigate("/orders");
+    } catch (err: any) {
+      message.error(err.response?.data?.message || "Không thể chuyển sang COD");
+    } finally {
+      setSwitchingCod(false);
+    }
   };
 
   const finalAmount = order?.final_amount
@@ -195,24 +233,34 @@ const MomoReturnPage: React.FC = () => {
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
                 <Button
                   type="primary"
                   size="large"
-                  icon={<ShoppingOutlined />}
-                  onClick={() => navigate("/orders")}
-                  className="bg-primary hover:!bg-[#a37676] border-primary h-12 rounded-xl font-medium px-8"
+                  icon={<CreditCardOutlined />}
+                  loading={repaying}
+                  onClick={handleRepayMomo}
+                  className="bg-[#D82D8B] hover:!bg-[#b82274] border-[#D82D8B] h-12 rounded-xl font-medium px-8 text-white shadow-md"
                 >
-                  Kiểm tra đơn hàng
+                  Thanh toán lại qua Ví MoMo
                 </Button>
 
                 <Button
                   size="large"
-                  icon={<HomeOutlined />}
-                  onClick={() => navigate("/cart")}
-                  className="h-12 rounded-xl font-medium px-8 border-gray/20 hover:border-primary text-charcoal"
+                  loading={switchingCod}
+                  onClick={handleSwitchToCod}
+                  className="h-12 rounded-xl font-medium px-6 border-gray-300 hover:border-primary text-charcoal"
                 >
-                  Quay lại giỏ hàng
+                  Đổi sang nhận hàng trả tiền (COD)
+                </Button>
+
+                <Button
+                  size="large"
+                  icon={<ShoppingOutlined />}
+                  onClick={() => navigate("/orders")}
+                  className="h-12 rounded-xl font-medium px-6 border-gray/20 hover:border-primary text-charcoal"
+                >
+                  Xem đơn hàng của tôi
                 </Button>
               </div>
             </div>

@@ -7,6 +7,8 @@ import {
   handleMomoIpn,
   confirmMomoReturn,
   checkMomoStatus,
+  repayMomo,
+  switchToCod,
 } from "../controllers/orderController";
 import { authenticate, authorize } from "../middlewares/authMiddleware";
 
@@ -20,6 +22,8 @@ router.get("/check-momo-status/:orderCode", checkMomoStatus);
 // User routes
 router.post("/checkout", authenticate, checkout);
 router.get("/my-orders", authenticate, getMyOrders);
+router.post("/:id/repay-momo", authenticate, repayMomo);
+router.post("/:id/switch-to-cod", authenticate, switchToCod);
 
 // Admin & Staff routes
 router.get("/", authenticate, authorize("admin", "staff"), getAllOrders);
