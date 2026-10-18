@@ -153,7 +153,7 @@ export const checkout = async (req: Request, res: Response): Promise<Response> =
         momoPaymentData = await momoService.createPayment({
           orderId: order_code,
           amount: Math.round(final_amount),
-          orderInfo: `Thanh toán đơn hàng ${order_code} tại Linh Cosmetics`,
+          orderInfo: `Thanh toán đơn hàng ${order_code} qua Thẻ ATM tại Linh Cosmetics`,
           redirectUrl,
           ipnUrl,
         });
@@ -164,7 +164,7 @@ export const checkout = async (req: Request, res: Response): Promise<Response> =
 
     // --- TRẢ DATA ĐẦY ĐỦ VỀ FRONTEND ---
     return res.json({ 
-      message: payment_method === "momo" ? "Khởi tạo thanh toán MoMo thành công" : "Đặt hàng thành công", 
+      message: payment_method === "momo" ? "Khởi tạo thanh toán Thẻ ATM (MoMo) thành công" : "Đặt hàng thành công", 
       order: {
         id: orderId,
         order_code,
@@ -367,7 +367,7 @@ export const confirmMomoReturn = async (req: Request, res: Response): Promise<Re
 
     return res.json({
       success: isSuccess,
-      message: isSuccess ? "Thanh toán MoMo thành công!" : "Giao dịch MoMo không thành công hoặc người dùng đã hủy.",
+      message: isSuccess ? "Thanh toán Thẻ ATM (MoMo) thành công!" : "Giao dịch Thẻ ATM (MoMo) không thành công hoặc người dùng đã hủy.",
       order: updatedOrder,
     });
   } catch (error) {
@@ -461,7 +461,7 @@ export const repayMomo = async (req: Request, res: Response): Promise<Response> 
     const momoPaymentData = await momoService.createPayment({
       orderId: order.order_code,
       amount: Math.round(Number(order.final_amount)),
-      orderInfo: `Thanh toán lại đơn hàng ${order.order_code} tại Linh Cosmetics`,
+      orderInfo: `Thanh toán lại đơn hàng ${order.order_code} qua Thẻ ATM tại Linh Cosmetics`,
       redirectUrl,
       ipnUrl,
     });
@@ -474,7 +474,7 @@ export const repayMomo = async (req: Request, res: Response): Promise<Response> 
 
     return res.json({
       success: true,
-      message: "Khởi tạo thanh toán MoMo thành công",
+      message: "Khởi tạo thanh toán Thẻ ATM (MoMo) thành công",
       order_code: order.order_code,
       payUrl: momoPaymentData.payUrl,
       qrCodeUrl: momoPaymentData.qrCodeUrl,

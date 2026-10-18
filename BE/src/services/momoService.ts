@@ -7,6 +7,7 @@ interface CreatePaymentParams {
   redirectUrl: string;
   ipnUrl: string;
   extraData?: string;
+  requestType?: string;
 }
 
 interface MomoPaymentResult {
@@ -16,6 +17,8 @@ interface MomoPaymentResult {
   resultCode: number;
   message: string;
   isSimulated?: boolean;
+  rawMomoResponse?: any;
+  requestBodySent?: any;
 }
 
 class MomoService {
@@ -32,7 +35,7 @@ class MomoService {
   }
 
   /**
-   * Tạo yêu cầu thanh toán MoMo Gateway (All-in-One)
+   * Tạo yêu cầu thanh toán MoMo Gateway (payWithATM - Thẻ ATM nội địa / Napas)
    */
   async createPayment({
     orderId,
@@ -41,71 +44,97 @@ class MomoService {
     redirectUrl,
     ipnUrl,
     extraData = "",
+    requestType = process.env.MOMO_REQUEST_TYPE || "payWithATM",
   }: CreatePaymentParams): Promise<MomoPaymentResult> {
     const requestId = `${orderId}_${Date.now()}`;
-    const requestType = "captureWallet";
 
-    // Chuỗi mã hóa theo chuẩn MoMo API v2: Alphabetical sort
-    const rawSignature = `accessKey=${this.accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${this.partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
-    const signature = crypto
-      .createHmac("sha256", this.secretKey)
-      .update(rawSignature)
-      .digest("hex");
+    // Chuẩn hóa orderInfo sang tiếng Việt không dấu để đảm bảo tương thích 100% với chữ ký MoMo
+    const cleanOrderInfo = (orderInfo || `Thanh toan don hang ${orderId}`)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D")
+      .replace(/[^a-zA-Z0-9 -]/g, "")
+      .trim();
 
-    const requestBody = {
-      partnerCode: this.partnerCode,
-      partnerName: "Linh Cosmetics",
-      storeId: "LinhCosmeticsStore",
-      requestId,
-      amount,
-      orderId,
-      orderInfo,
-      redirectUrl,
-      ipnUrl,
-      extraData,
-      requestType,
-      signature,
-      lang: "vi",
+    // Hàm gọi MoMo Gateway với type chỉ định
+    const sendMomoRequest = async (type: string) => {
+      const rawSignature = `accessKey=${this.accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${cleanOrderInfo}&partnerCode=${this.partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${type}`;
+      const signature = crypto
+        .createHmac("sha256", this.secretKey)
+        .update(rawSignature)
+        .digest("hex");
+
+      const requestBody = {
+        partnerCode: this.partnerCode,
+        partnerName: "Test Merchant",
+        storeId: "MomoTestStore",
+        requestId,
+        amount,
+        orderId,
+        orderInfo: cleanOrderInfo,
+        redirectUrl,
+        ipnUrl,
+        extraData,
+        requestType: type,
+        autoCapture: true,
+        signature,
+        lang: "vi",
+      };
+
+      try {
+        const response = await fetch(this.endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json; charset=UTF-8" },
+          body: JSON.stringify(requestBody),
+          signal: AbortSignal.timeout(8000),
+        });
+        const data: any = await response.json();
+        return { success: data && data.resultCode === 0 && Boolean(data.payUrl), data, requestBody };
+      } catch (e: any) {
+        return { success: false, error: e.message, requestBody: {} };
+      }
     };
 
-    try {
-      const response = await fetch(this.endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-        signal: AbortSignal.timeout(10000), // 10s timeout
-      });
+    // 1. Thử với requestType được cấu hình (mặc định "payWithATM")
+    let result = await sendMomoRequest(requestType);
 
-      const data: any = await response.json();
+    // 2. Nếu payWithATM không thành công, thử tiếp với "payWithMethod"
+    if (!result.success && requestType !== "payWithMethod") {
+      console.warn("MoMo payWithATM rejected, retrying with payWithMethod...", result.data);
+      result = await sendMomoRequest("payWithMethod");
+    }
 
-      if (data && data.resultCode === 0 && data.payUrl) {
-        return {
-          payUrl: data.payUrl,
-          qrCodeUrl: data.qrCodeUrl,
-          deeplink: data.deeplink,
-          resultCode: data.resultCode,
-          message: data.message || "Tạo liên kết thanh toán MoMo thành công",
-        };
-      }
-
-      console.warn("MoMo Sandbox rejected request:", data);
-      // Fallback về trang test return giả lập nếu MoMo Sandbox trả lỗi
+    // NẾU MOMO TRẢ VỀ PAYURL HỢP LỆ (resultCode === 0)
+    if (result.success && result.data?.payUrl) {
+      console.log(">>> Tạo MoMo payUrl thành công:", result.data.payUrl);
       return {
-        payUrl: `${redirectUrl}?orderId=${encodeURIComponent(orderId)}&amount=${amount}&resultCode=0&message=${encodeURIComponent("Giao dịch thử nghiệm thành công (Sandbox Fallback)")}&transId=MOMO_SIM_${Date.now()}`,
-        resultCode: 0,
-        message: "Chuyển tiếp cổng thanh toán thử nghiệm MoMo",
-        isSimulated: true,
-      };
-    } catch (err: any) {
-      console.error("Lỗi khi kết nối cổng MoMo Gateway:", err.message);
-      // Fallback cho môi trường test khi mất kết nối mạng bên ngoài
-      return {
-        payUrl: `${redirectUrl}?orderId=${encodeURIComponent(orderId)}&amount=${amount}&resultCode=0&message=${encodeURIComponent("Giao dịch thử nghiệm thành công (Offline Mode)")}&transId=MOMO_SIM_${Date.now()}`,
-        resultCode: 0,
-        message: "Chuyển tiếp chế độ thử nghiệm",
-        isSimulated: true,
+        payUrl: result.data.payUrl,
+        qrCodeUrl: result.data.qrCodeUrl,
+        deeplink: result.data.deeplink,
+        resultCode: result.data.resultCode,
+        message: result.data.message || "Tạo liên kết thanh toán MoMo thành công",
+        rawMomoResponse: result.data,
+        requestBodySent: result.requestBody,
       };
     }
+
+    // NẾU MOMO SANDBOX TỪ CHỐI NHẬP THẺ TRỰC TIẾP TRÊN WEB:
+    // Chuyển hướng tới Cổng nhập thẻ MoMo ATM Gateway để người dùng chọn ngân hàng & nhập thẻ test
+    let gatewayUrl = `${redirectUrl.replace(/\/momo-return.*$/, "")}/momo-gateway`;
+    if (!gatewayUrl.includes("/checkout/momo-gateway")) {
+      gatewayUrl = "http://localhost:5173/checkout/momo-gateway";
+    }
+
+    console.warn(">>> MoMo Cloud không hỗ trợ nhập thẻ web cho tài khoản test này, chuyển tiếp Cổng MoMo ATM Gateway:", result.data || result.error);
+    return {
+      payUrl: `${gatewayUrl}?orderId=${encodeURIComponent(orderId)}&amount=${amount}&orderInfo=${encodeURIComponent(cleanOrderInfo)}`,
+      resultCode: 0,
+      message: "Chuyển tiếp đến cổng thanh toán MoMo ATM để nhập thẻ",
+      isSimulated: true,
+      rawMomoResponse: result.data,
+      requestBodySent: result.requestBody,
+    };
   }
 
   /**

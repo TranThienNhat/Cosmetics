@@ -18,6 +18,7 @@ import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import CheckoutSuccessPage from "./pages/CheckoutSuccessPage";
 import MomoReturnPage from "./pages/MomoReturnPage";
+import MomoGatewayPage from "./pages/MomoGatewayPage";
 import OrdersPage from "./pages/OrdersPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
@@ -79,6 +80,7 @@ const App: React.FC = () => {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+              <Route path="/checkout/momo-gateway" element={<MomoGatewayPage />} />
               <Route path="/checkout/momo-return" element={<MomoReturnPage />} />
 
               {/* === ADMIN & STAFF ROUTES === */}

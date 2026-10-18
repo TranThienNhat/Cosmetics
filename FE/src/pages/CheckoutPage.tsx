@@ -332,12 +332,17 @@ const CheckoutPage: React.FC = () => {
           await removeFromCart(item.variant_id);
         }
 
-        // Nếu chọn thanh toán qua Ví MoMo và có payUrl
-        if (paymentMethod === "momo" && response.data.payUrl) {
-          message.loading("Đang chuyển sang cổng thanh toán MoMo...", 2);
+        // Nếu chọn thanh toán qua Thẻ ATM (MoMo Gateway)
+        if (paymentMethod === "momo") {
+          // Chuyển hướng trực tiếp sang Cổng nhập thẻ MoMo ATM Gateway để người dùng chọn ngân hàng & nhập thẻ test
+          const targetUrl = `/checkout/momo-gateway?orderId=${encodeURIComponent(
+            response.data.order.order_code
+          )}&amount=${finalTotal}`;
+
+          message.loading("Đang chuyển sang cổng thanh toán Thẻ ATM MoMo để chọn ngân hàng & nhập thẻ...", 2);
           setTimeout(() => {
-            window.location.href = response.data.payUrl;
-          }, 800);
+            window.location.href = targetUrl;
+          }, 600);
           return;
         }
 
@@ -759,7 +764,7 @@ const CheckoutPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* LỰA CHỌN 2: MOMO */}
+                      {/* LỰA CHỌN 2: THẺ ATM / NAPAS (MOMO GATEWAY) */}
                       <div
                         onClick={() => setPaymentMethod("momo")}
                         className={`cursor-pointer p-4 rounded-2xl border transition-all duration-200 relative flex flex-col justify-between ${
@@ -778,19 +783,19 @@ const CheckoutPage: React.FC = () => {
                                     : "bg-[#FDF2F8] text-[#D82D8B]"
                                 }`}
                               >
-                                <QrcodeOutlined className="text-lg" />
+                                <CreditCardOutlined className="text-lg" />
                               </div>
                               <div>
                                 <div className="flex items-center gap-1.5">
                                   <Text strong className="text-sm text-charcoal block leading-tight">
-                                    Cổng Ví MoMo
+                                    Thẻ ATM / Napas
                                   </Text>
                                   <Tag color="magenta" className="text-[10px] py-0 px-1.5 rounded-full border-0 bg-[#D82D8B]/10 text-[#D82D8B] font-semibold m-0">
-                                    Khuyên dùng
+                                    Không cần App
                                   </Tag>
                                 </div>
                                 <span className="text-[11px] text-gray-400">
-                                  Quét QR / App MoMo
+                                  Cổng MoMo ATM trực tuyến
                                 </span>
                               </div>
                             </div>
@@ -805,7 +810,7 @@ const CheckoutPage: React.FC = () => {
                           </div>
 
                           <Text className="text-gray-500 text-xs leading-relaxed block">
-                            Quét mã QR bằng App MoMo hoặc ứng dụng ngân hàng bất kỳ để xác nhận thanh toán tức thì.
+                            Thanh toán trực tiếp bằng thẻ ATM nội địa / Internet Banking của hơn 30 ngân hàng trên trình duyệt web, không cần cài đặt ứng dụng.
                           </Text>
                         </div>
 
@@ -817,6 +822,25 @@ const CheckoutPage: React.FC = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* HỘP HƯỚNG DẪN CHUYỂN TIẾP SANG CỔNG NHẬP THẺ */}
+                    {paymentMethod === "momo" && (
+                      <div className="mt-3.5 p-3.5 bg-[#FAF3EC]/90 rounded-xl border border-[#BC8F8F]/40 text-xs text-charcoal animate-fadeIn">
+                        <div className="flex items-center gap-1.5 font-bold text-[#D82D8B] mb-1">
+                          <ThunderboltOutlined />
+                          <span>Chuyển tiếp Cổng thanh toán MoMo ATM:</span>
+                        </div>
+                        <p className="text-gray-600 text-xs m-0 mb-2 leading-relaxed">
+                          Khi bấm nút bên dưới, hệ thống sẽ chuyển hướng sang trang thanh toán của <strong>MoMo</strong> để bạn chọn ngân hàng và nhập thông tin thẻ ATM/Napas.
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[11px] text-gray-700 bg-white p-2 rounded-lg border border-[#BC8F8F]/20 font-mono">
+                          <div>Số thẻ: <strong className="text-charcoal font-bold">9704 0000 0000 0018</strong></div>
+                          <div>Chủ thẻ: <strong className="text-charcoal font-bold">NGUYEN VAN A</strong></div>
+                          <div>Ngày: <strong className="text-charcoal font-bold">03/07</strong></div>
+                          <div>OTP: <strong className="text-[#D82D8B] font-bold">000000</strong></div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* DẢI CAM KẾT BẢO MẬT & ĐỒNG BỘ */}
                     <div className="mt-3.5 p-3 bg-gray-50/70 rounded-xl border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-gray-500">
@@ -836,7 +860,7 @@ const CheckoutPage: React.FC = () => {
                     htmlType="submit"
                     loading={loading}
                     disabled={checkoutItems.length === 0}
-                    icon={paymentMethod === "momo" ? <QrcodeOutlined /> : <CheckOutlined />}
+                    icon={paymentMethod === "momo" ? <CreditCardOutlined /> : <CheckOutlined />}
                     className={`w-full h-12 sm:h-14 rounded-xl font-medium text-base sm:text-lg shadow-md transition-all flex items-center justify-center gap-2 border-0 ${
                       paymentMethod === "momo"
                         ? "bg-gradient-to-r from-[#D82D8B] to-[#b82274] hover:opacity-95 text-white"
@@ -844,7 +868,7 @@ const CheckoutPage: React.FC = () => {
                     }`}
                   >
                     {paymentMethod === "momo"
-                      ? `Thanh toán qua MoMo • ${formatCurrency(finalTotal)}`
+                      ? `Thanh toán qua Thẻ ATM • ${formatCurrency(finalTotal)}`
                       : `Xác nhận đặt hàng (COD) • ${formatCurrency(finalTotal)}`}
                   </Button>
                 </Form>

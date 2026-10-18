@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
+    "dev": "nodemon -e ts,js,json src/server.ts",
     "db:init": "node init-db.js",
     "db:seed": "node seed.js",
     "setup:ml": "python -m venv venv && .\\venv\\Scripts\\pip install -r requirements.txt",

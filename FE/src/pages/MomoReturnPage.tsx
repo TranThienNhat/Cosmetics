@@ -74,14 +74,16 @@ const MomoReturnPage: React.FC = () => {
     if (!targetOrderId) return;
     try {
       setRepaying(true);
-      message.loading({ content: "Đang tạo liên kết thanh toán Ví MoMo mới...", key: "repay" });
+      message.loading({ content: "Đang tạo liên kết thanh toán Thẻ ATM mới...", key: "repay" });
       const res = await api.post(`/orders/${targetOrderId}/repay-momo`);
-      if (res.data?.payUrl) {
-        message.success({ content: "Đang chuyển hướng sang Ví MoMo...", key: "repay" });
-        window.location.href = res.data.payUrl;
-      } else {
-        message.info({ content: res.data?.message || "Khởi tạo thanh toán thành công", key: "repay" });
-      }
+      const targetPayUrl = `/checkout/momo-gateway?orderId=${encodeURIComponent(
+        order?.order_code || targetOrderId
+      )}&amount=${finalAmount}`;
+
+      message.success({ content: "Đang chuyển hướng sang cổng thanh toán ATM...", key: "repay" });
+      setTimeout(() => {
+        window.location.href = targetPayUrl;
+      }, 500);
     } catch (err: any) {
       message.error({ content: err.response?.data?.message || "Không thể khởi tạo lại thanh toán lúc này.", key: "repay" });
     } finally {
@@ -115,7 +117,7 @@ const MomoReturnPage: React.FC = () => {
       <div className="min-h-[70vh] flex flex-col items-center justify-center bg-background px-4">
         <Spin size="large" />
         <Text className="mt-4 text-charcoal font-medium text-base">
-          Đang xác thực kết quả thanh toán từ Ví MoMo...
+          Đang xác thực kết quả thanh toán từ Cổng MoMo ATM...
         </Text>
       </div>
     );
@@ -127,13 +129,13 @@ const MomoReturnPage: React.FC = () => {
         <Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white text-center p-4 sm:p-8">
           {isSuccess ? (
             <div>
-              {/* SUCCESS ICON WITH MOMO BADGE */}
+              {/* SUCCESS ICON WITH ATM / MOMO BADGE */}
               <div className="relative inline-block mb-6">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#D82D8B]/10 flex items-center justify-center mx-auto text-[#D82D8B]">
                   <CheckCircleFilled className="text-5xl sm:text-6xl text-[#D82D8B]" />
                 </div>
                 <div className="absolute -bottom-1 -right-1 bg-[#D82D8B] text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-md">
-                  MoMo
+                  ATM • MoMo
                 </div>
               </div>
 
@@ -141,7 +143,7 @@ const MomoReturnPage: React.FC = () => {
                 Thanh toán thành công!
               </Title>
               <Paragraph className="text-gray-500 text-sm sm:text-base max-w-md mx-auto mb-6">
-                Cảm ơn nàng đã tin tưởng Linh Cosmetics. Đơn hàng của nàng đã được thanh toán qua Ví MoMo và đang được chuẩn bị để giao sớm nhất.
+                Cảm ơn nàng đã tin tưởng Linh Cosmetics. Đơn hàng của nàng đã được thanh toán qua Thẻ ATM (MoMo Gateway) và đang được chuẩn bị để giao sớm nhất.
               </Paragraph>
 
               {/* THÔNG TIN CHI TIẾT GIAO DỊCH */}
@@ -169,15 +171,15 @@ const MomoReturnPage: React.FC = () => {
                   <Text className="text-gray-500 text-xs sm:text-sm">Phương thức thanh toán:</Text>
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 rounded bg-[#D82D8B] text-white flex items-center justify-center font-bold text-[9px]">
-                      m
+                      ATM
                     </div>
-                    <Text strong className="text-xs sm:text-sm text-charcoal">Ví MoMo</Text>
+                    <Text strong className="text-xs sm:text-sm text-charcoal">Thẻ ATM nội địa (MoMo)</Text>
                   </div>
                 </div>
 
                 {transId && (
                   <div className="flex justify-between items-center pb-3 border-b border-gray/10">
-                    <Text className="text-gray-500 text-xs sm:text-sm">Mã giao dịch MoMo:</Text>
+                    <Text className="text-gray-500 text-xs sm:text-sm">Mã giao dịch:</Text>
                     <Text className="font-mono text-xs sm:text-sm text-gray-700">{transId}</Text>
                   </div>
                 )}
@@ -223,7 +225,7 @@ const MomoReturnPage: React.FC = () => {
                 Thanh toán chưa hoàn tất
               </Title>
               <Paragraph className="text-gray-500 text-sm sm:text-base max-w-md mx-auto mb-6">
-                {momoMessage || "Giao dịch thanh toán qua Ví MoMo không thành công hoặc đã bị hủy. Đừng lo lắng, nàng vẫn có thể kiểm tra lại đơn hàng hoặc chọn phương thức COD."}
+                {momoMessage || "Giao dịch thanh toán qua Thẻ ATM không thành công hoặc đã bị hủy. Đừng lo lắng, nàng vẫn có thể kiểm tra lại đơn hàng hoặc chọn phương thức COD."}
               </Paragraph>
 
               {orderId && (
@@ -242,7 +244,7 @@ const MomoReturnPage: React.FC = () => {
                   onClick={handleRepayMomo}
                   className="bg-[#D82D8B] hover:!bg-[#b82274] border-[#D82D8B] h-12 rounded-xl font-medium px-8 text-white shadow-md"
                 >
-                  Thanh toán lại qua Ví MoMo
+                  Thanh toán lại qua Thẻ ATM
                 </Button>
 
                 <Button

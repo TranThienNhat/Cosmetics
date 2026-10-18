@@ -155,7 +155,7 @@ const AdminOrdersPage: React.FC = () => {
             <div>
               {isMomo ? (
                 <Tag color="magenta" className="rounded-full text-xs font-medium">
-                  Ví MoMo
+                  Thẻ ATM (MoMo)
                 </Tag>
               ) : (
                 <Tag className="rounded-full text-xs bg-gray/5 border-gray/20 text-gray-600">
@@ -306,7 +306,7 @@ const AdminOrdersPage: React.FC = () => {
                 
                 <Descriptions.Item label="Phương thức TT">
                   {selectedOrder.payment_method === "momo" ? (
-                    <Tag color="magenta">Ví MoMo</Tag>
+                    <Tag color="magenta">Thẻ ATM (MoMo)</Tag>
                   ) : (
                     <Tag>Tiền mặt (COD)</Tag>
                   )}

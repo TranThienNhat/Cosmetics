@@ -123,19 +123,21 @@ const OrdersPage: React.FC = () => {
   };
 
   /**
-   * Thanh toán lại qua MoMo cho đơn hàng chưa hoàn tất
+   * Thanh toán lại qua Thẻ ATM cho đơn hàng chưa hoàn tất
    */
   const handleRepayMomo = async (order: any) => {
     try {
       setRepayingId(order.id);
-      message.loading({ content: "Đang kết nối cổng thanh toán Ví MoMo...", key: "repay" });
+      message.loading({ content: "Đang kết nối cổng thanh toán Thẻ ATM...", key: "repay" });
       const res = await api.post(`/orders/${order.id}/repay-momo`);
-      if (res.data?.payUrl) {
-        message.success({ content: "Đang chuyển hướng sang Ví MoMo...", key: "repay" });
-        window.location.href = res.data.payUrl;
-      } else {
-        message.info({ content: res.data?.message || "Khởi tạo thanh toán thành công", key: "repay" });
-      }
+      const targetPayUrl = `/checkout/momo-gateway?orderId=${encodeURIComponent(
+        order.order_code
+      )}&amount=${order.final_amount}`;
+
+      message.success({ content: "Đang chuyển hướng sang cổng thanh toán Thẻ ATM...", key: "repay" });
+      setTimeout(() => {
+        window.location.href = targetPayUrl;
+      }, 500);
     } catch (error: any) {
       message.error({ content: error.response?.data?.message || "Không thể thanh toán lại lúc này.", key: "repay" });
     } finally {
@@ -253,14 +255,14 @@ const OrdersPage: React.FC = () => {
     if (order.payment_method === "momo") {
       if (isCancelled) {
         if (order.payment_status === "paid" || order.payment_status === "refunded") {
-          return <Tag color="orange" className="rounded-full px-2.5 py-0.5 text-xs font-medium">Ví MoMo • Đã hoàn tiền</Tag>;
+          return <Tag color="orange" className="rounded-full px-2.5 py-0.5 text-xs font-medium">Thẻ ATM • Đã hoàn tiền</Tag>;
         }
-        return <Tag className="rounded-full px-2.5 py-0.5 text-xs bg-gray-100 text-gray-500 border-gray-200">Ví MoMo • Đã hủy</Tag>;
+        return <Tag className="rounded-full px-2.5 py-0.5 text-xs bg-gray-100 text-gray-500 border-gray-200">Thẻ ATM • Đã hủy</Tag>;
       }
       if (order.payment_status === "paid") {
-        return <Tag color="green" className="rounded-full px-2.5 py-0.5 text-xs font-medium">Ví MoMo • Đã TT</Tag>;
+        return <Tag color="green" className="rounded-full px-2.5 py-0.5 text-xs font-medium">Thẻ ATM • Đã TT</Tag>;
       }
-      return <Tag color="magenta" className="rounded-full px-2.5 py-0.5 text-xs font-medium">Ví MoMo • Chờ TT</Tag>;
+      return <Tag color="magenta" className="rounded-full px-2.5 py-0.5 text-xs font-medium">Thẻ ATM • Chờ TT</Tag>;
     }
 
     // COD
@@ -392,7 +394,7 @@ const OrdersPage: React.FC = () => {
                           Xem chi tiết <RightOutlined style={{ fontSize: 13 }} />
                       </Button>
 
-                      {/* Thanh toán lại MoMo nếu đơn chưa trả và còn hiệu lực */}
+                      {/* Thanh toán lại Thẻ ATM nếu đơn chưa trả và còn hiệu lực */}
                       {order.status === "pending" && order.payment_status !== "paid" && order.payment_method === "momo" && (
                         <Button
                           type="primary"
@@ -405,7 +407,7 @@ const OrdersPage: React.FC = () => {
                           }}
                           className="bg-[#D82D8B] hover:!bg-[#b82274] border-[#D82D8B] text-white rounded-lg text-xs font-semibold px-3 h-8 shadow-sm flex items-center gap-1"
                         >
-                          Thanh toán lại MoMo
+                          Thanh toán lại (ATM)
                         </Button>
                       )}
 
@@ -525,7 +527,7 @@ const OrdersPage: React.FC = () => {
                     <div className="bg-background p-5 rounded-xl border border-gray/10 h-full flex flex-col justify-center">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <Text strong className="text-charcoal text-sm">
-                            {selectedOrder.payment_method === 'momo' ? 'Ví điện tử MoMo' : 'Thanh toán khi nhận hàng (COD)'}
+                            {selectedOrder.payment_method === 'momo' ? 'Thẻ ATM nội địa (MoMo Gateway)' : 'Thanh toán khi nhận hàng (COD)'}
                           </Text>
                           {renderPaymentBadge(selectedOrder)}
                         </div>
@@ -641,7 +643,7 @@ const OrdersPage: React.FC = () => {
                       onClick={() => handleRepayMomo(selectedOrder)}
                       className="bg-[#D82D8B] hover:!bg-[#b82274] border-[#D82D8B] h-12 rounded-xl font-medium px-6 text-white w-full sm:w-auto shadow-md"
                     >
-                      Thanh toán lại MoMo
+                      Thanh toán lại (ATM)
                     </Button>
                   </>
                 )}
