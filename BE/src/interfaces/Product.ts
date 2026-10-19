@@ -14,7 +14,6 @@ export interface IProductVariant {
   variant_name: string;
   price: number;
   stock_quantity: number;
-  image_url?: string;
 }
 
 export interface IProductGallery {
@@ -22,5 +21,4 @@ export interface IProductGallery {
   product_id: number;
   image_url: string;
   is_main: number;
-  sort_order: number;
 }

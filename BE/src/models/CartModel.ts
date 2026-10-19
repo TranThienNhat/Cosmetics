@@ -15,9 +15,9 @@ class CartModel extends BaseModel<ICart> {
   // Lấy items trong giỏ, join với product_variants và products
   async getCartItems(cartId: number) {
     const sql = `
-      SELECT ci.id, ci.variant_id, ci.quantity, pv.variant_name, pv.price, pv.stock_quantity, pv.image_url,
+      SELECT ci.id, ci.variant_id, ci.quantity, pv.variant_name, pv.price, pv.stock_quantity,
              p.id as product_id, p.name, p.slug, p.status,
-             (SELECT image_url FROM product_galleries WHERE product_id = p.id ORDER BY is_main DESC, sort_order ASC LIMIT 1) as image_url
+             (SELECT image_url FROM product_galleries WHERE product_id = p.id ORDER BY is_main DESC, id ASC LIMIT 1) as image_url
       FROM cart_items ci
       JOIN product_variants pv ON ci.variant_id = pv.id
       JOIN products p ON pv.product_id = p.id

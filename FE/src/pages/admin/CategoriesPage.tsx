@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space, Typography, Input, Popconfirm, message, Card, Modal, Form, Upload, Image, Select } from "antd";
+import { Table, Button, Space, Typography, Input, Popconfirm, message, Card, Modal, Form, Select } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from "@ant-design/icons";
 import api from "../../utils/api";
-import { getImageUrl } from "../../utils/helpers";
 import { Category } from "../../types";
 
 const { Title } = Typography;
-const { Search, TextArea } = Input;
+const { Search } = Input;
 
 const createSlug = (str: string) => {
   if (!str) return "";
@@ -30,45 +29,37 @@ const CategoriesPage: React.FC = () => {
       const res = await api.get("/categories");
       setCategories(res.data.data || []);
     } catch (e: any) {
-      // Lấy message từ backend trả về, nếu không có thì dùng câu mặc định
       message.error(e.response?.data?.message || "Lỗi tải danh mục");
+    } finally {
+      setLoading(false);
     }
-    finally { setLoading(false); }
   };
 
   const handleSubmit = async (values: any) => {
     try {
-      const formData = new FormData();
-      formData.append("name", values.name);
-      formData.append("slug", values.slug);
-      formData.append("description", values.description || "");
-      formData.append("parent_id", values.parent_id || "");
-
-      if (values.image && values.image.length > 0 && values.image[0].originFileObj) {
-        formData.append("image", values.image[0].originFileObj);
-      }
-
-      const config = { headers: { "Content-Type": "multipart/form-data" } };
+      const payload = {
+        name: values.name,
+        slug: values.slug,
+        parent_id: values.parent_id || null,
+      };
 
       if (editingCategory) {
-        await api.put(`/categories/${editingCategory.id}`, formData, config);
+        await api.put(`/categories/${editingCategory.id}`, payload);
         message.success("Cập nhật thành công");
       } else {
-        await api.post("/categories", formData, config);
+        await api.post("/categories", payload);
         message.success("Tạo mới thành công");
       }
       setModalVisible(false);
       loadCategories();
       form.resetFields();
     } catch (e: any) {
-      // Lấy message từ backend
       message.error(e.response?.data?.message || "Thao tác thất bại");
     }
   };
 
-  // Tách riêng hàm xóa để bắt lỗi backend
   const handleDelete = async (id?: number) => {
-    if (!id) return; // Nếu không có id thì dừng luôn, không gọi API
+    if (!id) return;
 
     try {
       await api.delete(`/categories/${id}`);
@@ -80,12 +71,6 @@ const CategoriesPage: React.FC = () => {
   };
 
   const columns = [
-    {
-      title: "Ảnh",
-      dataIndex: "image_url",
-      width: 80,
-      render: (url: string) => <Image src={getImageUrl(url)} width={50} height={50} style={{ objectFit: 'cover', borderRadius: 4 }} fallback="/placeholder.jpg" />
-    },
     {
       title: "Tên danh mục",
       dataIndex: "name",
@@ -115,8 +100,9 @@ const CategoriesPage: React.FC = () => {
           <Button type="text" icon={<EditOutlined />} onClick={() => {
             setEditingCategory(record);
             form.setFieldsValue({
-              ...record,
-              image: record.image_url ? [{ uid: '-1', status: 'done', url: getImageUrl(record.image_url) }] : []
+              name: record.name,
+              slug: record.slug,
+              parent_id: record.parent_id || undefined,
             });
             setModalVisible(true);
           }} />
@@ -155,23 +141,21 @@ const CategoriesPage: React.FC = () => {
         onCancel={() => setModalVisible(false)} 
         footer={null} 
         destroyOnClose 
-        width={window.innerWidth < 640 ? "95%" : 600}
+        width={window.innerWidth < 640 ? "95%" : 520}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit} onValuesChange={v => v.name && form.setFieldsValue({ slug: createSlug(v.name) })}>
-          <Form.Item name="name" label="Tên danh mục" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="slug" label="Slug" rules={[{ required: true }]}><Input /></Form.Item>
+          <Form.Item name="name" label="Tên danh mục" rules={[{ required: true, message: "Vui lòng nhập tên danh mục" }]}>
+            <Input placeholder="Ví dụ: Chăm sóc da" />
+          </Form.Item>
+          <Form.Item name="slug" label="Slug" rules={[{ required: true, message: "Vui lòng nhập slug" }]}>
+            <Input placeholder="cham-soc-da" />
+          </Form.Item>
           <Form.Item name="parent_id" label="Danh mục cha">
             <Select placeholder="Chọn danh mục cha (nếu có)" allowClear>
               {categories.filter(c => c.id !== editingCategory?.id).map(c => (
                 <Select.Option key={c.id} value={c.id}>{c.name}</Select.Option>
               ))}
             </Select>
-          </Form.Item>
-          <Form.Item name="description" label="Mô tả"><TextArea rows={3} /></Form.Item>
-          <Form.Item name="image" label="Hình ảnh" valuePropName="fileList" getValueFromEvent={e => Array.isArray(e) ? e : e?.fileList}>
-            <Upload listType="picture-card" maxCount={1} beforeUpload={() => false} accept="image/*">
-              <div><PlusOutlined /><div style={{ marginTop: 8 }}>Chọn ảnh</div></div>
-            </Upload>
           </Form.Item>
           <div style={{ textAlign: 'right', marginTop: 20 }}>
             <Button onClick={() => setModalVisible(false)} style={{ marginRight: 8 }}>Hủy</Button>

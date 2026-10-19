@@ -11,7 +11,7 @@ class ReviewModel extends BaseModel<any> {
       SELECT r.*, u.name as user_name 
       FROM reviews r
       JOIN users u ON r.user_id = u.id
-      WHERE r.product_id = ? AND r.is_approved = 1
+      WHERE r.product_id = ?
       ORDER BY r.created_at DESC
     `;
     const [rows] = await this.db.query(sql, [productId]);

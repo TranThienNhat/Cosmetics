@@ -33,9 +33,7 @@ interface Supplier {
   phone: string;
   email?: string;
   address?: string;
-  note?: string;
   status: "active" | "inactive";
-  created_at: string;
 }
 
 const SuppliersPage: React.FC = () => {
@@ -343,14 +341,7 @@ const SuppliersPage: React.FC = () => {
               </Form.Item>
             </Col>
 
-            <Col span={24}>
-              <Form.Item name="note" label="Ghi chú nội bộ">
-                <Input.TextArea
-                  rows={2}
-                  placeholder="Chính sách chiết khấu, công nợ..."
-                />
-              </Form.Item>
-            </Col>
+
           </Row>
         </Form>
       </Modal>

@@ -33,7 +33,7 @@ export const createAddress = async (req: Request, res: Response): Promise<Respon
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Vui lòng đăng nhập" });
     }
 
-    const { recipient_name, phone, address_line, province, district, ward, is_default } = req.body;
+    const { recipient_name, phone, address_line, province, ward, is_default } = req.body;
 
     if (!recipient_name || !phone || !address_line) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -48,7 +48,6 @@ export const createAddress = async (req: Request, res: Response): Promise<Respon
       phone: phone.trim(),
       address_line: address_line.trim(),
       province: province ? String(province).trim() : null,
-      district: district ? String(district).trim() : null,
       ward: ward ? String(ward).trim() : null,
       is_default: Boolean(is_default),
     });
@@ -82,14 +81,13 @@ export const updateAddress = async (req: Request, res: Response): Promise<Respon
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: "ID địa chỉ không hợp lệ" });
     }
 
-    const { recipient_name, phone, address_line, province, district, ward, is_default } = req.body;
+    const { recipient_name, phone, address_line, province, ward, is_default } = req.body;
 
     const updated = await AddressModel.updateAddress(addressId, userId, {
       recipient_name,
       phone,
       address_line,
       province,
-      district,
       ward,
       is_default,
     });

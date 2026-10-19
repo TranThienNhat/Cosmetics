@@ -52,8 +52,7 @@ export const createReview = async (req: Request, res: Response) => {
       product_id: pId, // Lưu ID sản phẩm gốc
       order_id: oId,
       rating: star,
-      comment: comment?.trim() || "Sản phẩm tuyệt vời!",
-      is_approved: 1 
+      comment: comment?.trim() || "Sản phẩm tuyệt vời!"
     });
 
     return res.json({ success: true, message: "Cảm ơn nàng đã để lại đánh giá ✨" });
@@ -92,18 +91,7 @@ export const getAllReviews = async (req: Request, res: Response) => {
   }
 };
 
-// 5. Quản lý: Duyệt hoặc ẩn đánh giá (Dành cho Admin)
-export const toggleApproveReview = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { is_approved } = req.body; // 0 hoặc 1
 
-    await Review.update(parseInt(id), { is_approved });
-    return res.json({ message: "Cập nhật trạng thái đánh giá thành công." });
-  } catch (error) {
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: "Lỗi cập nhật." });
-  }
-};
 
 // 6. Xóa đánh giá
 export const deleteReview = async (req: Request, res: Response) => {

@@ -4,7 +4,6 @@ export interface ProductVariant {
   variant_name?: string;
   price: number;
   stock_quantity: number;
-  image_url?: string;
 }
 
 export interface Product {
@@ -30,7 +29,6 @@ export interface Gallery {
   product_id: number;
   image_url: string;
   is_main?: number;
-  sort_order?: number;
 }
 
 export interface CartItem {
@@ -63,8 +61,6 @@ export interface Category {
   parent_id?: number | null;
   name: string;
   slug: string;
-  description?: string;
-  image_url?: string;
 }
 
 export interface Brand {
@@ -82,7 +78,6 @@ export interface Review {
   order_id?: number;
   rating: number;
   comment: string;
-  is_approved: number;
   user_name: string;
   created_at: string;
 }
@@ -163,7 +158,6 @@ export interface UserAddress {
   phone: string;
   address_line: string;
   province?: string | null;
-  district?: string | null;
   ward?: string | null;
   is_default: boolean | number;
   created_at?: string;

@@ -50,7 +50,7 @@ async findAll(options: any = {}) {
                         SELECT image_url 
                         FROM product_galleries 
                         WHERE product_id = p.id 
-                        ORDER BY is_main DESC, sort_order ASC 
+                        ORDER BY is_main DESC, id ASC 
                         LIMIT 1
                       ),
                      -- Kiểm tra xem món này trong đơn này đã được nàng Review chưa

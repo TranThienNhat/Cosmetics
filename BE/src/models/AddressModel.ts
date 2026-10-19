@@ -28,7 +28,6 @@ class AddressModel extends BaseModel<IUserAddress> {
     phone: string;
     address_line: string;
     province?: string | null;
-    district?: string | null;
     ward?: string | null;
     is_default?: boolean | number;
   }): Promise<number> {
@@ -43,15 +42,14 @@ class AddressModel extends BaseModel<IUserAddress> {
     }
 
     const [result]: any = await this.db.query(
-      `INSERT INTO user_addresses (user_id, recipient_name, phone, address_line, province, district, ward, is_default)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO user_addresses (user_id, recipient_name, phone, address_line, province, ward, is_default)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         data.user_id,
         data.recipient_name,
         data.phone,
         data.address_line,
         data.province || null,
-        data.district || null,
         data.ward || null,
         shouldBeDefault ? 1 : 0,
       ]
@@ -90,10 +88,6 @@ class AddressModel extends BaseModel<IUserAddress> {
     if (data.province !== undefined) {
       fields.push("province = ?");
       values.push(data.province);
-    }
-    if (data.district !== undefined) {
-      fields.push("district = ?");
-      values.push(data.district);
     }
     if (data.ward !== undefined) {
       fields.push("ward = ?");

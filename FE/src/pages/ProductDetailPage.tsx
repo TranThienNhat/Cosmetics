@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Row,
@@ -25,6 +25,8 @@ import {
   FireFilled,
   AppstoreOutlined,
   RightOutlined,
+  DownOutlined,
+  UpOutlined,
 } from "@ant-design/icons"; 
 import { ProductVariant } from "../types";
 import api from "../utils/api";
@@ -48,6 +50,12 @@ const ProductDetailPage: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Description collapse/expand state
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [isDescClamped, setIsDescClamped] = useState(false);
+  const descRef = useRef<HTMLDivElement>(null);
+  const descContainerRef = useRef<HTMLDivElement>(null);
+
   // Frequently Bought Together (FBT) Bundle states
   const [bundleData, setBundleData] = useState<any | null>(null);
   const [selectedBundleItemIds, setSelectedBundleItemIds] = useState<number[]>([]);
@@ -66,6 +74,30 @@ const ProductDetailPage: React.FC = () => {
       loadRecommendations(id);
     }
   }, [id]);
+
+  useEffect(() => {
+    setIsDescExpanded(false);
+    const checkClamped = () => {
+      if (descRef.current) {
+        setIsDescClamped(descRef.current.scrollHeight > 280);
+      } else if (product?.description && product.description.length > 300) {
+        setIsDescClamped(true);
+      }
+    };
+    const timer = setTimeout(checkClamped, 150);
+    window.addEventListener("resize", checkClamped);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", checkClamped);
+    };
+  }, [product?.description, id]);
+
+  const toggleDescription = () => {
+    if (isDescExpanded && descContainerRef.current) {
+      descContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    setIsDescExpanded((prev) => !prev);
+  };
 
   const loadRecommendations = async (productId: string) => {
     try {
@@ -310,7 +342,6 @@ const ProductDetailPage: React.FC = () => {
                         key={v.id}
                         onClick={() => {
                             setSelectedVariant(v);
-                            if(v.image_url) setSelectedImage(v.image_url);
                         }}
                         className={`h-10 px-5 rounded-lg font-medium transition-all ${
                             selectedVariant?.id === v.id 
@@ -540,19 +571,50 @@ const ProductDetailPage: React.FC = () => {
               key: "1",
               label: <span className="px-2 sm:px-6 font-serif text-sm sm:text-lg tracking-wide">Mô tả sản phẩm</span>,
               children: (
-                <div className="max-w-4xl mx-auto py-4 sm:py-8">
+                <div ref={descContainerRef} className="max-w-4xl mx-auto py-4 sm:py-8 scroll-mt-24">
                   <div 
                     className="bg-white p-4 sm:p-8 md:p-12 rounded-2xl shadow-sm border border-gray/10"
                   >
-                    <div
-                      className="description-container leading-relaxed sm:leading-loose text-charcoal/80 text-sm sm:text-base font-light"
-                      style={{ 
-                        whiteSpace: 'pre-line',
-                        wordBreak: 'break-word' 
-                      }}
-                    >
-                      {product.description || "Nội dung đang được cập nhật từ Linh Cosmetics..."}
+                    <div className="relative">
+                      <div
+                        ref={descRef}
+                        className={`description-container leading-relaxed sm:leading-loose text-charcoal/80 text-sm sm:text-base font-light transition-all duration-500 overflow-hidden ${
+                          !isDescExpanded && isDescClamped ? "max-h-[280px]" : "max-h-none"
+                        }`}
+                        style={{ 
+                          whiteSpace: 'pre-line',
+                          wordBreak: 'break-word' 
+                        }}
+                      >
+                        {product.description || "Nội dung đang được cập nhật từ Linh Cosmetics..."}
+                      </div>
+
+                      {/* Gradient mờ dần ở đáy khi đang thu gọn */}
+                      {!isDescExpanded && isDescClamped && (
+                        <div 
+                          onClick={toggleDescription}
+                          className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-white via-white/80 to-transparent cursor-pointer" 
+                          title="Bấm để xem thêm"
+                        />
+                      )}
                     </div>
+
+                    {/* Nút Xem thêm / Thu gọn */}
+                    {isDescClamped && (
+                      <div className="text-center pt-5 sm:pt-6 relative z-10">
+                        <Button
+                          onClick={toggleDescription}
+                          className="h-10 px-6 rounded-full font-medium text-xs sm:text-sm text-primary border-primary/40 hover:!border-primary hover:!bg-primary/5 hover:!text-primary transition-all duration-300 shadow-xs inline-flex items-center gap-2 group"
+                        >
+                          <span>{isDescExpanded ? "Thu gọn nội dung" : "Xem thêm nội dung"}</span>
+                          {isDescExpanded ? (
+                            <UpOutlined className="text-xs transition-transform duration-300 group-hover:-translate-y-0.5" />
+                          ) : (
+                            <DownOutlined className="text-xs transition-transform duration-300 group-hover:translate-y-0.5" />
+                          )}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ),

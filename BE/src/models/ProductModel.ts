@@ -104,7 +104,7 @@ class ProductModel extends BaseModel<IProduct> {
     if (!products.length) return null;
 
     const [variants] = await this.db.query(`SELECT * FROM product_variants WHERE product_id = ?`, [id]);
-    const [galleries] = await this.db.query(`SELECT * FROM product_galleries WHERE product_id = ? ORDER BY sort_order ASC`, [id]);
+    const [galleries] = await this.db.query(`SELECT * FROM product_galleries WHERE product_id = ? ORDER BY is_main DESC, id ASC`, [id]);
 
     return { ...products[0], variants, galleries };
   }
@@ -125,7 +125,7 @@ class ProductModel extends BaseModel<IProduct> {
           SELECT image_url 
           FROM product_galleries 
           WHERE product_id = p.id 
-          ORDER BY is_main DESC, sort_order ASC 
+          ORDER BY is_main DESC, id ASC 
           LIMIT 1
         ) AS image_url,
         pv.id AS variant_id,
@@ -202,7 +202,7 @@ class ProductModel extends BaseModel<IProduct> {
           SELECT image_url 
           FROM product_galleries 
           WHERE product_id = p.id 
-          ORDER BY is_main DESC, sort_order ASC 
+          ORDER BY is_main DESC, id ASC 
           LIMIT 1
         ) AS thumb_image,
         COALESCE(AVG(r.rating), 5) AS avg_rating,
@@ -220,7 +220,7 @@ class ProductModel extends BaseModel<IProduct> {
       LEFT JOIN product_variants pv ON p.id = pv.product_id
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN brands b ON p.brand_id = b.id
-      LEFT JOIN reviews r ON p.id = r.product_id AND r.is_approved = 1
+      LEFT JOIN reviews r ON p.id = r.product_id
       LEFT JOIN order_items oi ON pv.id = oi.variant_id
       WHERE p.status = 'active'
         AND p.deleted_at IS NULL
@@ -270,7 +270,7 @@ class ProductModel extends BaseModel<IProduct> {
             SELECT image_url 
             FROM product_galleries 
             WHERE product_id = p.id 
-            ORDER BY is_main DESC, sort_order ASC 
+            ORDER BY is_main DESC, id ASC 
             LIMIT 1
           ) AS thumb_image,
           COALESCE(AVG(r.rating), 5) AS avg_rating,
@@ -280,7 +280,7 @@ class ProductModel extends BaseModel<IProduct> {
         LEFT JOIN product_variants pv ON p.id = pv.product_id
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN brands b ON p.brand_id = b.id
-        LEFT JOIN reviews r ON p.id = r.product_id AND r.is_approved = 1
+        LEFT JOIN reviews r ON p.id = r.product_id
         LEFT JOIN order_items oi ON pv.id = oi.variant_id
         WHERE p.status = 'active'
           AND p.deleted_at IS NULL
@@ -318,7 +318,7 @@ class ProductModel extends BaseModel<IProduct> {
           SELECT image_url 
           FROM product_galleries 
           WHERE product_id = p.id 
-          ORDER BY is_main DESC, sort_order ASC 
+          ORDER BY is_main DESC, id ASC 
           LIMIT 1
         ) AS thumb_image,
         COALESCE(AVG(r.rating), 5) AS avg_rating,
@@ -328,7 +328,7 @@ class ProductModel extends BaseModel<IProduct> {
       LEFT JOIN product_variants pv ON p.id = pv.product_id
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN brands b ON p.brand_id = b.id
-      LEFT JOIN reviews r ON p.id = r.product_id AND r.is_approved = 1
+      LEFT JOIN reviews r ON p.id = r.product_id
       LEFT JOIN order_items oi ON pv.id = oi.variant_id
       WHERE p.status = 'active'
         AND p.deleted_at IS NULL

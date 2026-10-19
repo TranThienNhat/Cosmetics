@@ -73,7 +73,6 @@ export const SupplierController = {
         phone,
         email,
         status,
-        note,
       }: ISupplier = req.body;
 
       if (!name)
@@ -97,7 +96,6 @@ export const SupplierController = {
         phone,
         email,
         status: status || "active", // Mặc định là active nếu không gửi
-        note,
       });
 
       return res

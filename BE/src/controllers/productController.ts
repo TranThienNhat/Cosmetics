@@ -56,15 +56,13 @@ const buildVariantUpdateQuery = (variants: any[], productId: number) => {
       UPDATE product_variants
       SET variant_name = CASE id ${caseSql} ELSE variant_name END,
           price = CASE id ${caseSql} ELSE price END,
-          stock_quantity = CASE id ${caseSql} ELSE stock_quantity END,
-          image_url = CASE id ${caseSql} ELSE image_url END
+          stock_quantity = CASE id ${caseSql} ELSE stock_quantity END
       WHERE product_id = ? AND id IN (?)
     `,
     values: [
       ...valuesFor("variant_name"),
       ...valuesFor("price"),
       ...valuesFor("stock_quantity"),
-      ...valuesFor("image_url"),
       productId,
       ids,
     ],
@@ -176,14 +174,13 @@ export const create = async (
 
       await connection.execute(
         `INSERT INTO product_variants
-          (product_id, variant_name, price, stock_quantity, image_url)
-         VALUES (?, ?, ?, ?, ?)`,
+          (product_id, variant_name, price, stock_quantity)
+         VALUES (?, ?, ?, ?)`,
         [
           productId,
           v.variant_name || v.name || "Mặc định",
           isNaN(priceNum) ? 0 : priceNum,
           isNaN(stockNum) ? 0 : stockNum,
-          v.image_url || null,
         ],
       );
     }
@@ -192,9 +189,9 @@ export const create = async (
       for (let i = 0; i < files.length; i++) {
         await connection.execute(
           `INSERT INTO product_galleries
-            (product_id, image_url, is_main, sort_order)
-           VALUES (?, ?, ?, ?)`,
-          [productId, `/uploads/products/${files[i].filename}`, i === 0 ? 1 : 0, i],
+            (product_id, image_url, is_main)
+           VALUES (?, ?, ?)`,
+          [productId, `/uploads/products/${files[i].filename}`, i === 0 ? 1 : 0],
         );
       }
     }
@@ -312,7 +309,6 @@ export const update = async (req: Request, res: Response) => {
         variant_name: v.variant_name || v.name || "Mặc định",
         price: isNaN(priceNum) ? 0 : priceNum,
         stock_quantity: isNaN(stockNum) ? 0 : stockNum,
-        image_url: v.image_url || null,
       };
 
       if (v.id && existingIds.includes(Number(v.id))) {
@@ -320,7 +316,7 @@ export const update = async (req: Request, res: Response) => {
       } else {
         variantsToInsert.push([
           variantData.product_id, variantData.variant_name, variantData.price,
-          variantData.stock_quantity, variantData.image_url
+          variantData.stock_quantity
         ]);
       }
     }
@@ -332,7 +328,7 @@ export const update = async (req: Request, res: Response) => {
     if (variantsToInsert.length > 0) {
       dbTasks.push(
         connection.query(
-          `INSERT INTO product_variants (product_id, variant_name, price, stock_quantity, image_url) VALUES ?`,
+          `INSERT INTO product_variants (product_id, variant_name, price, stock_quantity) VALUES ?`,
           [variantsToInsert]
         )
       );
@@ -358,8 +354,6 @@ export const update = async (req: Request, res: Response) => {
     // Await tất cả các tác vụ DELETE/UPDATE Variants và DELETE Galleries cùng lúc
     await Promise.all(dbTasks);
 
-    const remainingCount = oldGalleries.length - galleriesToDelete.length;
-    let currentSortOrder = remainingCount;
     const hasExistingMain = oldGalleries
       .filter((g: any) => !galleriesToDelete.some((del: any) => del.id === g.id))
       .some((g: any) => g.is_main === 1);
@@ -369,16 +363,15 @@ export const update = async (req: Request, res: Response) => {
         productId,
         `/uploads/products/${file.filename}`,
         !hasExistingMain && i === 0 ? 1 : 0,
-        currentSortOrder + i,
       ]);
       await connection.query(
-        `INSERT INTO product_galleries (product_id, image_url, is_main, sort_order) VALUES ?`,
+        `INSERT INTO product_galleries (product_id, image_url, is_main) VALUES ?`,
         [galleryRows]
       );
     }
 
     const [[finalGalleries]]: any = await connection.execute(
-      "SELECT id, is_main FROM product_galleries WHERE product_id = ? ORDER BY sort_order ASC",
+      "SELECT id, is_main FROM product_galleries WHERE product_id = ? ORDER BY id ASC",
       [productId]
     );
 

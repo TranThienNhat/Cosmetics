@@ -5,6 +5,5 @@ export interface IReview {
   order_id?: number;
   rating: number;
   comment: string;
-  is_approved: number;
   created_at?: Date | string;
 }
