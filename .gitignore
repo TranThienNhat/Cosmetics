@@ -49,11 +49,9 @@ Thumbs.db
 BE/.env
 FE/.env
 
-# Uploads
-BE/uploads/*
-!BE/uploads/.gitkeep
-!BE/uploads/banner/
-!BE/uploads/banner/**
+# Uploads (Cho phép đẩy ảnh lên Git)
+!BE/uploads/
+!BE/uploads/**
 .agents/
 powershell.cmd
 */powershell.cmd
